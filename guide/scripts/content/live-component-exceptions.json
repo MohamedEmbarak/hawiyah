@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "file": "docs/components/rating.md",
+    "example": "display",
+    "reason": "The group shows RatingDisplay, the second component that this page documents in its API tables: the React, Vue and Angular blocks use RatingDisplay and hw-rating-display, which the check accepts, and the html block uses the class hw-rating-display of the installed stylesheet, which components.json does not list among the classes of rating (only hw-rating), so the check cannot find the component in the html block.",
+    "approvedBy": "lead"
+  }
+]

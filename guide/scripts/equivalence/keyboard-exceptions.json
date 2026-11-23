@@ -10,5 +10,101 @@
     "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of AppShell documents the native skip link and the main region it focuses, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
     "reference": "@hawiyah/react README.md: \"The skip link, whose text is the required `skipLabel`, focuses main.\"",
     "approvedBy": "lead"
+  },
+  {
+    "component": "accordion",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Accordion documents the native summary of each section, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/vanilla README.md: \"Native buttons, fields, select, file input, progress, and details/summary accordions work without this package.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "tooltip",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Tooltip documents the focus of the trigger and Escape, which show and hide the tooltip, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Focus or hover shows the tooltip; it hides when focus leaves, 120 ms after the pointer leaves, on Escape (focus stays on the trigger) and on a press outside.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "popover",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Popover documents the native trigger button, the ordinary Tab order of the panel and Escape, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Ordinary Tab order; closes on Escape pressed inside it (focus returns to the trigger), on an outside press and when focus moves outside (focus stays where it went).\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "menu",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Menu documents the trigger and the items of the menu, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Trigger: click, Enter or Space toggles and focuses the first enabled item; ArrowDown opens on the first, ArrowUp on the last enabled item.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "dialog",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Dialog documents the native modal dialog and its native buttons, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/vanilla README.md: \"A native `<dialog>` supplies modality, its top layer, Escape handling, and focus containment through `showModal()`/`close()`.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "drawer",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Drawer documents the native modal dialog and its native buttons, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Native modal dialog with the markup of Dialog and the classes `hw-dialog hw-drawer`.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "toast-region",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of ToastRegion documents the native dismiss buttons of the messages, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"A dismissal listener enables the button, which is named by `getDismissLabel(message)`, required while messages can be dismissed.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "cookie-consent",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of CookieConsent documents the native buttons and the policy link of the region, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Non-modal, no focus trap; the region moves no focus when it closes, so send focus to the main heading or to the control that reopens the preferences.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "password-field",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of PasswordField documents the native input and its native toggle button, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"The toggle keeps the same input and is ignored while the input is disabled.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "search-field",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of SearchField documents the native input, the clear button and the keys of the suggestions, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Arrow keys wrap through matches; Enter on an active suggestion selects it and prevents form submission.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "pin-input",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of PinInput documents the one native input of the code, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"String value, `length`; one numeric input with `one-time-code` autocomplete and `pattern=\"[0-9]{N}\"`.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "rating",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Rating documents the native radio group of the stars, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/react README.md: \"Numeric value/defaultValue, `onValueChange`, max (1–20, default 5), label/name/required, required `getRatingLabel(value,max)`; one native radio group.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "combobox",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of Combobox documents the input and the keys of its list of options, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Arrow keys/Home/End move the active option, Enter explicitly commits, and Escape/Tab/blur close without silently selecting.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "multi-select",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of MultiSelect documents the native filter input and the native checkboxes of the options, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Selected values remain in FormData when the filter hides their checkboxes.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "tag-input",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of TagInput documents the text input and the native remove buttons of the tags, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Enter or comma commits a unique trimmed tag; there is no Add button; Backspace in an empty draft removes the last tag and keeps focus in the input.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "range-slider",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of RangeSlider documents the two native range inputs, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/angular README.md: \"Crossing thumbs stop at the other value; absent distinct names, `name` submits two ordered values.\"",
+    "approvedBy": "lead"
   }
 ]

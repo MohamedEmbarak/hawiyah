@@ -382,6 +382,16 @@ export function differenceOf(group, entries) {
   return { entry };
 }
 
+/**
+ * The documented differences a group names with differences=<id>[,<id>...]: each id is
+ * judged as differenceOf judges one. Returns { entries, errors }.
+ */
+export function differencesOf(group, entries) {
+  if (group.differences === undefined) return { entries: [], errors: [] };
+  const found = String(group.differences).split(',').map((id) => differenceOf({ ...group, differences: id }, entries));
+  return { entries: found.flatMap((item) => (item.entry ? [item.entry] : [])), errors: found.flatMap((item) => (item.error ? [item.error] : [])) };
+}
+
 /** Bundles harness.ts with esbuild (the frame sources are imported as text, as the Angular build does). */
 export async function bundleHarness(outFile) {
   const frameText = {
@@ -519,13 +529,70 @@ async function clearHover(page, framework, frameworks) {
   }
 }
 
-/** Waits until the iframe has the height its document reports (screenshots are not clipped). */
+/**
+ * The height (CSS px) at which the four frames of a group are laid out when a frame
+ * document has an element whose minimum block size follows the viewport (min-block-size:
+ * 100dvh on .hw-app-shell and .hw-portal-layout). Such a document is taller than any
+ * frame it is given (the element fills the viewport and the body padding adds to it), so
+ * a frame that takes the reported height grows with every report until the bound of the
+ * protocol, and each framework stops at another height.
+ */
+export const FIXED_FRAME_HEIGHT = 720;
+/** The two heights at which a frame is laid out to find an element whose minimum block size follows the viewport. */
+export const PROBE_HEIGHTS = [600, 700];
+
+/** Fixes the height of a framework's frame in the harness page (null releases it) and waits until its document has that viewport height. */
+async function fixFrameHeight(page, framework, height) {
+  const fixed = await page.evaluate(([name, value]) => window.__harnessFixHeight?.(name, value) ?? false, [framework, height]);
+  if (!fixed) throw new Error(`the harness cannot fix the height of the ${framework} frame`);
+  if (height === null) return;
+  const frame = await frameOf(page, framework);
+  // Polled on a timer: a frame outside the viewport of the harness page gets no animation frames.
+  await frame.waitForFunction((value) => window.innerHeight === value, height, { timeout: 5_000, polling: 20 });
+}
+
+/**
+ * The minimum block size of every element below the body of a frame document, in
+ * document order (computed values, so a viewport unit is resolved to pixels); evaluated
+ * in a frame.
+ */
+export function minimumBlockSizes() {
+  return Array.from(document.body?.querySelectorAll('*') ?? [], (element) => getComputedStyle(element).minBlockSize);
+}
+
+/**
+ * Lays the frames of a group out at one height when a frame document has an element
+ * whose minimum block size follows the viewport: each frame is laid out at the two
+ * PROBE_HEIGHTS, and an element whose computed minimum block size differs between them
+ * follows the viewport. If one frame has such an element, the four frames are fixed at
+ * FIXED_FRAME_HEIGHT, the same in each, and the height their documents report no longer
+ * changes them; otherwise every frame takes its reported height again. Returns the fixed
+ * height or null.
+ */
+export async function layOutFrames(page, frameworks = FRAMEWORKS) {
+  let relative = false;
+  for (const framework of frameworks) {
+    const frame = await frameOf(page, framework);
+    const sizes = [];
+    for (const height of PROBE_HEIGHTS) {
+      await fixFrameHeight(page, framework, height);
+      sizes.push(await frame.evaluate(minimumBlockSizes));
+    }
+    if (sizes[0].length !== sizes[1].length || sizes[0].some((value, index) => value !== sizes[1][index])) relative = true;
+  }
+  for (const framework of frameworks) await fixFrameHeight(page, framework, relative ? FIXED_FRAME_HEIGHT : null);
+  return relative ? FIXED_FRAME_HEIGHT : null;
+}
+
+/** Waits until the iframe has the height its document reports (screenshots are not clipped), or the height the runner fixed. */
 async function settleHeight(page, frame, framework) {
   const wanted = await frame.evaluate(() => Math.ceil(document.documentElement.getBoundingClientRect().height));
   await page
     .waitForFunction(
       ([name, height]) => {
         const element = document.querySelector(`iframe[data-framework="${name}"]`);
+        const fixed = window.__harness?.frames?.[name]?.fixed;
+        if (element && typeof fixed === 'number') return Math.abs(element.getBoundingClientRect().height - fixed) < 1;
         return element && Math.abs(element.getBoundingClientRect().height - Math.min(4000, Math.max(80, height))) < 1;
       },
       [framework, wanted],
@@ -584,9 +651,12 @@ export async function capture(page, frameworks = FRAMEWORKS, before = null, { ke
 
 /**
  * Runs the three comparisons on a capture; returns report rows (skipped aspects
- * included). difference is the known-differences entry of the group or null: an
- * entry without ignore skips its aspect; a structure entry with ignore leaves only
- * the listed attributes out of the structure comparison (leadAmendments A8).
+ * included). difference is the known-differences entry of the group, the list of
+ * the entries it names, or null: an entry without ignore skips its aspect; a
+ * structure entry with ignore leaves only the listed attributes out of the
+ * structure comparison (leadAmendments A8), and the ignore lists of several such
+ * entries are joined. A structure entry without ignore skips the structure
+ * comparison, whatever the other entries ignore.
  */
 export function compareCapture(captured, difference = null, designed = null) {
   const rows = [];
@@ -594,11 +664,12 @@ export function compareCapture(captured, difference = null, designed = null) {
   if (designed && (designed.emptyClasses.length || designed.vanillaAttributes.length)) {
     captured = { ...captured, trees: Object.fromEntries(Object.entries(captured.trees).map(([framework, tree]) => [framework, withoutDesigned(tree, designed, framework)])) };
   }
-  const skip = difference && !difference.ignore ? difference.aspect : null;
-  const ignore = difference?.aspect === 'structure' && difference.ignore ? difference.ignore : [];
+  const named = (Array.isArray(difference) ? difference : [difference]).filter(Boolean);
+  const skipped = new Set(named.filter((entry) => !entry.ignore).map((entry) => entry.aspect));
+  const ignore = skipped.has('structure') ? [] : named.filter((entry) => entry.aspect === 'structure' && entry.ignore).flatMap((entry) => entry.ignore);
   const add = (aspect, results) => {
     for (const result of results) {
-      if (skip === aspect) rows.push({ aspect, pair: result.pair, result: 'skipped' });
+      if (skipped.has(aspect)) rows.push({ aspect, pair: result.pair, result: 'skipped' });
       else rows.push({ aspect, ...result, result: result.equal ? 'equal' : 'different', ...(aspect === 'structure' && ignore.length > 0 ? { ignored: ignore } : {}) });
     }
   };
@@ -828,26 +899,32 @@ export async function runChecks({
 }
 
 /** Runs one group; returns { rows, failures, asserted, axeFrames, hosts } (hosts: the listed Angular host elements its Angular results hold). */
-async function runGroup({ page, origin, base, pin, group, checks, difference, designed = null, outDir, imageDir = '.cache/equivalence' }) {
+async function runGroup({ page, origin, base, pin, group, checks, differences = [], designed = null, outDir, imageDir = '.cache/equivalence' }) {
   const rows = [];
   const failures = [];
   const angularHosts = designed?.angularHosts ?? {};
   const hosts = new Set();
+  // The frame widths at which the frames were laid out at FIXED_FRAME_HEIGHT (layOutFrames).
+  const fixedHeights = new Set();
   let axeCount = 0;
   const open = async (width) => {
     const harness = await openGroup(page, harnessUrl(origin, base, group, pin, FRAMEWORKS, width));
     if (harness.error) return [failureLine('HWE-FRAME', group, harness.error)];
-    return FRAMEWORKS.flatMap((framework) => {
+    const failed = FRAMEWORKS.flatMap((framework) => {
       const frame = harness.frames[framework];
       return !frame || frame.state !== 'ready' ? [failureLine('HWE-FRAME', group, `${framework} frame ${frame?.state ?? 'missing'}: ${frame?.message ?? ''}`)] : [];
     });
+    if (failed.length > 0) return failed;
+    // A document with an element whose minimum block size follows the viewport: one fixed height for the four frames.
+    if ((await layOutFrames(page)) !== null) fixedHeights.add(width);
+    return [];
   };
   const opened = await open(group.frame ? FRAMED_WIDTH : FRAME_WIDTH);
   if (opened.length > 0) return { rows, failures: opened, asserted: 0, axeFrames: 0, hosts: [] };
 
   const evaluate = async (state, captured) => {
     for (const element of captured.hosts ?? []) hosts.add(element);
-    for (const row of compareCapture(captured, difference, designed)) {
+    for (const row of compareCapture(captured, differences, designed)) {
       const entry = { group: groupKey(group), state, ...row };
       delete entry.equal;
       delete entry.diff;
@@ -893,7 +970,7 @@ async function runGroup({ page, origin, base, pin, group, checks, difference, de
       await axe(`rest@${group.width}`);
     }
   }
-  return { rows, failures, asserted: checked.asserted, axeFrames: axeCount, hosts: [...hosts] };
+  return { rows, failures, asserted: checked.asserted, axeFrames: axeCount, hosts: [...hosts], fixedHeights: [...fixedHeights] };
 }
 
 /**
@@ -960,15 +1037,15 @@ export async function runEquivalence(options) {
   const withController = new Set(controllerScope.keys());
   const plan = [];
   for (const group of groups) {
-    const difference = differenceOf(group, known.entries);
-    if (difference.error) failures.push(difference.error);
+    const named = differencesOf(group, known.entries);
+    failures.push(...named.errors);
     for (const name of checkNames(group)) {
       if (!checks.has(name)) failures.push(failureLine('HWE-CHECK', group, `check=${name} has no scripts/equivalence/checks/${name}.mjs`));
     }
     if (withController.has(group.id) && checkNames(group).length === 0 && !group.static) {
       failures.push(failureLine('HWE-CHECK', group, `${group.example}: ${group.id} has a controller, so the group names at least one check (check=<name>[,<name>]) or declares itself static`));
     }
-    plan.push({ group, difference: difference.entry ?? null, designed: designedOf(group.id, designedLists), checks: checkNames(group).map((name) => checks.get(name)).filter(Boolean) });
+    plan.push({ group, differences: named.entries, designed: designedOf(group.id, designedLists), checks: checkNames(group).map((name) => checks.get(name)).filter(Boolean) });
   }
   if (failures.length > 0) throw new Error(failures.join('\n'));
 
@@ -989,6 +1066,8 @@ export async function runEquivalence(options) {
   let asserted = 0;
   let axeChecked = 0;
   const assertedOf = new Map();
+  // The groups whose frames were laid out at FIXED_FRAME_HEIGHT (layOutFrames).
+  const fixedFrames = [];
   // Per component: the listed Angular host elements found in the Angular results of its groups.
   const hostsFound = new Map();
   try {
@@ -1008,13 +1087,17 @@ export async function runEquivalence(options) {
           asserted += result.asserted;
           axeChecked += result.axeFrames;
           assertedOf.set(groupKey(item.group), result.asserted);
+          if (result.fixedHeights?.length > 0) {
+            fixedFrames.push({ group: groupKey(item.group), widths: result.fixedHeights, height: FIXED_FRAME_HEIGHT });
+            log(`equivalence: ${groupKey(item.group)} laid out at a frame height of ${FIXED_FRAME_HEIGHT} px in the four frames (${result.fixedHeights.join(' and ')} px wide): an element's minimum block size follows the viewport`);
+          }
           const found = hostsFound.get(item.group.id) ?? new Set();
           for (const element of result.hosts ?? []) found.add(element);
           hostsFound.set(item.group.id, found);
-          if (item.difference) {
-            const list = applied.get(item.difference.id) ?? [];
+          for (const entry of item.differences) {
+            const list = applied.get(entry.id) ?? [];
             list.push(groupKey(item.group));
-            applied.set(item.difference.id, list);
+            applied.set(entry.id, list);
           }
           log(`equivalence: ${groupKey(item.group)} ${result.failures.length === 0 ? 'equal' : `${result.failures.length} failure(s)`}`);
         }
@@ -1070,6 +1153,7 @@ export async function runEquivalence(options) {
     comparedAfterInteraction: interacted.size,
     comparedAtRestOnly: pages.size - interacted.size,
     documentedDifferences: documented,
+    fixedFrameHeights: fixedFrames.sort((a, b) => a.group.localeCompare(b.group)),
     angularHosts,
     failures: [...failures].sort(),
     comparisons: rows,

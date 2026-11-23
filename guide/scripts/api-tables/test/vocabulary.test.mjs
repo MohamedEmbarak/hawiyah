@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { memberCache } from '../cli.mjs';
 import { coverageLines, coverageOf } from '../coverage.mjs';
-import { checkVocabulary, createVocabularyContext, markupTerms, readVocabularyExceptions, terms } from '../vocabulary.mjs';
+import { checkVocabulary, componentVocabulary, createVocabularyContext, documentedAttributes, judge, markupTerms, readVocabularyExceptions, readmeBlocks, terms } from '../vocabulary.mjs';
 import { processPair } from '../../content/pipeline.mjs';
 import { repoDir, testReaders } from './helpers.mjs';
 
@@ -97,7 +97,7 @@ describe('each kind of invented name fails with HWC-VOCAB', () => {
     const input = fixture('tabs', (text) => once(text, '<div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">', '<div class="hw-tabs hw-tabs-wide" data-hw="tabs" data-hw-overflow="scroll" data-hw-sticky="true">'));
     expect(messages(run(input))).toEqual([
       'HWC-VOCAB docs/components/tabs.md: live example basic (html): `class="hw-tabs hw-tabs-wide"`: hw-tabs-wide is not a class of the installed stylesheet',
-      'HWC-VOCAB docs/components/tabs.md: live example basic (html): `data-hw-sticky`: data-hw-sticky is neither selected by the installed stylesheet, read by a published module, nor an attribute of vocabulary-allow.json',
+      'HWC-VOCAB docs/components/tabs.md: live example basic (html): `data-hw-sticky`: data-hw-sticky is neither selected by the installed stylesheet, read by a published module, documented for this component by an installed README, nor an attribute of vocabulary-allow.json',
     ]);
   });
   it('a scoped package the guide does not install', () => {
@@ -235,6 +235,43 @@ describe('names that the installed packages or the HTML Standard define', () => 
     expect(messages(run(insert('The card takes no `loading`.', 'service-card')))).toEqual([
       'HWC-VOCAB docs/components/service-card.md: accessibility: `loading`: loading is not a member of this component in any adapter, of a component the sentence links to, an export, a value of this component or a name of vocabulary-allow.json',
     ]);
+  });
+});
+
+// A vanilla controller may build a hook name at run time from an option (createRangeSlider
+// reads data-hw-range-label through getRangeLabel), so no published module holds the name;
+// the vanilla README documents it in the row of createRangeSlider.
+describe('data-hw-* attributes that an installed README documents for the component', () => {
+  const name = (text) => ({ kind: 'name', name: text, text });
+  const where = (id, scope = []) => ({ scope, vocabulary: componentVocabulary(vocab, id, declared(id)), linked: [] });
+
+  it('accepts data-hw-range-label on the RangeSlider page, in prose and in an html block', () => {
+    expect(componentVocabulary(vocab, 'range-slider', declared('range-slider')).documented.has('data-hw-range-label')).toBe(true);
+    expect(judge(vocab, name('data-hw-range-label'), where('range-slider'))).toBeNull();
+    expect(judge(vocab, { kind: 'attribute', name: 'data-hw-range-label', text: 'data-hw-range-label' }, where('range-slider', ['vanilla']))).toBeNull();
+  });
+
+  it('still refuses it on the page of another component, and refuses an invented attribute', () => {
+    expect(judge(vocab, name('data-hw-range-label'), where('tabs'))).toBe(
+      'data-hw-range-label is neither selected by the installed stylesheet, read by a published module, documented for this component by an installed README, nor an attribute of vocabulary-allow.json',
+    );
+    expect(judge(vocab, name('data-hw-range-labels'), where('range-slider'))).toMatch(/^data-hw-range-labels is neither selected/);
+    expect(judge(vocab, name('data-hw-range-caption'), where('range-slider'))).toMatch(/^data-hw-range-caption is neither selected/);
+  });
+
+  it('reads a README by its blocks and takes an attribute only from a block that names the component', () => {
+    const readme = [
+      '# Package', '', 'Intro with `data-hw-intro` and no component.', '',
+      '| Controller | Template |', '| --- | --- |', '| `createRangeSlider` | `data-hw-range-label="{lower} – {upper}"` |', '| `createSlider` | `data-hw-slider-label` |', '',
+      '- `hw-range-slider` takes `data-hw-lower`', '- Slider takes `data-hw-step-label`', '',
+      '```html', '<fieldset class="hw-range-slider" data-hw-upper-name="x"></fieldset>', '```',
+    ].join('\n');
+    const blocks = readmeBlocks(readme);
+    expect(blocks).toContain('| `createRangeSlider` | `data-hw-range-label="{lower} – {upper}"` |');
+    expect(blocks).toContain('- Slider takes `data-hw-step-label`');
+    expect([...documentedAttributes(blocks, ['RangeSlider', 'createRangeSlider', 'hw-range-slider'])].sort()).toEqual(['data-hw-lower', 'data-hw-range-label', 'data-hw-upper-name']);
+    // A longer name that starts with an identifier is not that identifier.
+    expect([...documentedAttributes(['`hw-range-slider-value` with `data-hw-x`', '`createRangeSliders` with `data-hw-y`'], ['hw-range-slider', 'createRangeSlider'])]).toEqual([]);
   });
 });
 

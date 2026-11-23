@@ -1271,6 +1271,106 @@ built type declarations of each package.
   each link text directly in its `a`, where React, Vue and Angular wrap it in a
   `span`. The stylesheet does not select that `span`, so the appearance and the
   accessibility tree are the same.
+- Tooltip (Angular) gives its host element `hw-tooltip` the class
+  `hw-tooltip-anchor` and the trigger marked `hwTooltipTrigger` the class
+  `hw-tooltip-trigger`; the vanilla, React and Vue results wrap the trigger in a
+  `span` with `data-hw="tooltip"` and carry neither class. The stylesheet styles
+  both wrappers alike, so the appearance is the same.
+- Popover and Menu (Vue, Angular) render their packaged trigger as
+  `button.hw-button` without the `data-size` attribute that the button component
+  of each adapter writes as `md` by default; the stylesheet selects only `sm` and
+  `lg`, so the appearance is the same.
+- Menu (React, Vue) gives the first enabled item of a closed menu
+  `tabindex="0"`, while the vanilla controller and Angular give every item
+  `tabindex="-1"` until the menu opens or an item takes focus; the closed menu is
+  hidden, so the keyboard behaviour is the same.
+- Menu (React, Vue) does not activate a link item on Space; the vanilla
+  controller and Angular activate every enabled item on Space, as on Enter.
+- Menu (React, Vue) runs the action of an activated item before it moves focus
+  to the trigger, so a dialog that the action opens returns focus to the hidden
+  item; the vanilla controller and Angular focus the trigger first.
+- Dialog and Drawer (React) set `aria-haspopup="dialog"` on the element given as
+  `trigger`; the Vue `trigger` slot and the Angular dialogs leave the opening
+  button without it.
+- Dialog and Drawer (Angular) render their close button without
+  `data-size="md"`, which the React and Vue dialogs and drawers write on theirs.
+  The appearance is the same.
+- Drawer (Vue) renders a `side` attribute on its dialog element besides
+  `data-side`; the vanilla markup and the React and Angular drawers have only
+  `data-side`. The placement is the same.
+- ToastRegion (Angular) writes `data-variant="default"` on the region when no
+  variant is given, where the vanilla, React and Vue regions write no
+  `data-variant`, and renders the dismiss button without `data-size="md"`, which
+  the React and Vue regions write on theirs. The appearance is the same.
+- ToastRegion (vanilla): `createToastRegion` writes `role="region"` on a region
+  that holds polite and urgent live containers, which the React, Vue and Angular
+  regions do not write; the named `section` already has the region role.
+- CookieConsent (Angular): the host element `hw-cookie-consent` is the consent
+  region and carries `role="region"`, as the `@hawiyah/angular` README
+  documents; the vanilla markup, React and Vue render a `section`, which has the
+  region role without the attribute. The role and the name of the region are the
+  same.
+- PasswordField (Vue) writes `hw-password-field` on `div.hw-password-control`
+  instead of its root element; React, Angular and the documented vanilla markup
+  write it on the root.
+- PasswordField: React and Vue write `aria-labelledby` on the input next to the
+  `for` of its label and `data-size="md"` on the toggle; Angular writes neither,
+  and Vue writes an empty `value` attribute on the input.
+- SearchField (vanilla, `createSearchField`) creates the polite results status
+  as a `div.hw-sr-only`; React, Vue and Angular render a `span.hw-sr-only`.
+- SearchField (Vue) names the suggestion listbox with `aria-label`, the text of
+  `label`; React, Angular and the vanilla controller name it with
+  `aria-labelledby`.
+- SearchField (Angular) writes `autocomplete="off"` on every field unless
+  `autocomplete` is given, where React, Vue and the vanilla controller turn it
+  off only with suggestions; its clear button has no `data-size` and its search
+  button neither `data-variant` nor `data-size`. React and Vue write
+  `aria-labelledby` on the input next to the `for` of its label and an empty
+  `value` attribute, which Angular and the vanilla markup do not write.
+- PinInput (Vue) writes `hw-pin-input` on the input instead of its root
+  element, and writes `dir="ltr"` on the input, which React, Angular and the
+  vanilla controller do not.
+- PinInput: React and Vue write `aria-labelledby` on the input next to the
+  `for` of its label, Angular does not, and React and Vue write an empty `value`
+  attribute.
+- Rating (Angular) names each radio with a visually hidden `span.hw-sr-only`
+  inside its label instead of `aria-label`, so its accessibility tree differs
+  from React, Vue and the vanilla markup; it checks the selected radio as a
+  property, so the radio has no `checked` attribute.
+- Rating (React) renders `fieldset.hw-rating` without `hw-field`, which Vue,
+  Angular and the vanilla markup write, and writes `hw-radio` on the radios and
+  `data-state` on the stars; without `hw-field` a React rating with an error
+  message renders 7 px shorter than the other three. Rating (Vue) writes
+  `data-selected` on the labels, `data-hw-filled` on the first radio and the
+  `name` attribute on the fieldset as well as on the radios.
+- Rating (Vue) declares the props `min` and `step`, which it does not read.
+- Combobox: React and Vue write `aria-labelledby` on the input next to the `for`
+  of its label; Angular and the vanilla markup rely on the label alone. The
+  accessible name is the same.
+- Combobox (React) writes an id on its status element; the other adapters write
+  none. No behaviour differs.
+- Combobox (Angular) sets the text of the input as a property only, so its DOM
+  has no `value` attribute, where React and Vue write one; the text shown is the
+  same.
+- MultiSelect: the class `hw-multi-select-selected` of the selected-count
+  paragraph, which React, Vue and Angular render with `getSelectedMessage` and
+  which the adapter READMEs and the vanilla markup contract document, has no rule
+  in `@hawiyah/styles`; the paragraph is styled through `.hw-multi-select > p`.
+- MultiSelect (React, Vue) writes `value=""` on the filter input; vanilla and
+  Angular write none.
+- TagInput: React and Vue write `aria-labelledby` and `value=""` on the text
+  input next to the `for` of its label; Angular and the vanilla markup rely on
+  the label alone. The accessible name is the same.
+- RangeSlider (Vue, Angular) always writes `step="1"` on the two range inputs;
+  React and the vanilla markup write it only when `step` is given. Vue writes
+  `data-hw-filled` on the lower range input through the value-presence observer
+  of its form-reset hook. No behaviour differs.
+- RangeSlider (Angular) sets the value of the range inputs as a property, so its
+  DOM has no `value` attribute; the values are the same.
+- RangeSlider: the class `hw-range-slider-value` of the range output, which
+  React, Vue and Angular write and which the `@hawiyah/styles` README and the
+  vanilla markup contract document, has no rule in `dist/styles.css`; the output
+  is styled through `.hw-range-slider output`.
 
 #### Left for a later release
 

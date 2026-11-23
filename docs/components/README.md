@@ -282,7 +282,14 @@ exist in the installed packages:
   (`--hw-gap: 2rem`, whose value is not judged); a prefix such as `--hw-*` names
   no property.
 - `data-*` and `aria-*` occur in the stylesheet or in a published module, or are
-  attributes of `guide/scripts/api-tables/vocabulary-allow.json`.
+  attributes of `guide/scripts/api-tables/vocabulary-allow.json`. On the page of a
+  component, a `data-hw-*` attribute is also accepted when the README of an
+  installed package documents it for that component: the attribute stands in a
+  table row, a list item or a paragraph of the README that also names the
+  component by its name, its factory `create<Name>`, one of its classes, its hook
+  `data-hw="<id>"` or an export of its API (`data-hw-range-label` in the row of
+  `createRangeSlider`, which builds the name from its option `getRangeLabel`). An
+  attribute that no README documents for the component still fails.
 - A name that starts with `Hw`, `create` or an upper-case letter is an export of
   an installed `@hawiyah` package, of this component or of another one (`Button`
   on the Service card page); `@hawiyah/...` is a package or an export path;
@@ -340,7 +347,7 @@ the published packages during the build.
 Each block of a group is a fenced code block whose info string is:
 
 ~~~text
-<lang> live example=<name> [framework=<framework>] [check=<check>[,<check>...] | static] [differences=<id>] [frame [width=390]]
+<lang> live example=<name> [framework=<framework>] [check=<check>[,<check>...] | static] [differences=<id>[,<id>...]] [frame [width=390]]
 ~~~
 
 - `lang` is `html`, `tsx`, `jsx`, `vue` or `ts`. The framework follows from it:
@@ -349,8 +356,11 @@ Each block of a group is a fenced code block whose info string is:
 - `name` matches `^[a-z][a-z0-9-]{0,39}$` and is unique in the file
   (`HWC-LIVE3`).
 - `check` names one interaction check or several, separated by commas; `static`
-  declares that the group is compared at rest only; `differences` names an
-  approved known difference. They stand only on the `html` block, the first of
+  declares that the group is compared at rest only; `differences` names one
+  approved known difference or several, separated by commas, each once (a group
+  whose results differ in more than one aspect names one entry for each, such as
+  the structure, the accessibility tree and the rendering of Portal layout). They stand only on
+  the `html` block, the first of
   the group, and a group is either `static` or names checks. Every group of a
   component with a controller (as [Keyboard table](#keyboard-table) defines it)
   names the checks that exercise what its text says, or is `static`
@@ -360,14 +370,18 @@ Each block of a group is a fenced code block whose info string is:
   `component`, `aspect` (`structure`, `aria` or `screenshot`), `description`,
   `source` (`CHANGELOG.md, <version>, <section>: <text of the entry>`, checked
   against `CHANGELOG.md`) and
-  `approvedBy` (`lead`). An entry without `ignore` leaves its aspect out of the
-  equivalence check of the groups that name it. An entry of aspect `structure`
+  `approvedBy` (`lead`). Each id of a group is checked as one: an id that names
+  no entry, or an entry of another component, fails with `HWE-KD`. An entry
+  without `ignore` leaves its aspect out of the equivalence check of the groups
+  that name it. An entry of aspect `structure`
   may instead carry `ignore: [{ "class": "hw-...", "attribute": "..." }]`: only
   that attribute on elements with that class is left out of the comparison
   with the JavaScript result, and every other structural difference still
   fails with `HWE-STRUCT`; the other three results are compared with each
   other in full, and the check fails once the JavaScript result writes the
-  attribute. The Tabs groups name
+  attribute. When a group names several entries of aspect `structure` with
+  `ignore`, their lists are joined; an entry of that aspect without `ignore`
+  leaves the structure out whatever the others ignore. The Tabs groups name
   `tabs-bar-orientation`, which ignores `data-orientation` on `.hw-tab-bar`
   (CHANGELOG.md, Known defects in 0.3.0); the entry is removed when the guide
   pins a release that corrects it. A writer whose example shows a difference
@@ -407,6 +421,12 @@ Each block of a group is a fenced code block whose info string is:
   wide; a framed group is first compared at 1280 px. Without script a framed group
   shows its Angular listing and one sentence instead of a result, and no status. `frame` and
   `width` stand only on the `html` block.
+- Step 80 gives each of the four frames of a group the height its document
+  reports, except when a frame document has an element whose minimum block size
+  follows the viewport (`min-block-size: 100dvh` on `.hw-app-shell` and
+  `.hw-portal-layout`): such a document is taller than any frame it is given, so
+  the four frames of that group are laid out at one fixed height of 720 px and
+  compared at that height.
 - Any other key or value fails the build (`HWC-LIVE1`). GitHub highlights the
   block by its first word and ignores the rest.
 

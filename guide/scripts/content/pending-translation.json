@@ -50,6 +50,22 @@
     "app-shell",
     "site-verification",
     "portal-footer",
-    "portal-layout"
+    "portal-layout",
+    "accordion",
+    "tooltip",
+    "popover",
+    "menu",
+    "dialog",
+    "drawer",
+    "toast-region",
+    "cookie-consent",
+    "password-field",
+    "search-field",
+    "pin-input",
+    "rating",
+    "combobox",
+    "multi-select",
+    "tag-input",
+    "range-slider"
   ]
 }

@@ -71,8 +71,9 @@ describe('the evidence of a page', () => {
     expect(evidenceOf({ id: 'tabs', entry: { name: 'Tabs' }, version: '0.4.0', changelog: '', differences: [], keyboard: [unchecked] }).open).toEqual([]);
     expect(keyboardUnchecked('dialog', [unchecked])).toBe(true);
     expect(keyboardUnchecked('dialog', [])).toBe(false);
-    // The lead's list is empty, so no page of the build has the item.
-    expect(evidenceOf({ id: 'dialog', entry: { name: 'Dialog' }, version: '0.4.0', changelog: CHANGELOG, differences: [] }).open).toEqual([]);
+    // Without a list the lead's list is read: it names Dialog and not Tabs.
+    expect(evidenceOf({ id: 'dialog', entry: { name: 'Dialog' }, version: '0.4.0', changelog: CHANGELOG, differences: [] }).open).toEqual([{ kind: 'keyboard' }]);
+    expect(evidenceOf({ id: 'tabs', entry: { name: 'Tabs' }, version: '0.4.0', changelog: '', differences: [] }).open).toEqual([]);
   });
 
   // G23 of the 5a fix round: the kinds of evidence some built adapters have and others do not.

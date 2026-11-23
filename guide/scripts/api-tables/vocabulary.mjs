@@ -15,7 +15,9 @@
 //   hw:*                an event name that a published module dispatches;
 //   data-*, aria-*      an attribute the stylesheet selects or a published module
 //                       reads or writes (data-hw-value as dataset.hwValue too),
-//                       or a name of vocabulary-allow.json;
+//                       or a name of vocabulary-allow.json; on a component's page
+//                       also a data-hw-* attribute that an installed README
+//                       documents for that component (documentedAttributes);
 //   Hw*, create*, A*    an export of an installed @hawiyah package;
 //   other names         a member of this component in some adapter (the names its
 //                       published declarations give: props, options, inputs,
@@ -281,12 +283,68 @@ export function createVocabularyContext(readers, options = {}) {
     exportsOf,
     angularElements,
     hooks: vanillaHooks(nodeModules),
+    readmeBlocks: installedReadmes(nodeModules).flatMap(readmeBlocks),
     packages: packagePaths(nodeModules),
     dependencies: guideDependencies(nodeModules),
     allow: options.allow ?? readAllow(options.allowFile),
     repoDir: options.repoDir ?? resolve(nodeModules, '..', '..'),
     vocabularies: new Map(),
   };
+}
+
+/** The README.md of every installed @hawiyah package. */
+function installedReadmes(nodeModules) {
+  const scope = join(nodeModules, '@hawiyah');
+  if (!existsSync(scope)) return [];
+  return readdirSync(scope).map((name) => join(scope, name, 'README.md')).filter((file) => existsSync(file)).map((file) => readFileSync(file, 'utf8'));
+}
+
+/**
+ * The blocks of a README in which a name is documented together with the component it
+ * belongs to: each table row, each list item, and each paragraph or run of code lines
+ * between blank lines and fences.
+ */
+export function readmeBlocks(text) {
+  const blocks = [];
+  let current = [];
+  const flush = () => {
+    if (current.length) blocks.push(current.join('\n'));
+    current = [];
+  };
+  for (const line of String(text).split('\n')) {
+    if (/^\s*$/.test(line) || /^\s*(?:```|~~~)/.test(line)) {
+      flush();
+      continue;
+    }
+    if (/^\s*\|/.test(line)) {
+      flush();
+      blocks.push(line);
+      continue;
+    }
+    if (/^\s*(?:[-*+]|\d+\.)\s/.test(line)) flush();
+    current.push(line);
+  }
+  flush();
+  return blocks;
+}
+
+const nameIn = (name, text) => new RegExp(`(?<![\\w-])${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`).test(text);
+
+/**
+ * The data-hw-* attributes that an installed README documents for a component: those
+ * written in a block (readmeBlocks) that also names the component by one of its
+ * identifiers (its name in components.json, its controller factory create<Name>, its
+ * classes, its hook data-hw="<id>" or an export of its API in some adapter). A vanilla controller may build such a name at run time from an
+ * option (data-hw-range-label from getRangeLabel), so the module text does not hold it.
+ */
+export function documentedAttributes(blocks, identifiers) {
+  const names = [...new Set(identifiers.filter(Boolean))];
+  const found = new Set();
+  for (const block of blocks) {
+    if (!names.some((name) => nameIn(name, block))) continue;
+    for (const match of block.matchAll(/(?<![\w-])data-hw-[a-z0-9]+(?:-[a-z0-9]+)*(?![\w-])/g)) found.add(match[0]);
+  }
+  return found;
 }
 
 /**
@@ -473,7 +531,10 @@ export function componentVocabulary(vocab, id, declared) {
   }
   const contract = contractFor(readers.contractRows, classes, readers.selectors, componentClasses(readers));
   for (const [attribute, list] of contract.values) for (const value of list) addValue(attribute, value);
-  const result = { names, values, attributeValues };
+  // The data-hw-* attributes an installed README documents for this component (RangeSlider: data-hw-range-label).
+  const exportNames = FRAMEWORKS.flatMap((framework) => declared[framework].exports ?? []);
+  const documented = documentedAttributes(vocab.readmeBlocks ?? [], [entry?.name, entry?.name && `create${entry.name}`, ...classes, `data-hw="${id}"`, ...exportNames]);
+  const result = { names, values, attributeValues, documented };
   vocab.vocabularies.set(id, result);
   return result;
 }
@@ -690,7 +751,9 @@ function judgeName(vocab, term, where, helpers) {
   if (/^(data|aria)-/.test(name)) {
     if (knownAttribute(vocab, name) || allow.has(['aria-attribute', 'html-attribute'], name)) return null;
     if (where.vocabulary.names.vanilla.has(name)) return null;
-    return `${name} is neither selected by the installed stylesheet, read by a published module, nor an attribute of vocabulary-allow.json`;
+    if (/^data-hw-/.test(name) && where.vocabulary.documented?.has(name)) return null;
+    const readme = /^data-hw-/.test(name) ? ' documented for this component by an installed README,' : '';
+    return `${name} is neither selected by the installed stylesheet, read by a published module,${readme} nor an attribute of vocabulary-allow.json`;
   }
   const members = [...new Set([...memberOf(where.vocabulary, name), ...where.linked.flatMap((vocabulary) => memberOf(vocabulary, name))])];
   if (/^(Hw|create)[A-Z]/.test(name) || /^[A-Z]/.test(name)) {

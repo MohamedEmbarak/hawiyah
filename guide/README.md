@@ -426,7 +426,7 @@ lists the steps that ran; `scripts/test/build.test.mjs` asserts the plan.
 | `10-features` | Writes `src/generated/features.ts`, `features.json` and `pages.json`. |
 | `20-content` | Parses and checks the component Markdown, with the text gates of `scripts/content/prose.mjs` (`HWC-CLAIM`, `HWC-EMPTY`, `HWC-TODO`, `HWC-TONE`, `HWC-LIVE7` and install text in running text; they prove structure and words, not that a sentence is true) (an English page without its Arabic sibling only while `scripts/content/pending-translation.json` lists it: it gets no route, and the step prints `content: <n> pages pending translation` in every build, deployable or not; the writer of the English page adds the id and the writer of the Arabic page removes it), writes `src/generated/content/`: the page models, `loaders.ts`, `manifest.json` (read by the scripts and tests at build time only), `navigation.json` (the navigation index: id, langs, category, names, summaries and live groups of each page, read by the catalogue, the side navigation, the drawer and the editor from lazy chunks) and `routes.json` (ids and languages, read by the route matcher). The manifest carries the keyboard table of each page and language (keys and actions, read by step 80); each page model carries the data of its evidence panel (`scripts/content/evidence.mjs`: `components.json`, the Known defects of the pinned version in `CHANGELOG.md` that name the component, its documented differences, each shown under the Known defects entry its source cites, and the kinds of evidence that some built adapters have and others do not) and adds the two headings of the panel to its headings. A heading of the section Platforms Code reference that restates the panel (Evidence, Open items and the like, in both languages) fails with `HWC-H2`; a Key cell separated by anything but the comma of the page's language, an arrow cell whose forward key is not first, and an Action cell that is not one sentence fail with `HWC-KEYS` (G20 of the 5a fix round). |
 | `25-examples` | Wraps, type-checks and compiles the live example groups; writes `src/generated/examples/` and `.cache/examples/`. |
-| `30-api-tables` | Checks the API tables of every built page against the installed packages (`scripts/api-tables/`): the member names of each table (as a set), the kind (Vue and Angular tables), the required flag, the type and the default of every row. Types are compared in the written form of one printer, `types.mjs` (see the API tables section of `docs/components/README.md`), after normalising white space, quotes, union order and parameter names. Defaults are read from the published JavaScript: React destructuring defaults, the Vue runtime props object (a later property replaces an earlier one, also one of a spread, and a default that names a parameter of a component factory is the argument of the call or the parameter's default), Angular field initialisers in the FESM; a default that is absent, generated or computed in a body is an em dash, and so is the default of a vanilla option or stylesheet attribute unless `defaults.json` quotes a line of an installed file that sets it. A component without a vanilla controller is compared with the union of its row in the stable class and state API of the `@hawiyah/styles` README and the attribute selectors that `dist/styles.css` has on its classes (a row that names several classes of `components.json` gives an attribute or value only where `dist/styles.css` selects it on the component's class or inside it); the 26 components without a contract row need the generated note after their JavaScript table. Vue slot rows are compared with the slots the published `@hawiyah/vue` build reads (a computed slot name through `VUE_SLOT_PATTERNS` of `targets.mjs`). The lead's lists (`exclusions.json`, `defaults.json`, `TARGET_OVERRIDES`, `VUE_SLOT_PATTERNS` and `UNOWNED_EXPORTS` of `targets.mjs`, `arabic-exceptions.json`, `claim-exceptions.json`, `live-component-exceptions.json`, `marketing-terms.json`, `latin-allowlist.json`, `scripts/equivalence/keyboard-exceptions.json`; `UNOWNED_EXPORTS` and the marketing terms belong to no page) need `approvedBy` and a reason on every entry and hold at most 5 entries per page (`scripts/api-tables/lists.mjs`); `scripts/test/lead-lists.test.mjs` pins each list by the hash of its content, so the lead renews a pin with every entry. The step writes `src/generated/parity.json` with the members of all components of `components.json`, and fails when a reader cannot read a component. Its second pass is the vocabulary check (`scripts/api-tables/vocabulary.mjs`, `HWC-VOCAB`): every inline code value of a page outside the API tables (prose, lists, headings, link text, alerts, other tables and their captions) and every class, `data-hw` hook, `data-*` attribute with its value and `aria-*` attribute name of its `html` live blocks must exist in the installed packages, as the section Vocabulary of `docs/components/README.md` states (a `--hw-*` custom property that `dist/styles.css` defines or the `@hawiyah/styles` README documents by its whole name, an export of any installed package, the attribute selector of an Angular class of any component in the scope of Angular, among them), or be an entry `{ file, text, reason, approvedBy }` of `vocabulary-exceptions.json` (a lead's list; an entry that matches nothing fails); names that HTML, ARIA, the DOM, CSS and the Vue and Angular template syntax define are read from `vocabulary-allow.json` (its group of HTML elements holds the elements of the HTML Standard), each group with its specification (a list of the guide, not a lead list: an entry is a group of names of one kind with the https address of its specification, and the step and `scripts/api-tables/test/vocabulary-allow.test.mjs` fail on an entry without one). The success line states what was compared, with counts: `api-tables: <n> API tables of <m> page models, <r> rows: names, kinds, required flags, types and defaults match the installed packages (...; <d> defaults.json entries; <s> rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; <e> rows of exclusions.json compared by name only; Vue slots read from the published build, <p> slot patterns; <o> target overrides); parity.json: members of <c> components; vocabulary: <v> code values outside the API tables (<t> terms) and <k> classes, hooks and data attributes of html live blocks exist in the installed packages (<x> vocabulary-exceptions.json entries)`. |
+| `30-api-tables` | Checks the API tables of every built page against the installed packages (`scripts/api-tables/`): the member names of each table (as a set), the kind (Vue and Angular tables), the required flag, the type and the default of every row. Types are compared in the written form of one printer, `types.mjs` (see the API tables section of `docs/components/README.md`), after normalising white space, quotes, union order and parameter names. Defaults are read from the published JavaScript: React destructuring defaults, the Vue runtime props object (a later property replaces an earlier one, also one of a spread, and a default that names a parameter of a component factory is the argument of the call or the parameter's default), Angular field initialisers in the FESM; a default that is absent, generated or computed in a body is an em dash, and so is the default of a vanilla option or stylesheet attribute unless `defaults.json` quotes a line of an installed file that sets it. A component without a vanilla controller is compared with the union of its row in the stable class and state API of the `@hawiyah/styles` README and the attribute selectors that `dist/styles.css` has on its classes (a row that names several classes of `components.json` gives an attribute or value only where `dist/styles.css` selects it on the component's class or inside it); the 26 components without a contract row need the generated note after their JavaScript table. Vue slot rows are compared with the slots the published `@hawiyah/vue` build reads (a computed slot name through `VUE_SLOT_PATTERNS` of `targets.mjs`). The lead's lists (`exclusions.json`, `defaults.json`, `TARGET_OVERRIDES`, `VUE_SLOT_PATTERNS` and `UNOWNED_EXPORTS` of `targets.mjs`, `arabic-exceptions.json`, `claim-exceptions.json`, `live-component-exceptions.json`, `marketing-terms.json`, `latin-allowlist.json`, `scripts/equivalence/keyboard-exceptions.json`; `UNOWNED_EXPORTS` and the marketing terms belong to no page) need `approvedBy` and a reason on every entry and hold at most 5 entries per page (`scripts/api-tables/lists.mjs`); `scripts/test/lead-lists.test.mjs` pins each list by the hash of its content, so the lead renews a pin with every entry. The step writes `src/generated/parity.json` with the members of all components of `components.json`, and fails when a reader cannot read a component. Its second pass is the vocabulary check (`scripts/api-tables/vocabulary.mjs`, `HWC-VOCAB`): every inline code value of a page outside the API tables (prose, lists, headings, link text, alerts, other tables and their captions) and every class, `data-hw` hook, `data-*` attribute with its value and `aria-*` attribute name of its `html` live blocks must exist in the installed packages, as the section Vocabulary of `docs/components/README.md` states (a `--hw-*` custom property that `dist/styles.css` defines or the `@hawiyah/styles` README documents by its whole name, an export of any installed package, the attribute selector of an Angular class of any component in the scope of Angular, and on a component's page a `data-hw-*` attribute that a table row, list item or paragraph of an installed README names together with that component, by its name, `create<Name>`, a class, `data-hw="<id>"` or an export (`readmeBlocks` and `documentedAttributes` in `vocabulary.mjs`), among them), or be an entry `{ file, text, reason, approvedBy }` of `vocabulary-exceptions.json` (a lead's list; an entry that matches nothing fails); names that HTML, ARIA, the DOM, CSS and the Vue and Angular template syntax define are read from `vocabulary-allow.json` (its group of HTML elements holds the elements of the HTML Standard), each group with its specification (a list of the guide, not a lead list: an entry is a group of names of one kind with the https address of its specification, and the step and `scripts/api-tables/test/vocabulary-allow.test.mjs` fail on an entry without one). The success line states what was compared, with counts: `api-tables: <n> API tables of <m> page models, <r> rows: names, kinds, required flags, types and defaults match the installed packages (...; <d> defaults.json entries; <s> rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; <e> rows of exclusions.json compared by name only; Vue slots read from the published build, <p> slot patterns; <o> target overrides); parity.json: members of <c> components; vocabulary: <v> code values outside the API tables (<t> terms) and <k> classes, hooks and data attributes of html live blocks exist in the installed packages (<x> vocabulary-exceptions.json entries)`. |
 | `32-install` | Writes `src/generated/install.json`. |
 | `35-index-html` | Writes `src/generated/index.html` from the template with the pre-paint script. |
 | `40-angular` | Runs `ng build --stats-json` with the base href, the configuration and the preview define, with `--max-old-space-size=8192` added to its `NODE_OPTIONS` unless the caller set a heap limit (one program holds every page model, listing and native example: the default heap ran out at 85 pages); saves the output to `.cache/logs/` and logs the peak memory of the ng process tree (`40-angular: peak memory <n> MB ...`, where `/proc` exists). The esbuild metafiles `browser-stats.json` and `server-stats.json` are written to `dist/` (not deployed); the step fails when a browser output has `src/generated/content/manifest.json` among its inputs (`scripts/features/bundle.mjs`). |
@@ -486,6 +486,27 @@ number of the rest under `more` (`scripts/equivalence/compare.mjs`).
 The report also holds, per page and language, each row of the keyboard table
 with the steps that press its keys (`keyboard`), the number of asserted steps and
 the number of frame documents axe checked.
+
+Each frame takes the height its document reports (bounded at 80 and 4000 px by the
+frame protocol), except in a group with a frame document that has an element whose
+minimum block size follows the viewport (`min-block-size: 100dvh` on
+`.hw-app-shell` and `.hw-portal-layout`). Such a document is as tall as its frame
+plus the body padding, so a frame that takes each reported height grows with every
+report until the bound, and each framework stopped at another height (the
+screenshots of App shell and Portal layout differed for that reason alone). Once the
+frames are ready, `layOutFrames` in `run.mjs` lays each frame out at 600 and at 700
+px through `__harnessFixHeight` of the harness page
+(`scripts/equivalence/harness/frame-height.ts`) and compares the computed minimum
+block size of every element below the body; when one element of one frame differs,
+the four frames of the group are fixed at 720 px (`FIXED_FRAME_HEIGHT`), and the
+height their documents report no longer changes them; otherwise each frame takes its
+reported height again. This is done each time the harness opens the group, so also
+for the second pass of a framed group at 390 px. The step prints `equivalence: <id>/<lang>/<example> laid out at a frame height of 720 px in the four frames (<width> px wide): an element's minimum block size follows the viewport`,
+and the report lists such groups under `fixedFrameHeights`.
+`scripts/equivalence/test/frame-height.test.mjs` shows a frame of such a document
+growing past 1500 px without the fixed height, the four frames at 720 px with it
+(also below the viewport of the page and for a minimum block size of `50vh`), and the
+frames of documents without such an element at their reported heights.
 
 Screenshots are compared with pixelmatch at threshold 0.005 (anti-aliasing
 excluded) and at most `max(16, 0.05 % of the pixels)` differing pixels. 0.005 is
@@ -573,7 +594,10 @@ its white space collapsed and trimmed, so React's two text nodes `+` and `2` rea
 space only is dropped.
 A documented difference is an
 entry of `scripts/equivalence/known-differences.json` approved by the lead and
-named by a group with `differences=<id>`. Its `source` reads
+named by a group with `differences=<id>[,<id>...]` (several ids, each once, when the
+results of the group differ in more than one aspect; step 20 fails a repeated or
+malformed id with `HWC-LIVE1`, and step 80 judges each id as one, `differencesOf` in
+`run.mjs`). Its `source` reads
 `CHANGELOG.md, <version>, <section>: <text of the entry>` and is checked
 against `CHANGELOG.md`: the version section, the heading and the quoted text
 must exist there. An entry without `ignore` leaves its
@@ -582,7 +606,9 @@ group. An entry of aspect `structure` may carry
 `ignore: [{ "class": "hw-...", "attribute": "..." }]` instead: only that
 attribute on elements with that class is left out of the structure comparison
 with the JavaScript result, which does not write it, and every other difference
-still fails with `HWE-STRUCT`. The React, Vue and Angular results are then also
+still fails with `HWE-STRUCT` (the lists of several such entries of one group are
+joined; an entry of aspect `structure` without `ignore` leaves the structure out
+whatever the others ignore). The React, Vue and Angular results are then also
 compared with each other in full, so a wrong value in one of them is reported,
 and the step fails once the JavaScript result writes the attribute, so the
 entry cannot outlive the defect. Unknown fields, empty
@@ -622,8 +648,9 @@ difference outside the listed element, attribute or tag still failing.
 `hw-verification-mark` (SiteVerification); `angular-hosts.json` lists
 `hw-skeleton`, `hw-spinner`, `hw-badge`, `hw-avatar` and `hw-chip` (Skeleton,
 Spinner, Badge, Avatar and AvatarGroup, Chip, and `hw-badge` again for
-NotificationList), each compared as `span`; `vanilla-hooks.json` is empty.
-`known-differences.json` holds thirty-two entries, each citing the Known defects
+NotificationList), each compared as `span`; `vanilla-hooks.json` lists
+`data-hw-value` (Accordion, citing the recorded change of 0.3.0 that keys Menu and
+Accordion items by `value`). `known-differences.json` holds fifty-one entries, each citing the Known defects
 in 0.3.0 of `CHANGELOG.md`: `tabs-bar-orientation` (`@hawiyah/vanilla` 0.3.0
 creates `.hw-tab-bar` without the `data-orientation` attribute that the other
 adapters write), `progress-adapter-max` (React, Vue and Angular write `max` on
@@ -642,8 +669,15 @@ Radio, Select, Slider and FileUpload (`<id>-adapter-attributes`, or
 Spacer, Center, Container, Inline, Grid, Columns and Section,
 `sidebar-adapter-layout-attributes`, `aspect-ratio-adapter-attributes`,
 `app-shell-adapter-side`, `collapsible-adapter-markup`,
-`portal-footer-adapter-markup` and `portal-layout-adapter-markup` leave the
-structure aspect out of the groups that name them.
+`portal-footer-adapter-markup`, `portal-layout-adapter-markup` and the
+`<id>-adapter-markup` entries of Tooltip, Popover, Menu, Dialog, Drawer,
+ToastRegion, CookieConsent, PasswordField, SearchField, PinInput, Rating,
+Combobox, MultiSelect, TagInput and RangeSlider leave the structure aspect out of
+the groups that name them; `rating-angular-radio-names` and
+`portal-layout-footer-brand-tree` leave the accessibility tree out, and
+`rating-react-error-height` and `portal-layout-footer-brand-weight` the
+rendering. The groups of Rating and Portal layout name two or three entries, one
+for each aspect.
 
 A group names its interaction checks on its `html` block with
 `check=<name>[,<name>...]` (files in `scripts/equivalence/checks/`, run one
@@ -763,7 +797,9 @@ of the content manifest and no English file of `docs/components/`, where a page
 pending translation has its file but no route; in check:page, no English file of the
 page directory or of `docs/components/`), when its component has no controller, or when the files do not
 hold its reference; an entry of a page outside the run is otherwise not judged. The
-list holds the entries of FileUpload and AppShell. The Tabs groups name `tabs-keyboard` (horizontal, automatic
+list holds the entries of FileUpload, AppShell, Accordion, Tooltip, Popover, Menu,
+Dialog, Drawer, ToastRegion, CookieConsent, PasswordField, SearchField, PinInput,
+Rating, Combobox, MultiSelect, TagInput and RangeSlider. The Tabs groups name `tabs-keyboard` (horizontal, automatic
 activation: Tab into the list, Right Arrow and Left Arrow with wrapping, Down Arrow
 and Up Arrow, which a horizontal list does not handle and which keep focus and the
 selection, End, Home, Tab to the panel), `tabs-keyboard-vertical` (Down Arrow and Up

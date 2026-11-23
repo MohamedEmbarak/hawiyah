@@ -43,6 +43,15 @@ describe('parseInfo', () => {
     expect(parseInfo(node('html', 'live example=basic check=tabs-click,')).errors).toEqual(['the check value "" must match /^[a-z][a-z0-9-]{0,39}$/']);
   });
 
+  // A group can differ in several aspects (Portal layout: the structure, and the accessibility tree and the rendering of its footer brand).
+  it('reads several known differences and rejects a repeated, empty or malformed id (HWC-LIVE1)', () => {
+    expect(parseInfo(node('html', 'live example=basic static differences=layout-markup,layout-brand'))).toMatchObject({ differences: 'layout-markup,layout-brand', errors: [] });
+    expect(parseInfo(node('html', 'live example=basic differences=d1,d1')).errors).toEqual(['differences=d1,d1 names a known difference more than once']);
+    expect(parseInfo(node('html', 'live example=basic differences=d1,')).errors).toEqual(['the differences value "" must match /^[a-z][a-z0-9-]{0,39}$/']);
+    expect(parseInfo(node('html', 'live example=basic differences=d1,D2')).errors).toEqual(['the differences value "D2" must match /^[a-z][a-z0-9-]{0,39}$/']);
+    expect(parseInfo(node('tsx', 'live example=basic differences=d1,d2')).errors).toEqual(['differences= is allowed only on the html block, the first of the group']);
+  });
+
   it('reads frame and width=390 on the html block of a page-level component or a template, and rejects every other use (5a.9, HWC-LIVE1)', () => {
     const header = { id: 'portal-header', kind: 'component' };
     expect(parseInfo(node('html', 'live example=page frame width=390 static'), header)).toMatchObject({ frame: true, width: '390', static: true, errors: [] });

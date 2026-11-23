@@ -13,6 +13,7 @@ import { FRAME_FRAMEWORK_NAMES, frameTexts } from '../../../src/app/examples/fra
 import { MessageBudget, READY_TIMEOUT_MS, acceptMessage, randomHex128 } from '../../../src/app/examples/frame/protocol';
 import { loadRuntimeConfig } from '../../../src/app/examples/frame/runtime-config';
 import { EXAMPLE_FRAMEWORKS, examplePayloadPath, type ExampleFramework, type ExampleLanguage, type ExamplePayload } from '../../../src/app/examples/payload';
+import { fixHeight, reportHeight, type FrameHeight } from './frame-height';
 
 export const FRAME_WIDTH = 720;
 
@@ -22,6 +23,8 @@ interface FrameState {
   /** Errors and console messages of level warn or error that the frame reported. */
   log: string[];
   height: number;
+  /** The height the runner fixed with __harnessFixHeight (CSS px); absent while the frame follows the reports. */
+  fixed?: number;
 }
 
 interface HarnessState {
@@ -32,6 +35,17 @@ interface HarnessState {
 
 const state: HarnessState = { done: false, frames: {} };
 (window as unknown as { __harness: HarnessState }).__harness = state;
+const heights = new Map<ExampleFramework, FrameHeight>();
+// The runner fixes the height of a frame (frame-height.ts), or releases it with null.
+(window as unknown as { __harnessFixHeight: (framework: ExampleFramework, height: number | null) => boolean }).__harnessFixHeight = (framework, height) => {
+  const frame = heights.get(framework);
+  const current = state.frames[framework];
+  if (!frame || !current) return false;
+  fixHeight(frame, height);
+  if (height === null) delete current.fixed;
+  else current.fixed = height;
+  return true;
+};
 
 function settle(): void {
   const frames = Object.values(state.frames);
@@ -81,10 +95,12 @@ async function main(): Promise<void> {
         case 'console':
           if (message.level === 'warn' || message.level === 'error') frame.log.push(`console.${message.level}: ${message.text}`);
           break;
-        case 'height':
+        case 'height': {
           frame.height = message.height;
-          entry.frame.style.blockSize = `${message.height}px`;
+          const height = heights.get(entry.framework);
+          if (height) reportHeight(height, message.height);
           break;
+        }
         case 'navigation':
           frame.log.push(`navigation: ${message.href}`);
           break;
@@ -134,6 +150,7 @@ async function main(): Promise<void> {
     section.append(heading, frame);
     main.append(section);
     state.frames[framework] = { state: 'loading', log: [], height: 0 };
+    heights.set(framework, { element: frame, reported: 0, fixed: null });
     const window = frame.contentWindow;
     if (!window) throw new Error('harness: the frame has no window');
     runs.set(window, { framework, token, run, budget: new MessageBudget(), frame });

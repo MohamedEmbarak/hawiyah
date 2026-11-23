@@ -67,7 +67,13 @@ export function parseInfo(node, page = {}) {
   for (const key of ['check', 'differences']) {
     if (values[key] === undefined) continue;
     if (lang !== 'html') errors.push(`${key}= is allowed only on the html block, the first of the group`);
-    else if (key === 'differences' && !LIVE_NAME.test(values[key])) errors.push(`the ${key} value "${values[key]}" must match ${LIVE_NAME}`);
+  }
+  // differences=<a>[,<b>...]: one or more known differences, each named once (a group can
+  // differ in more than one aspect, such as a structure and an aria difference).
+  if (lang === 'html' && values.differences !== undefined) {
+    const ids = values.differences.split(',');
+    for (const name of ids) if (!LIVE_NAME.test(name)) errors.push(`the differences value "${name}" must match ${LIVE_NAME}`);
+    if (new Set(ids).size !== ids.length) errors.push(`differences=${values.differences} names a known difference more than once`);
   }
   // check=<a>[,<b>...]: one or more interaction checks, each named once.
   const checks = values.check === undefined ? [] : values.check.split(',');

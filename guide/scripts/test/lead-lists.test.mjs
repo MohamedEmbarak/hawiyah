@@ -46,13 +46,13 @@ const PINS = {
   'scripts/api-tables/targets.mjs UNOWNED_EXPORTS': '4f53cda18c2baa0c',
   'scripts/content/arabic-exceptions.json': '37517e5f3dc66819',
   'scripts/content/claim-exceptions.json': '37517e5f3dc66819',
-  'scripts/content/live-component-exceptions.json': '37517e5f3dc66819',
+  'scripts/content/live-component-exceptions.json': 'ad7c7cf7fb1c742f',
   'scripts/content/marketing-terms.json': '9376a99a82e48201',
   'scripts/page-guards/latin-allowlist.json': '37517e5f3dc66819',
-  'scripts/equivalence/keyboard-exceptions.json': '1524e9563a42d6b5',
-  'scripts/equivalence/known-differences.json': 'd27e944e1f146456',
+  'scripts/equivalence/keyboard-exceptions.json': 'bb7033edaea6a002',
+  'scripts/equivalence/known-differences.json': 'e14900547b485c14',
   'scripts/equivalence/empty-elements.json': 'd0758741b06a1e9a',
-  'scripts/equivalence/vanilla-hooks.json': '37517e5f3dc66819',
+  'scripts/equivalence/vanilla-hooks.json': 'bb5d2c8fecd4c734',
   'scripts/equivalence/angular-hosts.json': 'dadd35b44cd66f6e',
 };
 

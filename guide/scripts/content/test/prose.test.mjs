@@ -167,7 +167,8 @@ describe('HWC-LIVE7: every live group contains the page\'s component', () => {
     expect(found(runPair({ en: foreign }), 'HWC-LIVE7').map((item) => item.message)).toEqual([expect.stringMatching(/^the live group "primary" does not show the page's component in react: /)]);
     const file = 'guide/scripts/content/test/fixtures/docs/components/fixture-a.md';
     expect(found(runPair({ en: foreign, liveExceptions: [{ file, example: 'primary', reason: 'r', approvedBy: 'lead' }] }), 'HWC-LIVE7')).toEqual([]);
-    expect(readLiveComponentExceptions()).toEqual([]);
+    // The lead's list holds one entry: the RatingDisplay group of the Rating page.
+    expect(readLiveComponentExceptions().map((entry) => `${entry.file} ${entry.example} ${entry.approvedBy}`)).toEqual(['docs/components/rating.md display lead']);
   });
 
   it('reads fixture.json beside a docs copy outside docs/components only', () => {

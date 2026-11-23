@@ -11,7 +11,7 @@ import { JSDOM } from 'jsdom';
 import { FRAMEWORKS } from '../compare.mjs';
 import { generatedNamePattern } from '../generated-names.mjs';
 import { normalize } from '../normalize.js';
-import { bundleHarness, capture, hostsIn, changelogSourceError, checkNames, compareCapture, comparisonFailures, differenceOf, englishPages, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
+import { bundleHarness, capture, hostsIn, changelogSourceError, checkNames, compareCapture, comparisonFailures, differenceOf, differencesOf, englishPages, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
 import { styledAttributes } from '../styled-attributes.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
@@ -39,6 +39,10 @@ describe('known differences', () => {
       'collapsible-adapter-markup', 'container-vue-layout-attributes', 'inline-vue-layout-attributes', 'grid-vue-layout-attributes', 'columns-vue-layout-attributes',
       'section-vue-layout-attributes', 'sidebar-adapter-layout-attributes', 'aspect-ratio-adapter-attributes', 'app-shell-adapter-side', 'mobile-top-bar-adapter-variant',
       'portal-footer-adapter-markup', 'portal-layout-adapter-markup',
+      'tooltip-adapter-markup', 'popover-adapter-markup', 'menu-adapter-markup', 'dialog-adapter-markup', 'drawer-adapter-markup', 'toast-region-adapter-markup',
+      'cookie-consent-adapter-markup', 'password-field-adapter-markup', 'search-field-adapter-markup', 'pin-input-adapter-markup', 'rating-adapter-markup',
+      'rating-angular-radio-names', 'rating-react-error-height', 'combobox-adapter-markup', 'multi-select-adapter-markup', 'tag-input-adapter-markup',
+      'range-slider-adapter-markup', 'portal-layout-footer-brand-tree', 'portal-layout-footer-brand-weight',
     ]);
     const [orientation, textField, serviceCard, , progress, iconButton] = known;
     const byId = (id) => known.find((item) => item.id === id);
@@ -93,9 +97,37 @@ describe('known differences', () => {
       'app-shell-adapter-side': ['app-shell', /AppShell \(Vue\) always writes/],
       'portal-footer-adapter-markup': ['portal-footer', /PortalFooter \(Angular\): `hw-portal-footer` always renders/],
       'portal-layout-adapter-markup': ['portal-layout', /PortalHeader \(Angular\) always renders `div\.hw-portal-notice`/],
+      'tooltip-adapter-markup': ['tooltip', /Tooltip \(Angular\) gives its host element `hw-tooltip`/],
+      'popover-adapter-markup': ['popover', /Popover and Menu \(Vue, Angular\) render their packaged trigger/],
+      'menu-adapter-markup': ['menu', /Menu \(React, Vue\) gives the first enabled item/],
+      'dialog-adapter-markup': ['dialog', /Dialog and Drawer \(React\) set `aria-haspopup="dialog"`/],
+      'drawer-adapter-markup': ['drawer', /Drawer \(Vue\) renders a `side` attribute/],
+      'toast-region-adapter-markup': ['toast-region', /ToastRegion \(Angular\) writes `data-variant="default"`/],
+      'cookie-consent-adapter-markup': ['cookie-consent', /CookieConsent \(Angular\): the host element `hw-cookie-consent`/],
+      'password-field-adapter-markup': ['password-field', /PasswordField \(Vue\) writes `hw-password-field`/],
+      'search-field-adapter-markup': ['search-field', /SearchField \(Angular\) writes `autocomplete="off"`/],
+      'pin-input-adapter-markup': ['pin-input', /PinInput \(Vue\) writes `hw-pin-input`/],
+      'rating-adapter-markup': ['rating', /Rating \(React\) renders `fieldset\.hw-rating` without `hw-field`/],
+      'combobox-adapter-markup': ['combobox', /Combobox: React and Vue write `aria-labelledby`/],
+      'multi-select-adapter-markup': ['multi-select', /MultiSelect \(React, Vue\) writes `value=""`/],
+      'tag-input-adapter-markup': ['tag-input', /TagInput: React and Vue write `aria-labelledby`/],
+      'range-slider-adapter-markup': ['range-slider', /RangeSlider \(Vue, Angular\) always writes `step="1"`/],
     };
     for (const [id, [component, text]] of Object.entries(whole)) {
       expect(byId(id)).toMatchObject({ component, aspect: 'structure', approvedBy: 'lead' });
+      expect(byId(id).ignore).toBeUndefined();
+      expect(byId(id).source.replace(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: /, '')).toMatch(new RegExp(`^${text.source}`));
+    }
+    // A difference of the accessibility tree or of the rendering leaves that aspect out; the
+    // groups that name one also name the structure entry of their component.
+    const aspects = {
+      'rating-angular-radio-names': ['rating', 'aria', /Rating \(Angular\) names each radio/],
+      'rating-react-error-height': ['rating', 'screenshot', /Rating \(React\) renders `fieldset\.hw-rating` without `hw-field`/],
+      'portal-layout-footer-brand-tree': ['portal-layout', 'aria', /PortalFooter: a text `brand` renders as plain text in React/],
+      'portal-layout-footer-brand-weight': ['portal-layout', 'screenshot', /PortalFooter: a text `brand` renders as plain text in React/],
+    };
+    for (const [id, [component, aspect, text]] of Object.entries(aspects)) {
+      expect(byId(id)).toMatchObject({ component, aspect, approvedBy: 'lead' });
       expect(byId(id).ignore).toBeUndefined();
       expect(byId(id).source.replace(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: /, '')).toMatch(new RegExp(`^${text.source}`));
     }
@@ -167,6 +199,21 @@ describe('known differences', () => {
       'HWE-KD docs/components/tabs.ar.md:19: differences=missing names no entry of scripts/equivalence/known-differences.json',
     );
     expect(differenceOf({ ...group, differences: 'tabs-bar' }, entries).error).toMatch(/documents component button, not tabs/);
+  });
+
+  // A group of Portal layout differs in several aspects: the structure, the accessibility tree and the rendering.
+  it('judge each id of a list as one, in the order written', () => {
+    const aria = { ...entry, id: 'tabs-aria', aspect: 'aria' };
+    const { entries } = validateKnownDifferences([entry, aria, { ...entry, id: 'button-x', component: 'button' }]);
+    expect(differencesOf({ ...group, differences: 'tabs-bar,tabs-aria' }, entries)).toEqual({ entries: [entry, aria], errors: [] });
+    expect(differencesOf(group, entries)).toEqual({ entries: [], errors: [] });
+    expect(differencesOf({ ...group, differences: 'tabs-bar,missing,button-x' }, entries)).toEqual({
+      entries: [entry],
+      errors: [
+        'HWE-KD docs/components/tabs.ar.md:19: differences=missing names no entry of scripts/equivalence/known-differences.json',
+        'HWE-KD docs/components/tabs.ar.md:19: differences=button-x documents component button, not tabs',
+      ],
+    });
   });
 });
 
@@ -260,6 +307,35 @@ describe('a structure entry with ignore (self-test, leadAmendments A8)', () => {
   it('skips the whole aspect for an entry without ignore, as before', () => {
     const rows = structure(compareCapture(capture([bar({}, 1)]), entry));
     expect(rows.map((row) => row.result)).toEqual(['skipped', 'skipped', 'skipped']);
+  });
+
+  it('applies every entry of a list: each aspect without ignore is skipped, and the other aspects are compared', () => {
+    const aria = { ...entry, id: 'tabs-aria', aspect: 'aria' };
+    const captured = capture([bar({}, 1)]);
+    captured.snapshots.angular = 'b';
+    // Without the list both aspects fail; with it neither is compared, and the screenshots still are.
+    expect(compareCapture(captured).filter((row) => row.result === 'different').map((row) => `${row.aspect} ${row.pair}`)).toEqual(expect.arrayContaining(['structure vanilla-react', 'aria vanilla-angular']));
+    const rows = compareCapture(captured, [entry, aria]);
+    expect(rows.filter((row) => row.aspect !== 'screenshot').every((row) => row.result === 'skipped')).toBe(true);
+    expect(rows.filter((row) => row.aspect === 'aria').map((row) => row.pair)).toEqual(['vanilla-react', 'vanilla-vue', 'vanilla-angular']);
+    // One entry of the list leaves the other aspect compared in full.
+    expect(compareCapture(captured, [aria]).filter((row) => row.result === 'different').every((row) => row.aspect === 'structure')).toBe(true);
+    expect(compareCapture(captured, [entry]).filter((row) => row.result === 'different').map((row) => `${row.aspect} ${row.pair}`)).toEqual(['aria vanilla-angular']);
+  });
+
+  it('joins the ignore lists of several structure entries and still fails what none of them names', () => {
+    const side = { ...orientation, id: 'tabs-bar-side', ignore: [{ class: 'hw-tab-bar', attribute: 'data-side' }] };
+    const both = [bar({ 'data-orientation': 'horizontal', 'data-side': 'start' })];
+    expect(structure(compareCapture(capture(both), [orientation])).every((row) => row.result === 'different')).toBe(true);
+    expect(structure(compareCapture(capture(both), [side])).every((row) => row.result === 'different')).toBe(true);
+    const rows = structure(compareCapture(capture(both), [orientation, side]));
+    expect(rows.map((row) => row.result)).toEqual(['equal', 'equal', 'equal']);
+    expect(rows[0].ignored).toEqual([...orientation.ignore, ...side.ignore]);
+    const more = structure(compareCapture(capture([bar({ 'data-orientation': 'horizontal', 'data-side': 'start', 'data-x': 'y' })]), [orientation, side]));
+    expect(more.every((row) => row.result === 'different')).toBe(true);
+    expect(more[0].message).toMatch(/\["data-x"\]/);
+    // A structure entry without ignore skips the comparison, whatever another entry ignores.
+    expect(structure(compareCapture(capture(both), [orientation, entry])).map((row) => row.result)).toEqual(['skipped', 'skipped', 'skipped']);
   });
 
   it('counts one documented difference in the summary line', () => {

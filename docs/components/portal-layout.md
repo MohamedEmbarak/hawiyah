@@ -6,7 +6,7 @@ PortalLayout is the page shell of a portal: a header with a skip link and main n
 
 The skip link leads to the main container, so a keyboard reader reaches the page content without passing the navigation. The brand, the navigation and the footer links are supplied as data, and the page content is placed inside the layout.
 
-```html live example=basic differences=portal-layout-adapter-markup frame
+```html live example=basic differences=portal-layout-adapter-markup,portal-layout-footer-brand-tree,portal-layout-footer-brand-weight frame
 <div class="hw-portal-layout">
   <header class="hw-portal-header" data-hw="portal-header">
     <a class="hw-skip-link" href="#main-content">Skip to main content</a>
@@ -108,7 +108,7 @@ template: `<hw-portal-layout
 
 A secondary navigation stands between the header and the main container, and a breadcrumb stands at the start of the main container. Each needs its own label, `secondaryLabel` and `breadcrumbLabel`, because each is a navigation region. The last breadcrumb item is the current page and has no `href`.
 
-```html live example=secondary differences=portal-layout-adapter-markup frame
+```html live example=secondary differences=portal-layout-adapter-markup,portal-layout-footer-brand-tree,portal-layout-footer-brand-weight frame
 <div class="hw-portal-layout">
   <header class="hw-portal-header" data-hw="portal-header">
     <a class="hw-skip-link" href="#secondary-content">Skip to main content</a>
