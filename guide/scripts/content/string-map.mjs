@@ -3,7 +3,9 @@
 // applied to the four frameworks of every group.
 //
 // Only reader text is replaced (isReader), in the four forms of a group: markup
-// text; the string value of a reader attribute or text prop (READER_NAMES and
+// text, the text of a textarea included (never the control flow of an Angular
+// template); the name of a component that the group reads as reader text (an
+// Avatar); the string value of a reader attribute or text prop (READER_NAMES and
 // READER_SUFFIX of parity.mjs, which HWC-PAR8 uses); a value that HWC-PAR8 reads as
 // shown (the value of a text input, a text area or an output, the name or
 // defaultValue of a data object; never the value of an input or component of type
@@ -13,8 +15,9 @@
 // the same group reads that string as reader text (a card's category, an item's
 // term, which the html block shows as text); and any other string of two or more
 // Latin words that HWC-PAR8 reads as reader text (rendersText: Stat trend, an
-// item's content) when the map translates it. A string under id, name, slot, key or
-// any other token name, the value of an option, a check box or a radio button, the
+// item's content) when the map translates it. A string under id, a field name, slot,
+// key or any other token name, a data-* attribute that the stylesheet selects, the
+// value of an option, a check box or a radio button, the
 // value of an object property and a component value that no native element of the
 // group shows are never replaced, whatever their text, so an option value or a slot
 // name that equals a translated label stays as written.
@@ -27,7 +30,8 @@ import { parser as htmlBase } from '@lezer/html';
 import { parser as jsBase } from '@lezer/javascript';
 import { sectionId } from './hash.mjs';
 import { parseMarkdown, plainText } from './parse.mjs';
-import { LATIN_PHRASE, READER_NAMES, READER_SUFFIX, SHOWN_VALUE_NAMES, TOKEN_NAMES, bareName, unquote, valueShownBy } from './parity.mjs';
+import { angularTextParts } from './highlight.mjs';
+import { LATIN_PHRASE, READER_NAMES, READER_SUFFIX, SHOWN_VALUE_NAMES, TOKEN_NAMES, bareName, isComponentTag, styleHooks, unquote, valueShownBy } from './parity.mjs';
 
 const ARABIC = /[؀-ۿ]/;
 const VALUE_NAMES = new Set(['value', 'defaultvalue', 'default-value', 'modelvalue', 'model-value', 'v-model', 'checked', 'selected']);
@@ -64,7 +68,11 @@ const BOUND = /^(?::|v-bind:|@|v-on:|v-|\[|\(|\*|#)/;
  * name the attribute or property it is the value of (null when it has none).
  * Angular templates (template literals with markup) and bound Vue and Angular
  * attribute values (:items="...", [label]="...") are read as markup and as script
- * respectively, so their strings carry their own names.
+ * respectively, so their strings carry their own names. The text content of a
+ * textarea is markup text (tag: 'textarea'), and the control flow of an Angular
+ * template (@if (open()) {, the closing brace) is not text. A string inside an
+ * object property or a class field is named by the nearest one that holds it
+ * (property: true).
  */
 export function candidates(lang, code) {
   const out = [];
@@ -73,12 +81,12 @@ export function candidates(lang, code) {
   return out;
 }
 
-function pushText(out, code, from, to, offset) {
+function pushText(out, code, from, to, offset, extra = {}) {
   const raw = code.slice(from, to);
   const start = raw.search(/\S/);
   if (start < 0) return;
   const end = raw.length - (raw.length - raw.trimEnd().length);
-  out.push({ kind: 'text', key: raw.trim().replace(/\s+/g, ' '), from: offset + from + start, to: offset + from + end, name: null });
+  out.push({ kind: 'text', key: raw.trim().replace(/\s+/g, ' '), from: offset + from + start, to: offset + from + end, name: null, ...extra });
 }
 
 /** The tag name and the type attribute of the markup element that holds an attribute node. */
@@ -107,12 +115,21 @@ function jsxElement(code, attribute) {
   return { tag: nameNode ? code.slice(nameNode.from, nameNode.to) : '', type };
 }
 
-function scanMarkup(code, offset, out, markup = htmlBase) {
+function scanMarkup(code, offset, out, markup = htmlBase, angular = false) {
   const tree = markup.parse(code);
   tree.iterate({
     enter(node) {
       if (node.name === 'Text') {
-        pushText(out, code, node.from, node.to, offset);
+        if (!angular) pushText(out, code, node.from, node.to, offset);
+        else {
+          for (const part of angularTextParts(code.slice(node.from, node.to))) {
+            if (!part.code) pushText(out, code, node.from + part.from, node.from + part.to, offset);
+          }
+        }
+        return false;
+      }
+      if (node.name === 'TextareaText') {
+        pushText(out, code, node.from, node.to, offset, { tag: 'textarea' });
         return false;
       }
       if (node.name === 'ScriptText') {
@@ -138,11 +155,13 @@ function scanMarkup(code, offset, out, markup = htmlBase) {
   });
 }
 
+/** The name of the nearest object property or class field (PropertyDeclaration) that holds a node, or null. */
 function nameOf(code, node) {
-  const parent = node.parent;
-  if (parent?.name === 'Property') {
-    const key = parent.getChild('PropertyDefinition') ?? parent.firstChild;
-    return key ? unquote(code.slice(key.from, key.to)) : null;
+  for (let parent = node.parent; parent; parent = parent.parent) {
+    if (parent.name === 'Property' || parent.name === 'PropertyDeclaration') {
+      const key = parent.getChild('PropertyDefinition') ?? parent.firstChild;
+      return key ? unquote(code.slice(key.from, key.to)) : null;
+    }
   }
   return null;
 }
@@ -161,7 +180,7 @@ function scanScript(code, offset, out, fallbackName, element = NO_ELEMENT) {
       if (node.name === 'TemplateString') {
         const raw = code.slice(node.from, node.to);
         const inner = raw.slice(1, -1);
-        if (inner.includes('<') && !inner.includes('${')) scanMarkup(inner, offset + node.from + 1, out, vueMarkup);
+        if (inner.includes('<') && !inner.includes('${')) scanMarkup(inner, offset + node.from + 1, out, vueMarkup, true);
         else out.push({ kind: 'string', key: inner, from: offset + node.from, to: offset + node.to, ...named(node.node) });
         return false;
       }
@@ -191,8 +210,14 @@ function scanScript(code, offset, out, fallbackName, element = NO_ELEMENT) {
   });
 }
 
-const isComponent = (tag) => /^[A-Z]/.test(tag ?? '') || (tag ?? '').includes('-');
-const tokenName = (bare) => VALUE_NAMES.has(bare) || TOKEN_NAMES.has(bare) || bare.startsWith('#') || bare.startsWith('v-slot');
+const isComponent = isComponentTag;
+/**
+ * A token name: a value, id, name, slot or other name of TOKEN_NAMES, or a data-* attribute
+ * that the stylesheet selects (styleHooks of parity.mjs). The value names of an element
+ * (checked, selected, v-model) are attributes: as the key of an object (labels.selected)
+ * they name a string like any other key, as HWC-PAR8 reads it.
+ */
+const tokenName = (bare, property = false) => (VALUE_NAMES.has(bare) && !property) || TOKEN_NAMES.has(bare) || bare.startsWith('#') || bare.startsWith('v-slot') || (bare.startsWith('data-') && styleHooks().has(bare));
 
 /**
  * Whether a candidate is a value that HWC-PAR8 reads as shown on its own: the value
@@ -215,9 +240,12 @@ const NO_GROUP = { readerKeys: new Set(), shownValues: new Set() };
  * reader name; a shown value (nativeShownValue); and, from the other blocks of its
  * group (groupContext), the value, defaultValue or default-value of a component
  * that the native markup of the group shows as a value (the defaultValue of a text
- * field), and a string under any other name that is not a token name whose text the
- * group reads as reader text (the category of a card or the term of an item, which
- * the html block shows as text).
+ * field, or the text of a textarea), the name of a component when the group reads
+ * that string as reader text (the name of an Avatar, which the html block writes as
+ * its accessible name; otherwise a component's name is a field name), and a string
+ * under any other name that is not a token name whose text the group reads as reader
+ * text (the category of a card or the term of an item, which the html block shows as
+ * text).
  */
 export function isReader(candidate, names, group = NO_GROUP) {
   if (candidate.kind === 'text') return true;
@@ -227,7 +255,8 @@ export function isReader(candidate, names, group = NO_GROUP) {
   if (!candidate.property && SHOWN_VALUE_NAMES.has(bare) && isComponent(candidate.tag)) {
     return valueShownBy(candidate.tag, candidate.type) && group.shownValues.has(candidate.key);
   }
-  if (tokenName(bare)) return false;
+  if (!candidate.property && bare === 'name' && isComponent(candidate.tag)) return group.readerKeys.has(candidate.key);
+  if (tokenName(bare, candidate.property)) return false;
   return names.has(bare) || READER_SUFFIX.test(bare.replace(/-/g, '')) || group.readerKeys.has(candidate.key);
 }
 
@@ -235,7 +264,8 @@ export function isReader(candidate, names, group = NO_GROUP) {
  * What the blocks of one group read as reader text, for isReader: readerKeys, the
  * strings that are reader text in some block of the group by their own name or place
  * (markup text, a reader name, a shown value), and shownValues, the values that a
- * native element of the group shows.
+ * native element of the group shows (the value of a text input, the text of a
+ * textarea).
  * @param {{ lang: string, code: string }[]} blocks the blocks of one group (English)
  */
 export function groupContext(blocks, names = readerNames()) {
@@ -243,7 +273,7 @@ export function groupContext(blocks, names = readerNames()) {
   const shownValues = new Set();
   for (const block of blocks) {
     for (const item of candidates(block.lang, block.code)) {
-      if (nativeShownValue(item) && !item.property) shownValues.add(item.key);
+      if ((nativeShownValue(item) && !item.property) || (item.kind === 'text' && item.tag === 'textarea')) shownValues.add(item.key);
       if (isReader(item, names) && /[A-Za-z]/.test(item.key)) readerKeys.add(item.key);
     }
   }
@@ -269,7 +299,7 @@ export function groupContexts(blocks, names = readerNames()) {
 export function rendersText(candidate, names, group = NO_GROUP) {
   if (candidate.kind !== 'string' || !candidate.name || isReader(candidate, names, group)) return false;
   const bare = bareName(candidate.name);
-  if (tokenName(bare)) return false;
+  if (tokenName(bare, candidate.property)) return false;
   return LATIN_PHRASE.test(candidate.key) && !ARABIC.test(candidate.key);
 }
 

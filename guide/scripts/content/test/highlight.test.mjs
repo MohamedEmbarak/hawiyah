@@ -55,4 +55,19 @@ describe('tokens', () => {
   it('marks JSX text as text', () => {
     expect(tokens('tsx', '<Button>Continue now</Button>').filter((token) => token.kind === 'text')).toEqual([{ kind: 'text', text: 'Continue now' }]);
   });
+
+  // The intake of the first Arabic component pages: the text of a textarea is shown to the
+  // reader as the value of the field, and was split into code tokens.
+  it('marks the text content of a textarea as text', () => {
+    expect(tokens('html', '<textarea class="hw-textarea" readonly>The request was received.</textarea>').filter((token) => token.kind === 'text')).toEqual([{ kind: 'text', text: 'The request was received.' }]);
+    expect(tokens('ts', 'template: `<textarea>The request was received.</textarea>`').filter((token) => token.kind === 'text')).toEqual([{ kind: 'text', text: 'The request was received.' }]);
+  });
+
+  it('reads the control flow of an Angular template as code, and its text and interpolations as text', () => {
+    const list = tokens('ts', 'template: `@if (open()) {<p>Your draft was saved.</p>} @else {<p>{{ count }} drafts</p>} @for (item of items(); track item.id) {<b>{{ item.name }}</b>}`');
+    expect(list.filter((token) => token.kind === 'text').map((token) => token.text)).toEqual(['Your draft was saved.', '{{ count }} drafts', '{{ item.name }}']);
+    expect(list.filter((token) => token.kind === 'code').map((token) => token.text)).toEqual(['template', '@if', '(open())', '{', '}', '@else', '{', '}', '@for', '(item', 'of', 'items();', 'track', 'item.id)', '{', '}']);
+    // Outside an Angular template, an @ and a brace are text.
+    expect(tokens('html', '<p>@if (open()) {</p>').filter((token) => token.kind === 'text')).toEqual([{ kind: 'text', text: '@if (open()) {' }]);
+  });
 });

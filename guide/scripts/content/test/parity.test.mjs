@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { liveTokenDifference, readArabicExceptions, tokensMatch } from '../parity.mjs';
+import { liveTokenDifference, readArabicExceptions, styleHooks, tokensMatch } from '../parity.mjs';
 import { runPair, validAr, validEn } from './helpers.mjs';
 
 const codes = (replace) => runPair(replace).findings.map((item) => item.code);
@@ -126,6 +126,71 @@ describe('checkParity', () => {
     expect(live('react', '<TextField label="الجهة" defaultValue="Example" />')).toEqual(['live block "primary" (react) defaultValue']);
     expect(live('vue', '<TextField label="الجهة" type="text" default-value="Example" />')).toEqual(['live block "primary" (vue) default-value']);
     expect(live('angular', '<hw-text-field label="الجهة" value="Example" />')).toEqual(['live block "primary" (angular) value']);
+  });
+
+  // The intake of the first Arabic component pages: HWC-PAR8 read expressions, option values
+  // and styling hooks as reader text, and the text of a textarea as code (HWC-PAR4).
+  describe('reader text only (HWC-PAR8)', () => {
+    const blocks = {
+      vanilla: '<button class="hw-button" type="button" data-variant="primary">متابعة</button>',
+      react: '<Button variant="primary">متابعة</Button>',
+      vue: '<HwButton variant="primary">متابعة</HwButton>',
+      angular: 'template: `<button hwButton variant="primary">متابعة</button>`',
+    };
+    const block = (framework, markup) => (framework === 'angular' ? `template: \`${markup}\`` : markup);
+    /** The PAR8 findings of the fixture with some of the four blocks of the primary group replaced, in both pages or in Arabic only. */
+    const par8 = (arabic, english = {}) => {
+      const put = (text, replace) => Object.entries(replace).reduce((out, [framework, markup]) => swap(out, blocks[framework], block(framework, markup)), text);
+      return runPair({ en: put(validEn().replaceAll('Continue', 'متابعة'), english), ar: put(validAr(), arabic) }).findings
+        .filter((item) => item.code === 'HWC-PAR8')
+        .map((item) => item.message.replace(/; translate it.*/, ''));
+    };
+
+    it('reads the string literals of a bound expression, not the expression', () => {
+      expect(par8({ vue: '<Switch label="الإشعارات" :default-value="true" />', angular: '<hw-switch label="الإشعارات" [value]="true" />' })).toEqual([]);
+      expect(par8({ angular: '<hw-avatar-group label="الفريق" [getOverflowLabel]="overflowLabel" />' })).toEqual([]);
+      // A literal inside the expression that the reader sees is judged under the name of the binding.
+      expect(par8({ vue: '<Switch :label="\'Notifications\'" />', angular: '<hw-switch [label]="\'Notifications\'" />' })).toEqual([
+        'live block "primary" (vue) :label has no Arabic script: "Notifications"',
+        'live block "primary" (angular) [label] has no Arabic script: "Notifications"',
+      ]);
+      expect(par8({ vue: '<AvatarGroup label="الفريق" :get-overflow-label="(count: number) => (count === 1 ? \'شخص واحد آخر\' : `${count} more people`)" />' })).toEqual([
+        'live block "primary" (vue) :get-overflow-label has no Arabic script: "more people`"',
+      ]);
+      expect(par8({ vue: '<AvatarGroup label="الفريق" :items="[{ name: \'Rana Cole\' }]" />' })).toEqual(['live block "primary" (vue) name has no Arabic script: "Rana Cole"']);
+    });
+
+    it('reads the value of a component that the group writes as an option value as a token, and a shown value as reader text', () => {
+      const radios = '<input class="hw-radio" type="radio" name="delivery" value="post"><option value="email">البريد الإلكتروني</option>';
+      expect(par8({ vanilla: `${blocks.vanilla}${radios}`, react: '<><Radio name="delivery" value="post" label="بالبريد" /><Select defaultValue="email" /></>', vue: '<RadioGroup default-value="post" /><Select default-value="email" />' })).toEqual([]);
+      // Without the option in the group, the value of a component stays reader text.
+      expect(par8({ react: '<Radio name="delivery" value="post" label="بالبريد" />' })).toEqual(['live block "primary" (react) value has no Arabic script: "post"']);
+      // The value of a text input is shown, in the native markup and in the component.
+      expect(par8({ vanilla: `${blocks.vanilla}<input class="hw-input" name="org" value="post">`, react: '<TextField label="الجهة" defaultValue="post" />' })).toEqual([
+        'live block "primary" (vanilla) value has no Arabic script: "post"',
+        'live block "primary" (react) defaultValue has no Arabic script: "post"',
+      ]);
+    });
+
+    it('reads a data-* attribute that the stylesheet selects as a styling hook', () => {
+      expect(styleHooks().has('data-message')).toBe(true);
+      expect(styleHooks().has('data-copied-message')).toBe(false);
+      expect(par8({ vanilla: '<button class="hw-button" type="button" data-variant="primary" data-message="true">متابعة</button>' })).toEqual([]);
+      expect(par8({ vanilla: '<button class="hw-button" type="button" data-variant="primary" data-copied-message="true">متابعة</button>' })).toEqual(['live block "primary" (vanilla) data-copied-message has no Arabic script: "true"']);
+    });
+
+    it('reads the name of a component as reader text where the English group reads it so, and as a field name elsewhere', () => {
+      const vanilla = '<span class="hw-avatar" role="img" aria-label="Rana Cole"><span aria-hidden="true">RC</span></span>';
+      const english = { vanilla, react: '<><Avatar name="Rana Cole" /><TextField label="Name" name="applicant" /></>' };
+      const arabicVanilla = '<span class="hw-avatar" role="img" aria-label="رنا كمال"><span aria-hidden="true">رك</span></span>';
+      expect(par8({ vanilla: arabicVanilla, react: '<><Avatar name="Rana Cole" /><TextField label="الاسم" name="applicant" /></>' }, english)).toEqual(['live block "primary" (react) name has no Arabic script: "Rana Cole"']);
+      expect(par8({ vanilla: arabicVanilla, react: '<><Avatar name="رنا كمال" /><TextField label="الاسم" name="applicant" /></>' }, english)).toEqual([]);
+    });
+
+    it('reads the text of a textarea as reader text that differs between the pages (HWC-PAR4)', () => {
+      expect(liveTokenDifference('html', '<textarea class="hw-textarea" readonly>The request was received.</textarea>', '<textarea class="hw-textarea" readonly>استُلم الطلب.</textarea>')).toBe(null);
+      expect(par8({ vanilla: `${blocks.vanilla}<textarea class="hw-textarea" readonly>The request was received.</textarea>` })).toEqual(['live block "primary" (vanilla) text has no Arabic script: "The request was received."']);
+    });
   });
 
   it('requires Arabic script in headings h2 to h6, except the framework names (HWC-PAR8)', () => {

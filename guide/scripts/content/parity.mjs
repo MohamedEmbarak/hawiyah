@@ -10,7 +10,13 @@
 // the token names of TOKEN_NAMES), unless arabic-exceptions.json lists the text
 // with a reason. A value that is Latin by nature is not reader text: the value of an
 // input or component of type email, url, tel or number (LATIN_VALUE_TYPES), and a
-// value without any letter.
+// value without any letter. Only reader text is judged: the value of a bound attribute
+// (EXPRESSION_ATTRIBUTE) is an expression, of which only the string literals count; the
+// value of a component that its group writes as an option value, and the value of a
+// data-* attribute that the stylesheet selects (styleHooks), are tokens; the name of a
+// component is reader text only where its group reads it so (groupReading); the text of
+// a textarea is markup text and the control flow of an Angular template is code
+// (highlight.mjs).
 
 import { readFileSync } from 'node:fs';
 import { FRAMEWORKS, finding } from './config.mjs';
@@ -122,12 +128,11 @@ export function valueShownBy(tag, type) {
   if (tag === 'input') return !HIDDEN_VALUE_TYPES.has(kind);
   return false;
 }
-/** Whether a value-like string token is shown to the reader, from its name and its element. */
-function shownValue(list, index, name, bare) {
-  if (name.kind === 'property') return bare === 'name' || bare === 'defaultvalue';
-  if (!SHOWN_VALUE_NAMES.has(bare)) return false;
-  // The element of the attribute: the tag after the nearest opening < before it.
-  let at = list.lastIndexOf(name, index);
+/** Whether a tag names a component (a React or Vue name, a custom element) rather than a native element. */
+export const isComponentTag = (tag) => /^[A-Z]/.test(tag ?? '') || (tag ?? '').includes('-');
+/** The element of the attribute token at index: its tag (after the nearest opening < before it) and its type attribute. */
+function elementOf(list, index) {
+  let at = index;
   while (at > 0 && !(list[at].kind === 'tag' && list[at - 1]?.text === '<')) at -= 1;
   const tag = at > 0 ? list[at].text : '';
   // The type of the element (type="email", [type]="'email'"), wherever it stands among its attributes.
@@ -135,7 +140,71 @@ function shownValue(list, index, name, bare) {
   for (let j = at + 1; at > 0 && j < list.length && list[j].text !== '>' && list[j].text !== '/>'; j += 1) {
     if (list[j].kind === 'attribute' && bareName(list[j].text) === 'type' && list[j + 2]?.kind === 'string') type = unquote(unquote(list[j + 2].text));
   }
+  return { tag, type };
+}
+/** Whether a value-like string token is shown to the reader, from its name and its element. */
+function shownValue(list, index, name, bare) {
+  if (name.kind === 'property') return bare === 'name' || bare === 'defaultvalue';
+  if (!SHOWN_VALUE_NAMES.has(bare)) return false;
+  const { tag, type } = elementOf(list, list.lastIndexOf(name, index));
   return valueShownBy(tag, type);
+}
+/** The attribute or property token that names the string token at index: the nearest one before it. */
+const nameTokenOf = (list, index) => list.slice(0, index).reverse().find((item) => item.kind === 'attribute' || item.kind === 'property');
+/**
+ * Attributes whose value is an expression, not text: a Vue bound prop or directive
+ * (:name, v-bind:name, @event, v-on:event, v-if) and an Angular property, event or
+ * structural binding ([name], (event), *ngIf). Only the string literals inside the
+ * expression can be reader text.
+ */
+export const EXPRESSION_ATTRIBUTE = /^(?::|v-bind:|@|v-on:|v-|\[|\(|\*)/;
+/** The types of an input whose value is an option value, which the reader does not see. */
+const CHOICE_TYPES = new Set(['checkbox', 'radio']);
+
+const STYLESHEET = new URL('../../node_modules/@hawiyah/styles/dist/styles.css', import.meta.url);
+let styleHookCache = null;
+/**
+ * The data-* attributes that the installed @hawiyah/styles/dist/styles.css selects
+ * ([data-message], [data-status='error']): styling hooks, whose values are tokens.
+ * The stylesheet never renders the value of an attribute as text.
+ * @param {URL | string} [file]
+ */
+export function styleHooks(file = STYLESHEET) {
+  const key = String(file);
+  if (styleHookCache?.key === key) return styleHookCache.names;
+  const css = readFileSync(file, 'utf8');
+  const names = new Set([...css.matchAll(/\[\s*(data-[A-Za-z0-9_-]+)\s*(?:[~|^$*]?=|\])/g)].map((match) => match[1].toLowerCase()));
+  styleHookCache = { key, names };
+  return names;
+}
+
+/**
+ * What the blocks of one live group read as reader text and as option values, for
+ * HWC-PAR8: reader, the markup text, the values of reader names and the values that a
+ * native element shows (a text input, a text area, an output); options, the values of
+ * an option, a check box or a radio button.
+ * @param {{ blocks: Record<string, { lang: string, code: string }> }} group
+ */
+export function groupReading(group) {
+  const reader = new Set();
+  const options = new Set();
+  for (const block of Object.values(group?.blocks ?? {})) {
+    const list = tokens(block.lang, block.code);
+    list.forEach((token, index) => {
+      if (token.kind === 'text') reader.add(token.text);
+      if (token.kind !== 'string') return;
+      const name = nameTokenOf(list, index);
+      if (!name || name.kind !== 'attribute') return;
+      const bare = bareName(name.text);
+      const value = unquote(unquote(token.text));
+      const { tag, type } = elementOf(list, list.lastIndexOf(name, index));
+      if (READER_NAMES.has(bare) || READER_SUFFIX.test(bare.replace(/-/g, ''))) reader.add(value);
+      if (isComponentTag(tag)) return;
+      if (shownValue(list, index, name, bare)) reader.add(value);
+      if (bare === 'value' && (tag === 'option' || (tag === 'input' && CHOICE_TYPES.has(String(type ?? '').toLowerCase())))) options.add(value);
+    });
+  }
+  return { reader, options };
 }
 /** Two or more words of Latin letters in a row: a phrase a reader reads, wherever it stands. */
 export const LATIN_PHRASE = /(?:^|\s)[A-Za-z]+(?:[.,;:!?])?\s+[A-Za-z]+(?=[.,;:!?]?(?:\s|$))/;
@@ -300,23 +369,55 @@ export function checkParity(en, ar, sources) {
     const text = proseText(heading.node).replace(/\s+/g, ' ').trim();
     if (heading.level >= 2 && !LATIN_HEADINGS.has(text)) requireArabic(heading.node, text, `the h${heading.level}`);
   }
+  const hooks = sources.styleHooks ?? styleHooks();
+  const sameTokens = (a, b) => a.length === b.length && a.every((token, index) => tokensMatch(token, b[index]));
   for (const group of ar.groups) {
+    // What the group reads as reader text and as option values decides the component
+    // props below: from the English group where the Arabic block has its tokens, so a
+    // string left in English is judged where its English form is reader text.
+    const english = en.groups.find((item) => item.example === group.example);
+    const readings = { ar: groupReading(group), en: english ? groupReading(english) : null };
     for (const framework of FRAMEWORKS) {
       const block = group.blocks[framework];
+      const at = { position: { start: { line: block.line } } };
+      const where = `live block "${group.example}" (${framework})`;
       const list = tokens(block.lang, block.code);
-      list.forEach((token, index) => {
+      const englishBlock = english?.blocks[framework];
+      const englishList = englishBlock ? tokens(englishBlock.lang, englishBlock.code) : null;
+      const aligned = Boolean(englishList && readings.en && sameTokens(englishList, list));
+      const reading = aligned ? readings.en : readings.ar;
+      // owner: the bound attribute whose expression the list is, with its own list and index.
+      const judge = (items, references, owner = null) => items.forEach((token, index) => {
         const text = unquote(token.text);
-        if (token.kind === 'text') requireArabic({ position: { start: { line: block.line } } }, text, `live block "${group.example}" (${framework}) text`);
-        else if (token.kind === 'string') {
-          const name = list.slice(0, index).reverse().find((item) => item.kind === 'attribute' || item.kind === 'property');
-          const bare = name ? bareName(name.text) : '';
-          const reader = name && (READER_NAMES.has(bare) || READER_SUFFIX.test(bare.replace(/-/g, '')) || shownValue(list, index, name, bare));
-          const phrase = !TOKEN_NAMES.has(bare) && LATIN_PHRASE.test(text);
-          if (reader || phrase) {
-            requireArabic({ position: { start: { line: block.line } } }, text, `live block "${group.example}" (${framework}) ${name?.text ?? 'string'}`);
-          }
+        if (token.kind === 'text') {
+          requireArabic(at, text, `${where} text`);
+          return;
         }
+        if (token.kind !== 'string') return;
+        const reference = references ? unquote(references[index].text) : text;
+        const own = nameTokenOf(items, index);
+        const name = own ?? owner?.name;
+        const context = own ? { list: items, index } : owner;
+        const bare = name ? bareName(name.text) : '';
+        // An expression is not reader text; the string literals inside it can be.
+        if (own?.kind === 'attribute' && EXPRESSION_ATTRIBUTE.test(own.text) && items[index - 1]?.text === '=' && items[index - 2] === own) {
+          const inner = tokens('ts', text);
+          const innerReferences = references ? tokens('ts', reference) : null;
+          judge(inner, innerReferences && sameTokens(innerReferences, inner) ? innerReferences : null, { name: own, list: items, index });
+          return;
+        }
+        // A data-* attribute that the stylesheet selects is a styling hook: its value is a token.
+        if (name?.kind === 'attribute' && bare.startsWith('data-') && hooks.has(bare)) return;
+        const component = name?.kind === 'attribute' && isComponentTag(elementOf(context.list, context.list.lastIndexOf(name, context.index)).tag);
+        // The value of a component that the group writes as the value of an option, a check box or a radio button is an option value.
+        if (component && SHOWN_VALUE_NAMES.has(bare) && reading.options.has(reference)) return;
+        const reader = name && (READER_NAMES.has(bare) || READER_SUFFIX.test(bare.replace(/-/g, '')) || shownValue(context.list, context.index, name, bare)
+          // The name of a component is a field name unless the group reads it as reader text (the name of an Avatar).
+          || (component && bare === 'name' && reading.reader.has(reference)));
+        const phrase = !TOKEN_NAMES.has(bare) && LATIN_PHRASE.test(text);
+        if (reader || phrase) requireArabic(at, text, `${where} ${name?.text ?? 'string'}`);
       });
+      judge(list, aligned ? englishList : null);
     }
   }
 

@@ -536,20 +536,29 @@ writes them from the English blocks with a string map (the Arabic text of each
 English reader string, once for the four frameworks), and
 `npm run content:sync-ar` rewrites them in place after the English blocks change,
 with the map that the two existing pages give. The map replaces every reader
-string that `HWC-PAR8` reads, in the four blocks of a group: markup text; the
-values of reader attributes and text props (the names listed below); a shown
-value (the `value` of a text input, a text area or an output, and the `name` or
-`defaultValue` of a data object); the `value`, `defaultValue` or `default-value`
-of a component, and the Angular `value`, when the native markup of the same group
-shows that string as a value (the `defaultValue` of a TextField); a string under
-any other name that is not a token name when the same group reads it as reader
-text (a one-word `category` or `term` that the `html` block shows as text); and
-any other string of two or more Latin words that `HWC-PAR8` reads as reader text
-(a Stat `trend`, the `content` of an accordion item) when the map translates it.
+string that `HWC-PAR8` reads, in the four blocks of a group: markup text, the
+text content of a `textarea` included; the values of reader attributes and text
+props (the names listed below), in markup and as the key of an object or the
+field of a class that holds the string (the `overflowLabel` field of an Angular
+example class); a shown value (the `value` of a text input, a text area or an
+output, and the `name` or `defaultValue` of a data object); the `value`,
+`defaultValue` or `default-value` of a component, and the Angular `value`, when
+the native markup of the same group shows that string as a value (the
+`defaultValue` of a TextField, the text of a `textarea` for the `defaultValue` of
+a Textarea); the `name` of a component when the same group reads that string as
+reader text (the `name` of an Avatar, which the `html` block writes as its
+accessible name); a string under any other name that is not a token name when
+the same group reads it as reader text (a one-word `category` or `term` that the
+`html` block shows as text, or the `selected` key of a labels object); and any
+other string of two or more Latin words that `HWC-PAR8` reads as reader text (a
+Stat `trend`, the `content` of an accordion item) when the map translates it.
 It never replaces an `id`, a field `name`, a slot, the value of an option, a check
 box or a radio button, the `value` of an object property, a component value that
-no native element of its group shows, or the value of an input or component of
-type `email`, `url`, `tel` or `number`, which stays in Latin script. Both commands
+no native element of its group shows, the value of a `data-*` attribute that the
+stylesheet selects, or the value of an input or component of type `email`, `url`,
+`tel` or `number`, which stays in Latin script. The control flow of an Angular
+template (`@if (open()) {`, `} @else {`, the closing brace of a block) is not
+text. Both commands
 print one line for each reader string of the English blocks that the map does not
 translate and one for every other string they leave in English that renders as
 reader text, and `content:sync-ar` never replaces an Arabic string by an English
@@ -561,7 +570,9 @@ tag with `/>`. Apart from that, each Arabic
 block has the same tokens as the English block of the same framework. Only
 these tokens may differ (`HWC-PAR4`):
 
-- strings and markup text whose Arabic form contains Arabic characters;
+- strings and markup text whose Arabic form contains Arabic characters (the text
+  content of a `textarea` is markup text; the control flow of an Angular template
+  is code, not text);
 - language tags, such as `en` and `ar`;
 - the pair `rtl` and `ltr`.
 
@@ -827,7 +838,8 @@ Besides the rules above, the Arabic page mirrors the English page:
   the blocks of each item, code, tables, alerts and headings (`HWC-PAR7`);
 - an Arabic letter in every paragraph, list item, heading h2 to h6 and table
   cell outside code and API tables, and in the reader text of every live block
-  (`HWC-PAR8`): its text; the values of `label`, `aria-label`, `title`,
+  (`HWC-PAR8`): its text, the text content of a `textarea` included; the values
+  of `label`, `aria-label`, `title`,
   `placeholder`, `alt`, `description`, `heading`, `caption`, `hint`, `message`,
   `text` and of every name that ends in `label`, `message`, `text` or `title`;
   `value`, `defaultValue` and `modelValue` where an element shows them (a text
@@ -836,11 +848,28 @@ Besides the rules above, the Arabic page mirrors the English page:
   Latin by nature: the value of an input or a component whose `type` is `email`,
   `url`, `tel` or `number`, in every form (`value`, `defaultValue`,
   `default-value`, the Angular `value` and `[value]`), and a value without any
-  letter (`3`, `1,250.00`); and any phrase of
+  letter (`3`, `1,250.00`); the `name` of a component when the group reads that
+  string as reader text (the `name` of an Avatar, which the `html` block writes as
+  its accessible name); and any phrase of
   two Latin words under another name that is not a token name (`class`, `id`,
   `role`, `type`, `href`, `name`, `value` and the other names of
   `TOKEN_NAMES` in `parity.mjs`). The value of an option, a check box or a radio
-  button and the name of a form field are tokens. Headings that name a framework
+  button and the name of a form field are tokens: so is the `value`,
+  `defaultValue` or `default-value` of a component, and the Angular `value`, when
+  a block of the same group writes that string as the value of an `option` or of
+  an input of type `checkbox` or `radio` (the `value` of a Radio, the
+  `defaultValue` of a Select), and the value of a `data-*` attribute that the
+  installed `@hawiyah/styles/dist/styles.css` selects (`data-message`, a styling
+  hook). What the group reads is taken from the English group when the Arabic
+  block has the same tokens as the English block, and from the Arabic group
+  otherwise. The value of a bound attribute (in Vue `:name`, `v-bind:name`,
+  `@event` and the directives `v-*`; in Angular `[name]`, `(event)` and `*name`)
+  is an expression, not text: `HWC-PAR8` judges the string literals inside it,
+  each under the object key that holds it or else under the name of the binding
+  (`:label="'…'"`, the template literal of a formatter), and nothing else of it
+  (`:default-value="true"`, `[getOverflowLabel]="overflowLabel"`). The control
+  flow of an Angular template (`@if (open()) {`, the closing brace of a block) is
+  code. Headings that name a framework
   (JavaScript, React, Vue, Angular) stay Latin. A key element is not reader
   text, so a table cell made only of key elements needs no Arabic letter; a table
   cell made only of key names without the key element (Tab, Enter, ...) also

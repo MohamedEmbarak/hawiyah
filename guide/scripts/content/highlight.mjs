@@ -105,13 +105,49 @@ export function highlight(lang, code) {
   return lines;
 }
 
-/** Ranges of markup text nodes (HTML Text, JSX text) in a parsed listing. */
+/**
+ * Markup text nodes: HTML text, the text content of a textarea element (TextareaText,
+ * which the browser shows as the value of the field) and JSX text.
+ */
+export const TEXT_NODES = new Set(['Text', 'TextareaText', 'JSXText']);
+
+// A parenthesised expression of an Angular block, with parentheses nested two deep (@if (open()) {).
+const PARENS = String.raw`\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\)`;
+/**
+ * The control flow of an Angular template, which the template compiler reads as code
+ * and the reader never sees: the opening of a block with or without its parenthesised
+ * expression (@if (open()) {, @for (item of items; track item.id) {, @else {, @empty {),
+ * a @let declaration and the closing brace of a block (outside an interpolation,
+ * a brace in Angular text is always template syntax). An interpolation ({{ count }})
+ * stays text.
+ */
+const ANGULAR_CONTROL_FLOW = new RegExp(String.raw`(?<interpolation>\{\{[\s\S]*?\}\})|@(?:else\s+if|if|for|switch|case|defer)\s*${PARENS}\s*\{|@(?:else|empty|default|defer|placeholder|loading|error)\s*(?:${PARENS}\s*)?\{|@let\s+[A-Za-z_$][\w$]*\s*=[^;]*;|\}`, 'g');
+
+/**
+ * Splits the text of an Angular template into control flow and text:
+ * [{ code: boolean, from, to }] in order, empty parts left out.
+ * @param {string} text
+ */
+export function angularTextParts(text) {
+  const parts = [];
+  let last = 0;
+  for (const match of text.matchAll(ANGULAR_CONTROL_FLOW)) {
+    if (match.groups.interpolation) continue;
+    if (match.index > last) parts.push({ code: false, from: last, to: match.index });
+    parts.push({ code: true, from: match.index, to: match.index + match[0].length });
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) parts.push({ code: false, from: last, to: text.length });
+  return parts;
+}
+
+/** Ranges of markup text nodes (TEXT_NODES) in a parsed listing. */
 function textRanges(tree) {
   const ranges = [];
   if (!tree) return ranges;
   tree.iterate({
     enter(node) {
-      if (node.name === 'Text' || node.name === 'JSXText') {
+      if (TEXT_NODES.has(node.name)) {
         ranges.push([node.from, node.to]);
         return false;
       }
@@ -124,20 +160,33 @@ function textRanges(tree) {
 /**
  * Token sequence of a listing for the parity check: [{ kind, text }], where kind
  * is a role, 'text' (markup text, one token per text run) or 'code' (other
- * unhighlighted source split at white space). Template literals in TypeScript
- * that contain markup (Angular templates) are tokenised as HTML.
+ * unhighlighted source split at white space). The text content of a textarea is
+ * markup text. Template literals in TypeScript that contain markup (Angular
+ * templates) are tokenised as HTML, and the control flow in their text
+ * (angularTextParts) is code.
  * @param {string | null} lang
  * @param {string} code
+ * @param {{ angular?: boolean }} [options] angular: the code is an Angular template
  */
-export function tokens(lang, code) {
+export function tokens(lang, code, options = {}) {
   const { out, tree } = runs(lang, code);
   const ranges = textRanges(tree);
   const inText = (index) => ranges.some(([from, to]) => index >= from && index < to);
   const result = [];
   let pendingText = '';
-  const flushText = () => {
-    const value = pendingText.replace(/\s+/g, ' ').trim();
+  const pushText = (text) => {
+    const value = text.replace(/\s+/g, ' ').trim();
     if (value) result.push({ kind: 'text', text: value });
+  };
+  const flushText = () => {
+    if (!options.angular) pushText(pendingText);
+    else {
+      for (const part of angularTextParts(pendingText)) {
+        const text = pendingText.slice(part.from, part.to);
+        if (!part.code) pushText(text);
+        else for (const word of text.split(/\s+/)) if (word) result.push({ kind: 'code', text: word });
+      }
+    }
     pendingText = '';
   };
   const script = SCRIPT.has((lang ?? '').toLowerCase());
@@ -146,7 +195,7 @@ export function tokens(lang, code) {
       flushText();
       if (run.r === 'string' && script && run.t.startsWith('`') && run.t.endsWith('`') && run.t.includes('<')) {
         result.push({ kind: 'punctuation', text: '`' });
-        result.push(...tokens('html', run.t.slice(1, -1)));
+        result.push(...tokens('html', run.t.slice(1, -1), { angular: true }));
         result.push({ kind: 'punctuation', text: '`' });
       } else {
         result.push({ kind: run.r, text: run.t });

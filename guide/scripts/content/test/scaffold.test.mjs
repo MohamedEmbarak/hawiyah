@@ -159,6 +159,66 @@ describe('content:scaffold-ar and content:sync-ar replace every reader string th
   });
 });
 
+// The intake of the first Arabic component pages: the map left the name of an Avatar,
+// the strings of an Angular class field and the text of a textarea in English without a
+// word, reported the control flow of an Angular template and a styling hook as strings
+// to translate, and skipped a string under the key selected of a labels object.
+describe('content:scaffold-ar and content:sync-ar replace and report what HWC-PAR8 judges', () => {
+  const scaffold = (id, english, map) => scaffoldArabic(english, { entry: readers.components.get(id), declared: declaredMembers(readers, id), map, version });
+  it.each(['avatar', 'avatar-group', 'textarea', 'alert'])('reproduces the live blocks of %s.ar.md byte for byte from its string map, and content:sync-ar leaves it as it is', (id) => {
+    const english = page(`${id}.md`);
+    const arabic = page(`${id}.ar.md`);
+    const derived = deriveStringMap(english, arabic);
+    expect(derived.conflicts).toEqual([]);
+    expect(derived.unaligned).toEqual([]);
+    const result = scaffold(id, english, derived.map);
+    expect([...result.missing, ...result.left, ...result.unused]).toEqual([]);
+    expect(liveBlocks(result.text).map((block) => block.code)).toEqual(liveBlocks(arabic).map((block) => block.code));
+    const synced = syncArabic(english, arabic, { entry: readers.components.get(id), declared: declaredMembers(readers, id), version });
+    expect(synced.text).toBe(arabic);
+    expect([...synced.missing, ...synced.left, ...synced.kept, ...synced.dropped, ...synced.review, ...synced.unmatched, ...synced.stale]).toEqual([]);
+  });
+  it('replaces the name of a component that the group reads as reader text, and keeps a field name', () => {
+    const blocks = [
+      { lang: 'html', code: '<span class="hw-avatar" role="img" aria-label="Rana Cole"><span aria-hidden="true">RC</span></span>' },
+      { lang: 'tsx', code: '<><Avatar name="Rana Cole" /><TextField label="Applicant" name="applicant" /></>' },
+    ];
+    const group = groupContext(blocks);
+    const map = { 'Rana Cole': 'رنا كمال', Applicant: 'مقدّم الطلب', applicant: 'x' };
+    expect(applyStringMap('tsx', blocks[1].code, map, undefined, { group }).code).toBe('<><Avatar name="رنا كمال" /><TextField label="مقدّم الطلب" name="applicant" /></>');
+    expect(applyStringMap('vue', '<Avatar name="Rana Cole" />', {}, undefined, { group }).missing).toEqual(['Rana Cole']);
+    expect(applyStringMap('ts', 'template: `<hw-avatar name="Rana Cole" />`', map, undefined, { group }).code).toBe('template: `<hw-avatar name="رنا كمال" />`');
+  });
+  it('replaces the strings of an Angular class field and of an object key that names an element value', () => {
+    const angular = 'export class Example {\n  overflowLabel = (count: number) => (count === 1 ? \'1 more person\' : `${count} more people`);\n}';
+    expect(applyStringMap('ts', angular, { '1 more person': 'شخص واحد آخر', '${count} more people': '${count} من الأشخاص الآخرين' }).code)
+      .toBe('export class Example {\n  overflowLabel = (count: number) => (count === 1 ? \'شخص واحد آخر\' : `${count} من الأشخاص الآخرين`);\n}');
+    expect(applyStringMap('ts', angular, {}).missing).toEqual(['1 more person', '${count} more people']);
+    const group = groupContext([{ lang: 'html', code: '<span class="hw-upload-status" role="status">Ready to send</span>' }]);
+    const labels = 'export class Example {\n  labels = { selected: \'Ready to send\', complete: \'Sent\' };\n}';
+    expect(applyStringMap('ts', labels, { 'Ready to send': 'جاهز للإرسال' }, undefined, { group }).code).toBe('export class Example {\n  labels = { selected: \'جاهز للإرسال\', complete: \'Sent\' };\n}');
+    expect(applyStringMap('ts', labels, {}).left).toEqual(['selected: Ready to send']);
+  });
+  it('replaces the text of a textarea and the value of the component that shows it', () => {
+    const blocks = [
+      { lang: 'html', code: '<textarea class="hw-textarea" id="note" name="note" readonly>The request was received.</textarea>' },
+      { lang: 'tsx', code: '<Textarea label="Note" name="note" defaultValue="The request was received." readOnly />' },
+    ];
+    const group = groupContext(blocks);
+    const map = { 'The request was received.': 'استُلم الطلب.', Note: 'ملاحظة' };
+    expect(applyStringMap('html', blocks[0].code, map, undefined, { group }).code).toBe('<textarea class="hw-textarea" id="note" name="note" readonly>استُلم الطلب.</textarea>');
+    expect(applyStringMap('tsx', blocks[1].code, map, undefined, { group }).code).toBe('<Textarea label="ملاحظة" name="note" defaultValue="استُلم الطلب." readOnly />');
+    expect(applyStringMap('html', blocks[0].code, {}, undefined, { group }).missing).toEqual(['The request was received.']);
+  });
+  it('reports neither the control flow of an Angular template nor the value of a styling hook', () => {
+    const angular = 'template: `\n  @if (open()) {\n    <p>Your draft was saved.</p>\n  } @else {\n    <p>{{ count }} drafts</p>\n  }\n`';
+    expect(candidates('ts', angular).map((item) => item.key)).toEqual(['Your draft was saved.', '{{ count }} drafts']);
+    expect(applyStringMap('ts', angular, { 'Your draft was saved.': 'حُفظت المسودة.' }).missing).toEqual(['{{ count }} drafts']);
+    expect(applyStringMap('html', '<li class="hw-upload-item" data-status="error" data-message="true">خطأ</li>', {}).missing).toEqual([]);
+    expect(applyStringMap('html', '<li class="hw-upload-item" data-copied-message="Copied">خطأ</li>', {}).missing).toEqual(['Copied']);
+  });
+});
+
 describe('content:scaffold-ar and the keyboard table (5a.7, 5a.8)', () => {
   it('writes the fixed Arabic caption and headers and the Arabic names of the arrow keys; other keys stay as printed', () => {
     const english = page('tabs.md');
