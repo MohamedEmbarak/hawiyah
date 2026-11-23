@@ -11,7 +11,7 @@ import { JSDOM } from 'jsdom';
 import { FRAMEWORKS } from '../compare.mjs';
 import { generatedNamePattern } from '../generated-names.mjs';
 import { normalize } from '../normalize.js';
-import { bundleHarness, capture, hostsIn, changelogSourceError, checkNames, compareCapture, comparisonFailures, differenceOf, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
+import { bundleHarness, capture, hostsIn, changelogSourceError, checkNames, compareCapture, comparisonFailures, differenceOf, englishPages, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
 import { styledAttributes } from '../styled-attributes.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
@@ -36,6 +36,9 @@ describe('known differences', () => {
       'field-adapter-markup', 'textarea-adapter-attributes', 'number-field-adapter-attributes', 'input-group-adapter-attributes', 'switch-adapter-attributes',
       'checkbox-adapter-attributes', 'radio-adapter-markup', 'select-adapter-attributes', 'slider-adapter-attributes', 'file-upload-adapter-labelledby',
       'chip-adapter-tone', 'secondary-nav-adapter-variant', 'spacer-vue-layout-attributes', 'center-vue-layout-attributes',
+      'collapsible-adapter-markup', 'container-vue-layout-attributes', 'inline-vue-layout-attributes', 'grid-vue-layout-attributes', 'columns-vue-layout-attributes',
+      'section-vue-layout-attributes', 'sidebar-adapter-layout-attributes', 'aspect-ratio-adapter-attributes', 'app-shell-adapter-side', 'mobile-top-bar-adapter-variant',
+      'portal-footer-adapter-markup', 'portal-layout-adapter-markup',
     ]);
     const [orientation, textField, serviceCard, , progress, iconButton] = known;
     const byId = (id) => known.find((item) => item.id === id);
@@ -62,6 +65,8 @@ describe('known differences', () => {
     expect(byId('chip-adapter-tone').source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: Chip \(React, Vue, Angular\) writes/);
     expect(byId('secondary-nav-adapter-variant')).toMatchObject({ component: 'secondary-nav', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-secondary-nav', attribute: 'data-variant' }] });
     expect(byId('secondary-nav-adapter-variant').source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: SecondaryNav: React, Vue and Angular write/);
+    expect(byId('mobile-top-bar-adapter-variant')).toMatchObject({ component: 'mobile-top-bar', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-mobile-top-bar', attribute: 'data-variant' }] });
+    expect(byId('mobile-top-bar-adapter-variant').source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: MobileTopBar: React, Vue and Angular always write/);
     // One or two adapters differ, or the vanilla result writes the attribute (data-hw-filled):
     // no ignore can express it, so these leave the structure aspect out of the groups that name them.
     const whole = {
@@ -77,6 +82,17 @@ describe('known differences', () => {
       'file-upload-adapter-labelledby': ['file-upload', /FileUpload: React and Vue write/],
       'spacer-vue-layout-attributes': ['spacer', /Spacer \(Vue\) always writes/],
       'center-vue-layout-attributes': ['center', /Center \(Vue\) always writes/],
+      'collapsible-adapter-markup': ['collapsible', /Collapsible \(React\) writes `aria-controls`/],
+      'container-vue-layout-attributes': ['container', /Container \(Vue\) always writes/],
+      'inline-vue-layout-attributes': ['inline', /Inline \(Vue\) always writes/],
+      'grid-vue-layout-attributes': ['grid', /Grid \(Vue\) always writes/],
+      'columns-vue-layout-attributes': ['columns', /Columns \(Vue\) always writes/],
+      'section-vue-layout-attributes': ['section', /Section \(Vue\) always writes/],
+      'sidebar-adapter-layout-attributes': ['sidebar', /Sidebar \(Vue\) always writes/],
+      'aspect-ratio-adapter-attributes': ['aspect-ratio', /AspectRatio \(Vue\) always writes/],
+      'app-shell-adapter-side': ['app-shell', /AppShell \(Vue\) always writes/],
+      'portal-footer-adapter-markup': ['portal-footer', /PortalFooter \(Angular\): `hw-portal-footer` always renders/],
+      'portal-layout-adapter-markup': ['portal-layout', /PortalHeader \(Angular\) always renders `div\.hw-portal-notice`/],
     };
     for (const [id, [component, text]] of Object.entries(whole)) {
       expect(byId(id)).toMatchObject({ component, aspect: 'structure', approvedBy: 'lead' });
@@ -429,6 +445,26 @@ describe('runEquivalence before the browser', () => {
     expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 1 (tabs) leaves the keyboard outcomes of tabs unchecked, but its groups name the checks tabs-nothing; a component with checks is bound to them, so remove the entry');
     expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 2 (combobox) matches no page: docs/components/ has no page combobox; remove it');
     expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 3 (accordion): the reference quotes a sentence that the README of the installed @hawiyah/vanilla does not hold');
+  });
+
+  // The full build reads the manifest, which has no page pending translation (no route until the
+  // Arabic page exists): an entry for such a page matches its English file of docs/components/.
+  it('matches an entry of keyboard-exceptions.json with an English page of docs/components/ that is pending translation', async () => {
+    const options = fixture({ groups: live('tabs', 'basic', { check: 'tabs-nothing' }), pages: [{ ...tabsPage(['basic']), liveGroups: [{ example: 'basic', check: 'tabs-nothing' }] }], components: interactive });
+    const docs = join(options.guideDir, '..', 'docs', 'components');
+    mkdirSync(docs, { recursive: true });
+    writeFileSync(join(docs, 'dialog.md'), '# Dialog\n');
+    writeFileSync(join(docs, 'README.md'), '# Contract\n');
+    mkdirSync(join(options.guideDir, 'node_modules', '@hawiyah', 'vanilla'), { recursive: true });
+    writeFileSync(join(options.guideDir, 'node_modules', '@hawiyah', 'vanilla', 'README.md'), 'Escape closes the dialog.\n');
+    const entry = (component) => ({ component, reason: 'Not yet checked.', reference: '@hawiyah/vanilla README.md: "Escape closes the dialog."', approvedBy: 'lead' });
+    const message = await runEquivalence({ ...options, keyboardExceptions: [entry('dialog'), entry('drawer')] }).then(() => '', (error) => error.message);
+    expect(message).toContain('HWE-CHECK docs/components/tabs.md:7: check=tabs-nothing has no scripts/equivalence/checks/tabs-nothing.mjs');
+    expect(message.split('\n').filter((line) => line.includes('(dialog)'))).toEqual([]);
+    expect(message).toContain('HWE-KEYS scripts/equivalence/keyboard-exceptions.json:1: entry 2 (drawer) matches no page: docs/components/ has no page drawer; remove it');
+    expect(englishPages(docs)).toEqual(['dialog']);
+    expect(englishPages(join(docs, 'none'))).toEqual([]);
+    rmSync(join(options.guideDir, '..', 'docs'), { recursive: true, force: true });
   });
 });
 

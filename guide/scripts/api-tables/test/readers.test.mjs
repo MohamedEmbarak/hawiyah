@@ -71,6 +71,19 @@ describe('Vue default reader', () => {
     expect(vueDefaults(readers.published.vue, 'Rating').problems).toEqual([]);
     expect(text(vueDefaults(readers.published.vue, 'Stack').defaults, 'collapseAt')).toBe("'md'");
   });
+  it('lets a later prop replace one of a spread, and reads a factory parameter from the call', () => {
+    // layout(name, className, tag = "div") declares { ...layoutProps, as: { type: String, default: tag } }:
+    // the shared layoutProps say 'div', the factory's own as replaces it with the tag of the call.
+    expect(vueDefaults(readers.published.vue, 'Section').defaults.get('as')).toMatchObject({ text: "'section'", computed: false, source: { file: '@hawiyah/vue/dist/layout.js', text: '"section"' } });
+    for (const name of ['Stack', 'Container', 'Spacer', 'Center']) {
+      expect(vueDefaults(readers.published.vue, name).defaults.get('as')).toMatchObject({ text: "'div'", computed: false, source: { file: '@hawiyah/vue/dist/layout.js', text: '"div"' } });
+    }
+    // Rating spreads ratingNumberProps (max 100) and then declares max: 5; DatePicker replaces
+    // the calendar of calendarProps ('gregory') with default: undefined.
+    expect(text(vueDefaults(readers.published.vue, 'Rating').defaults, 'max')).toBe('5');
+    expect(text(vueDefaults(readers.published.vue, 'Rating').defaults, 'defaultValue')).toBe('0');
+    expect(text(vueDefaults(readers.published.vue, 'DatePicker').defaults, 'calendar')).toBe('—');
+  });
 });
 
 describe('Angular default reader', () => {

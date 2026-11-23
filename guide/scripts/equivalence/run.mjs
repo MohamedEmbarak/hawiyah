@@ -365,6 +365,12 @@ export function unmatchedHosts(hosts, { groups, compared, matched, whole, pageEx
   return out;
 }
 
+/** The ids of the English pages of a directory of component pages (`<id>.md`; not `<id>.ar.md` or README.md). */
+export function englishPages(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).flatMap((name) => /^([a-z0-9-]+)\.md$/.exec(name)?.[1] ?? []);
+}
+
 /** The documented difference a group names, or a failure line. */
 export function differenceOf(group, entries) {
   if (group.differences === undefined) return { entry: null };
@@ -938,10 +944,12 @@ export async function runEquivalence(options) {
   // @hawiyah/vanilla (keys.mjs). One definition for HWE-CHECK and HWE-KEYS (G19 of the 5a fix round).
   const controllerScope = options.keyboardScope ?? await keyboardScope({ guideDir, componentsFile });
   // An entry of keyboard-exceptions.json that leaves a component unchecked must match a
-  // page: one of the content manifest, or one that check:page names (knownPages).
+  // page: one of the content manifest or an English page of docs/components/ (a page
+  // pending translation has no route and is not in the manifest), or one that check:page
+  // names (knownPages).
   const keys = keyboardRule({
     pages: keyPages, checks, scope: controllerScope, exceptions: options.keyboardExceptions ?? readKeyboardExceptions(),
-    knownPages: options.knownPages ?? (manifest.pages ?? []).map((page) => page.id),
+    knownPages: options.knownPages ?? [...(manifest.pages ?? []).map((page) => page.id), ...englishPages(resolve(guideDir, '..', 'docs', 'components'))],
     referenceError: (reference) => documentReferenceError(reference, { readme: installedReadme(guideDir) }),
   });
   if (options.keys !== false) {

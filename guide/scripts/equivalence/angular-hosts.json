@@ -46,5 +46,13 @@
     "reason": "@hawiyah/angular renders the chip on its host element hw-chip, which carries the class hw-chip; the vanilla markup, React and Vue render span.hw-chip.",
     "reference": "@hawiyah/angular README.md: \"`hw-chip`; the host is the chip (`hw-chip.hw-chip`)\"",
     "approvedBy": "lead"
+  },
+  {
+    "component": "notification-list",
+    "element": "hw-badge",
+    "tag": "span",
+    "reason": "The NotificationList of @hawiyah/angular renders the badge of an unread item as an hw-badge host element with the class hw-badge; the vanilla markup, React and Vue render span.hw-badge.",
+    "reference": "@hawiyah/angular README.md: \"The host is the badge (`hw-badge.hw-badge`): class, id and attributes written on it are on the styled element.\"",
+    "approvedBy": "lead"
   }
 ]

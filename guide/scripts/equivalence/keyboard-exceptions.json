@@ -4,5 +4,11 @@
     "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of FileUpload documents the native file input and the native remove buttons of the list, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
     "reference": "@hawiyah/react README.md: \"FileUpload is a native file picker.\"",
     "approvedBy": "lead"
+  },
+  {
+    "component": "app-shell",
+    "reason": "The guide launches with keyboard outcome checks for Tabs only (the owner's decision of 22 November 2026). The keyboard table of AppShell documents the native skip link and the main region it focuses, as the installed packages describe them; its outcomes are not yet verified by the guide's checks.",
+    "reference": "@hawiyah/react README.md: \"The skip link, whose text is the required `skipLabel`, focuses main.\"",
+    "approvedBy": "lead"
   }
 ]

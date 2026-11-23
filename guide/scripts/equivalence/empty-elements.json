@@ -33,5 +33,12 @@
     "reason": "@hawiyah/angular 0.3.0 always renders both span.hw-input-addon elements of hw-input-group, empty when no [hwPrefix] or [hwSuffix] content is projected; React and Vue render an addon only when it is given, and the stylesheet hides an empty addon.",
     "reference": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: InputGroup (Angular) always writes `data-size` (`md` when no size is given) on `.hw-input-group` and always renders both `span.hw-input-addon` elements, empty when no `[hwPrefix]` or `[hwSuffix]` content is projected",
     "approvedBy": "lead"
+  },
+  {
+    "component": "site-verification",
+    "class": "hw-verification-mark",
+    "reason": "@hawiyah/angular 0.3.0 always renders span.hw-verification-mark of hw-site-verification, empty when no [hwVerificationMark] content is projected; React and Vue render the region only with a mark, and the stylesheet hides it while it is empty.",
+    "reference": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: SiteVerification (Angular): `hw-site-verification` always renders `span.hw-verification-mark`, empty when no `[hwVerificationMark]` content is projected",
+    "approvedBy": "lead"
   }
 ]

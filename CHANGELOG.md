@@ -1157,6 +1157,120 @@ built type declarations of each package.
   which the stylesheet does not select on `.hw-center`; React writes the two
   attributes only when the props are given, and Angular and the vanilla markup
   never write them on Center.
+- Collapsible (React) writes `aria-controls` on the `summary` and the `id` it
+  names on the content element; Collapsible (Angular) writes the class
+  `hw-collapsible-trigger` on the `summary` and `hw-collapsible-content` on the
+  content element. Vue and the vanilla markup write neither, and the stylesheet
+  styles the `summary` and the content element of `.hw-collapsible` with or
+  without the two classes. The appearance and the accessibility tree are the
+  same.
+- Container (Vue) always writes `data-collapse-at="md"` and `data-side="start"`,
+  which the stylesheet does not select on `.hw-container`; React writes the two
+  attributes only when the props are given, and Angular and the vanilla markup
+  never write them on Container. The appearance and the accessibility tree are
+  the same.
+- Inline (Vue) always writes `data-collapse-at="md"` and `data-side="start"`,
+  which the stylesheet does not select on `.hw-inline`; React writes the two
+  attributes only when the props are given, and Angular and the vanilla markup
+  never write them on Inline. The appearance and the accessibility tree are the
+  same.
+- Grid (Vue) always writes `data-collapse-at="md"` and `data-side="start"`,
+  which the stylesheet does not select on `.hw-grid`; React writes the two
+  attributes only when the props are given, and Angular and the vanilla markup
+  never write them on Grid. The appearance and the accessibility tree are the
+  same.
+- Columns (Vue) always writes `data-collapse-at="md"` and `data-side="start"`,
+  which the stylesheet does not select on `.hw-columns`; React writes the two
+  attributes only when the props are given, and Angular and the vanilla markup
+  never write them on Columns. The appearance and the accessibility tree are the
+  same.
+- Section (Vue) always writes `data-collapse-at="md"` and `data-side="start"`,
+  which the stylesheet does not select on `.hw-section`; React writes the two
+  attributes only when the props are given, and Angular and the vanilla markup
+  never write them on Section. The appearance and the accessibility tree are the
+  same.
+- Sidebar (Vue) always writes `data-collapse-at="md"` and `data-side="start"`,
+  and Sidebar (Angular) always writes them on `hw-sidebar`, the initial values of
+  its `side` and `collapseAt` inputs; React writes the two attributes only when
+  the props are given, and the vanilla markup only when they are written. The
+  stylesheet treats the absent attributes of `.hw-sidebar` as `start` and `md`,
+  so the appearance and the accessibility tree are the same.
+- AspectRatio (Vue) always writes `data-collapse-at="md"` and `data-side="start"`,
+  which the stylesheet does not select on `.hw-aspect-ratio`; React writes the
+  two attributes only when the props are given, and Angular and the vanilla
+  markup never write them on AspectRatio. AspectRatio (Angular) always writes
+  `--hw-layout-ratio: 1.7777777777777777` in the `style` attribute of
+  `hw-aspect-ratio` when no `ratio` is given, because its `ratio` input is
+  initialised to 16 / 9; React, Vue and the vanilla markup write the property
+  only when a ratio is given, and the default of the stylesheet (1.777777778)
+  gives the same box. The appearance and the accessibility tree are the same.
+- AppShell (Vue) always writes `data-collapse-at="md"` and `data-side="start"`
+  on `.hw-app-shell`, and AppShell (Angular) always writes `data-side="start"` on
+  `hw-app-shell`, the initial value of its `side` input; the stylesheet selects
+  only `data-side="end"` on `.hw-app-shell` and no `data-collapse-at`. React
+  declares no `side` prop and writes neither attribute (a `data-side` attribute
+  passes through to the root), and the vanilla markup writes `data-side` only for
+  `end`. The appearance and the accessibility tree are the same.
+- PageHeader places content that is not a title, description, breadcrumb or
+  action differently in each adapter: React renders its children inside the
+  title block after the description, Vue renders the default slot after the
+  title row as a direct child of the header, and Angular renders all content
+  not marked `hwBreadcrumb` in the actions region. The appearance and the order
+  of the accessibility tree therefore differ when such content is given.
+- PageHeader (Angular) always renders `div.hw-page-header-actions`, empty when
+  no content is projected; React and Vue render it only when actions are given.
+  The stylesheet has no rule for an empty actions region, so it stays a flex
+  item of `.hw-page-header-main` and the row keeps one gap after the title
+  block; the accessibility tree is the same.
+- MobileTopBar: React, Vue and Angular always write `data-variant` on the
+  header, including `data-variant="internal"` when no variant is given; the
+  vanilla markup and the stylesheet use `data-variant` only for `main`. The
+  appearance and the accessibility tree are the same.
+- MobileTopBar (Angular) always renders `div.hw-mobile-top-bar-leading` and
+  `div.hw-mobile-top-bar-actions`, empty when nothing is projected or no
+  `backHref` is set, and the stylesheet hides an empty one; React and Vue render
+  them only when they have content. MobileTopBar (Angular) has no default
+  content projection, so content not marked `hwTopBarLeading` or
+  `hwTopBarActions` is not rendered, where React children and the Vue default
+  slot render after the actions. Without such content the appearance and the
+  accessibility tree are the same.
+- SiteVerification (Angular): `hw-site-verification` always renders
+  `span.hw-verification-mark`, empty when no `[hwVerificationMark]` content is
+  projected; React and Vue render the region only with a mark, and the
+  stylesheet hides it while it is empty. The appearance and the accessibility
+  tree are the same.
+- SiteVerification: in light mode the registration link
+  (`.hw-verification-registration a`, `--hw-color-primary-text`, #1B8354) has a
+  contrast ratio of 4.32:1 against the muted surface of `.hw-site-verification`
+  (#F3F4F6) in the default theme, below the 4.5:1 that WCAG 2.2 AA requires for
+  its text (14 px, normal weight); in dark mode it measures 6.43:1 (#54C08A on
+  #1F2A37). The vanilla markup, React, Vue and Angular render the same link, so
+  the appearance and the accessibility tree are the same in the four.
+- PortalFooter (Angular): `hw-portal-footer` always renders
+  `div.hw-portal-footer-brand` with an empty `div.hw-portal-footer-brand-marks`,
+  an empty `div.hw-portal-footer-extra` and `div.hw-portal-footer-bottom` with an
+  empty `div.hw-portal-footer-partners` when nothing is given or projected, and
+  keeps the support section with the `hidden` attribute as its README documents;
+  React and Vue render each region only with content. The stylesheet hides the
+  empty regions, so the appearance and the accessibility tree are the same.
+- PortalFooter (Vue): the links are written without the class `hw-link` that
+  the React and Angular footers write. The footer rules select the links by
+  their container, so the appearance and the accessibility tree are the same.
+- PortalFooter: a text `brand` renders as plain text in React and in a `strong`
+  element in Vue and Angular, on which the stylesheet sets no weight, so the
+  brand is bold in Vue and Angular only and the accessibility tree has a
+  `strong` element there in place of the text.
+- PortalHeader (Angular) always renders `div.hw-portal-header-actions`, empty
+  when no content is projected; React and Vue render it only when actions are
+  given. The stylesheet hides it while it is empty, so the appearance and the
+  accessibility tree are the same.
+- PortalHeader (Vue, Angular) writes a text `brand` inside a `span` in the brand
+  link, where React writes the text directly in the link. The appearance and the
+  accessibility tree are the same.
+- SecondaryNav: the vanilla recipe in the `@hawiyah/vanilla` `PORTAL.md` writes
+  each link text directly in its `a`, where React, Vue and Angular wrap it in a
+  `span`. The stylesheet does not select that `span`, so the appearance and the
+  accessibility tree are the same.
 
 #### Left for a later release
 

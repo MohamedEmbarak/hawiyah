@@ -182,5 +182,107 @@
     "description": "@hawiyah/vue 0.3.0 always writes data-collapse-at and data-side on Center, which React writes only when the props are given and Angular and the vanilla markup never write on Center. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects the layout primitives of @hawiyah/vue.",
     "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Center (Vue) always writes `data-collapse-at=\"md\"` and `data-side=\"start\"`",
     "approvedBy": "lead"
+  },
+  {
+    "id": "collapsible-adapter-markup",
+    "component": "collapsible",
+    "aspect": "structure",
+    "description": "In 0.3.0 React writes aria-controls on the summary of Collapsible and the id it names on the content element, and Angular writes the classes hw-collapsible-trigger and hw-collapsible-content on the two elements; the vanilla markup and Vue write neither. The vanilla result agrees with Vue, so no attribute can be ignored in the comparison with it, and the structure aspect is left out of the groups that name this entry. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Collapsible (React) writes `aria-controls` on the `summary` and the `id` it names on the content element",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "container-vue-layout-attributes",
+    "component": "container",
+    "aspect": "structure",
+    "description": "@hawiyah/vue 0.3.0 always writes data-collapse-at and data-side on Container, which React writes only when the props are given and Angular and the vanilla markup never write on Container; the stylesheet does not select them on .hw-container. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects the layout primitives of @hawiyah/vue.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Container (Vue) always writes `data-collapse-at=\"md\"` and `data-side=\"start\"`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "inline-vue-layout-attributes",
+    "component": "inline",
+    "aspect": "structure",
+    "description": "@hawiyah/vue 0.3.0 always writes data-collapse-at and data-side on Inline, which React writes only when the props are given and Angular and the vanilla markup never write on Inline; the stylesheet does not select them on .hw-inline. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects the layout primitives of @hawiyah/vue.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Inline (Vue) always writes `data-collapse-at=\"md\"` and `data-side=\"start\"`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "grid-vue-layout-attributes",
+    "component": "grid",
+    "aspect": "structure",
+    "description": "@hawiyah/vue 0.3.0 always writes data-collapse-at and data-side on Grid, which React writes only when the props are given and Angular and the vanilla markup never write on Grid; the stylesheet does not select them on .hw-grid. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects the layout primitives of @hawiyah/vue.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Grid (Vue) always writes `data-collapse-at=\"md\"` and `data-side=\"start\"`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "columns-vue-layout-attributes",
+    "component": "columns",
+    "aspect": "structure",
+    "description": "@hawiyah/vue 0.3.0 always writes data-collapse-at and data-side on Columns, which React writes only when the props are given and Angular and the vanilla markup never write on Columns; the stylesheet does not select them on .hw-columns. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects the layout primitives of @hawiyah/vue.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Columns (Vue) always writes `data-collapse-at=\"md\"` and `data-side=\"start\"`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "section-vue-layout-attributes",
+    "component": "section",
+    "aspect": "structure",
+    "description": "@hawiyah/vue 0.3.0 always writes data-collapse-at and data-side on Section, which React writes only when the props are given and Angular and the vanilla markup never write on Section; the stylesheet does not select them on .hw-section. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release that corrects the layout primitives of @hawiyah/vue.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Section (Vue) always writes `data-collapse-at=\"md\"` and `data-side=\"start\"`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "sidebar-adapter-layout-attributes",
+    "component": "sidebar",
+    "aspect": "structure",
+    "description": "In 0.3.0 @hawiyah/vue always writes data-collapse-at and data-side on Sidebar, and @hawiyah/angular always writes them on hw-sidebar with the initial values start and md of its inputs, where React writes them only when the props are given and the vanilla markup only when they are written; the stylesheet treats the absent attributes as start and md. Two adapters differ from the vanilla result, so no attribute can be ignored, and the structure aspect is left out of the groups that name this entry. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Sidebar (Vue) always writes `data-collapse-at=\"md\"` and `data-side=\"start\"`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "aspect-ratio-adapter-attributes",
+    "component": "aspect-ratio",
+    "aspect": "structure",
+    "description": "In 0.3.0 @hawiyah/vue always writes data-collapse-at and data-side on AspectRatio, and @hawiyah/angular writes --hw-layout-ratio: 1.7777777777777777 in the style attribute of hw-aspect-ratio when no ratio is given (the same Known defects entry); React and the vanilla markup write neither, and the stylesheet default gives the same box. A difference of one adapter alone cannot be ignored attribute by attribute, so the structure aspect is left out of the groups that name this entry. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: AspectRatio (Vue) always writes `data-collapse-at=\"md\"` and `data-side=\"start\"`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "app-shell-adapter-side",
+    "component": "app-shell",
+    "aspect": "structure",
+    "description": "In 0.3.0 @hawiyah/vue always writes data-collapse-at and data-side on AppShell, and @hawiyah/angular always writes data-side=\"start\" on hw-app-shell, where React and the vanilla markup of the start side write neither; the stylesheet selects only data-side=\"end\" on .hw-app-shell. Two adapters differ from the vanilla result, so no attribute can be ignored, and the structure aspect is left out of the groups that name this entry. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: AppShell (Vue) always writes `data-collapse-at=\"md\"` and `data-side=\"start\"`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "mobile-top-bar-adapter-variant",
+    "component": "mobile-top-bar",
+    "aspect": "structure",
+    "ignore": [
+      {
+        "class": "hw-mobile-top-bar",
+        "attribute": "data-variant"
+      }
+    ],
+    "description": "In 0.3.0 React, Vue and Angular write data-variant=\"internal\" on the header of MobileTopBar when no variant is given, where the vanilla markup of the internal appearance writes no data-variant and the stylesheet selects only data-variant=\"main\"; the appearance and the accessibility tree are the same. Only data-variant on .hw-mobile-top-bar is left out of the comparison with the vanilla result, and the three framework results are compared with each other in full; the groups of the main variant, whose vanilla markup writes the attribute, do not name this entry. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: MobileTopBar: React, Vue and Angular always write `data-variant` on the header, including `data-variant=\"internal\"` when no variant is given",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "portal-footer-adapter-markup",
+    "component": "portal-footer",
+    "aspect": "structure",
+    "description": "In 0.3.0 hw-portal-footer always renders the brand and bottom wrappers with their empty mark and partner regions, an empty extra region and the hidden support section, and the Vue PortalFooter writes its links without the class hw-link (a second entry of the same Known defects list); React writes neither difference. The wrappers are not empty and the class is missing on the element itself, so neither empty-elements.json nor ignore can express them, and the structure aspect is left out of the groups that name this entry. The accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: PortalFooter (Angular): `hw-portal-footer` always renders `div.hw-portal-footer-brand` with an empty `div.hw-portal-footer-brand-marks`",
+    "approvedBy": "lead"
+  },
+  {
+    "id": "portal-layout-adapter-markup",
+    "component": "portal-layout",
+    "aspect": "structure",
+    "description": "In 0.3.0 the header and footer that PortalLayout renders differ by adapter: hw-portal-header always renders the notice region, Vue and Angular write a text brand inside a span, Vue writes the header and footer links without the class hw-link, the footer brand is plain text in React and a strong element in Vue and Angular, and only the vanilla header carries the data-hw-portal-toggle and data-hw-portal-navigation hooks of @hawiyah/vanilla (entries of the same Known defects list and the PORTAL.md recipe). No single vanilla markup equals the three, so the structure aspect is left out of the groups that name this entry; the accessibility tree and the rendering are compared in full. Removed when the guide pins a release in which the four results agree.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: PortalHeader (Angular) always renders `div.hw-portal-notice`, empty when no `[hwPortalNotice]` content is projected",
+    "approvedBy": "lead"
   }
 ]

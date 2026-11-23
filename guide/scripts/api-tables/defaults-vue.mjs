@@ -3,7 +3,10 @@
 // default: 'primary' }, loading: Boolean } })`. A component made by a local
 // factory (`textControl('input', 'hw-input', 'HwTextField')`) is the
 // defineComponent object the factory returns; spread props objects
-// (`...decorationProps`) are followed to their declaration in the package.
+// (`...decorationProps`) are followed to their declaration in the package. A
+// later property replaces an earlier one, as in the object, and a default that
+// names a parameter of the factory is the argument of the call, or the
+// parameter's own default (`layout("HwSection", "hw-section", "section")`).
 //   - `default: <literal>` is the default in the written form;
 //   - a Boolean prop (alone or in a type array) without `default` is `false`: Vue
 //     casts an absent Boolean prop to false;
@@ -46,15 +49,16 @@ export function optionsOf(published, module, node) {
     const factory = resolveLocal(published, module, init.expression.text);
     const fn = factory && functionOf(ts, factory.node);
     if (!fn) return null;
+    const withBindings = (options) => (options ? { ...options, factory: { module: factory.module, fn, bindings: parameterBindings(ts, fn, init, module, factory.module) } } : null);
     for (const expression of returnedExpressions(ts, fn)) {
-      if (isDefineComponent(ts, expression)) return optionsOf(published, factory.module, expression);
+      if (isDefineComponent(ts, expression)) return withBindings(optionsOf(published, factory.module, expression));
       if (ts.isIdentifier(expression) && fn.body && ts.isBlock(fn.body)) {
         // const component = defineComponent({ ... }); return component;
         for (const statement of fn.body.statements) {
           if (!ts.isVariableStatement(statement)) continue;
           for (const declaration of statement.declarationList.declarations) {
             if (ts.isIdentifier(declaration.name) && declaration.name.text === expression.text && isDefineComponent(ts, declaration.initializer)) {
-              return optionsOf(published, factory.module, declaration.initializer);
+              return withBindings(optionsOf(published, factory.module, declaration.initializer));
             }
           }
         }
@@ -62,6 +66,31 @@ export function optionsOf(published, module, node) {
     }
   }
   return null;
+}
+
+/**
+ * The value of each parameter of a factory in one call of it: the argument of the
+ * call, or the parameter's own default when the call passes none
+ * (`layout("HwSection", "hw-section", "section")` binds tag to "section";
+ * `layout("HwStack", "hw-stack")` binds it to the default of `tag = "div"`).
+ * Returns Map<name, { node, module }>.
+ */
+function parameterBindings(ts, fn, call, callModule, factoryModule) {
+  const bindings = new Map();
+  fn.parameters.forEach((parameter, index) => {
+    if (!ts.isIdentifier(parameter.name) || parameter.dotDotDotToken) return;
+    const argument = call.arguments[index];
+    if (argument && !ts.isSpreadElement(argument)) bindings.set(parameter.name.text, { node: argument, module: callModule });
+    else if (!argument && parameter.initializer) bindings.set(parameter.name.text, { node: parameter.initializer, module: factoryModule });
+  });
+  return bindings;
+}
+
+/** The expression a factory parameter named in a default stands for, or null (the default is not a parameter of the factory). */
+function boundValue(ts, factory, module, node) {
+  if (!factory || !ts.isIdentifier(node) || module !== factory.module) return null;
+  if (node.getStart() < factory.fn.getStart() || node.getEnd() > factory.fn.getEnd()) return null;
+  return factory.bindings.get(node.text) ?? null;
 }
 
 function propEntries(published, module, expression, seen = new Set()) {
@@ -126,10 +155,12 @@ export function vueDefaults(published, exportName) {
       const type = propertyOf(ts, value, 'type');
       if (required && ts.isPropertyAssignment(required) && required.initializer.kind === ts.SyntaxKind.TrueKeyword) text = EM_DASH;
       else if (fallback && ts.isPropertyAssignment(fallback)) {
-        const literal = literalOf(ts, fallback.initializer);
+        // A default that names a parameter of the factory is the value of that parameter in this call.
+        const bound = boundValue(ts, options.factory, module, fallback.initializer);
+        const literal = literalOf(ts, bound ? bound.node : fallback.initializer);
         text = literal ?? EM_DASH;
         computed = literal === null && !(ts.isIdentifier(fallback.initializer) && fallback.initializer.text === 'undefined');
-        source = sourceOf(published, module, fallback);
+        source = bound ? sourceOf(published, bound.module, bound.node) : sourceOf(published, module, fallback);
       } else if (type && ts.isPropertyAssignment(type) && includesBoolean(ts, type.initializer)) {
         text = 'false';
         source = sourceOf(published, module, value.parent);
@@ -138,7 +169,9 @@ export function vueDefaults(published, exportName) {
       text = 'false';
       source = sourceOf(published, module, value.parent);
     }
-    if (!defaults.has(name)) defaults.set(name, { text, computed, source });
+    // A later property of the props object replaces an earlier one, also one of a spread
+    // (`{ ...layoutProps, as: { type: String, default: tag } }`), as in the object itself.
+    defaults.set(name, { text, computed, source });
   }
   return { defaults, problems };
 }

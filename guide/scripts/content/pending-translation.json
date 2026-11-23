@@ -33,6 +33,23 @@
     "breadcrumb",
     "secondary-nav",
     "spacer",
-    "center"
+    "center",
+    "collapsible",
+    "timeline",
+    "notification-list",
+    "service-details",
+    "container",
+    "inline",
+    "grid",
+    "columns",
+    "sidebar",
+    "aspect-ratio",
+    "section",
+    "page-header",
+    "mobile-top-bar",
+    "app-shell",
+    "site-verification",
+    "portal-footer",
+    "portal-layout"
   ]
 }
