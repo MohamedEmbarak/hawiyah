@@ -187,6 +187,35 @@ describe('checkParity', () => {
       expect(par8({ vanilla: arabicVanilla, react: '<><Avatar name="رنا كمال" /><TextField label="الاسم" name="applicant" /></>' }, english)).toEqual([]);
     });
 
+    // The Arabic pages of Notification list, Service details and Site verification: a bound
+    // value or an Angular template written over several lines was read line by line, a Vue
+    // slot and an interpolation as text, and a host name as a phrase to translate.
+    it('reads a bound value and an Angular template written over several lines as one expression and one template', () => {
+      const items = (title) => `[\n    {\n      title: '${title}',\n      read: true,\n    },\n  ]`;
+      expect(par8({ vue: `<NotificationList\n  label="الإشعارات"\n  :items="${items('استلام الطلب')}"\n/>`, angular: `<hw-notification-list\n  label="الإشعارات"\n  [items]="${items('استلام الطلب')}"\n/>` })).toEqual([]);
+      expect(par8({ vue: `<NotificationList\n  label="الإشعارات"\n  :items="${items('Request received')}"\n/>`, angular: `<hw-notification-list\n  label="Notifications"\n  [items]="${items('استلام الطلب')}"\n/>` })).toEqual([
+        'live block "primary" (vue) title has no Arabic script: "Request received"',
+        'live block "primary" (angular) label has no Arabic script: "Notifications"',
+      ]);
+    });
+
+    it('reads a Vue slot as an expression and an interpolation as code, and the text around it as reader text', () => {
+      const slot = (text) => `<ServiceDetails title="حالة المستند">\n  <template #requirement="{ item, index }">\n    <a class="hw-link" :href="index === 0 ? '/a' : '/b'">${text}</a>\n  </template>\n</ServiceDetails>`;
+      expect(par8({ vue: slot('{{ item }}'), angular: '<p>@for (item of items; track item) {<span>{{ item }}</span>}</p>' })).toEqual([]);
+      expect(par8({ vue: slot('{{ item }} requests') })).toEqual(['live block "primary" (vue) text has no Arabic script: "{{ item }} requests"']);
+    });
+
+    it('reads markup text that is one host name as Latin by nature', () => {
+      expect(par8({ vanilla: `${blocks.vanilla}<h2>اسم النطاق: <bdi>portal.example.test</bdi></h2>` })).toEqual([]);
+      expect(par8({ vanilla: `${blocks.vanilla}<h2>اسم النطاق: <bdi>Portal example</bdi></h2>` })).toEqual(['live block "primary" (vanilla) text has no Arabic script: "Portal example"']);
+    });
+
+    it('reads the value of a component as a token where the group writes it as the data-hw-value of an item', () => {
+      const vanilla = '<button class="hw-tab" type="button" role="tab" data-hw-value="overview">نظرة عامة</button>';
+      expect(par8({ vanilla, angular: '<hw-tabs label="تفاصيل الطلب"><hw-tab value="overview" label="نظرة عامة"><p>الطلب قيد المراجعة.</p></hw-tab></hw-tabs>' })).toEqual([]);
+      expect(par8({ angular: '<hw-tabs label="تفاصيل الطلب"><hw-tab value="overview" label="نظرة عامة"><p>الطلب قيد المراجعة.</p></hw-tab></hw-tabs>' })).toEqual(['live block "primary" (angular) value has no Arabic script: "overview"']);
+    });
+
     it('reads the text of a textarea as reader text that differs between the pages (HWC-PAR4)', () => {
       expect(liveTokenDifference('html', '<textarea class="hw-textarea" readonly>The request was received.</textarea>', '<textarea class="hw-textarea" readonly>استُلم الطلب.</textarea>')).toBe(null);
       expect(par8({ vanilla: `${blocks.vanilla}<textarea class="hw-textarea" readonly>The request was received.</textarea>` })).toEqual(['live block "primary" (vanilla) text has no Arabic script: "The request was received."']);

@@ -33,9 +33,10 @@
 //                       name of vocabulary-allow.json (HTML, ARIA, DOM, CSS, Vue
 //                       and Angular template syntax, each with its specification);
 //   a literal           a value of a member type or of an enumerated attribute of
-//                       the component ('primary', aria-busy="true"); the value of
-//                       data-hw is a hook that enhance() registers, the value of
-//                       role an ARIA role.
+//                       the component ('primary', aria-busy="true"), or a value that
+//                       a published module compares a data-* attribute with
+//                       (data-hw-multiple="true"); the value of data-hw is a hook
+//                       that enhance() registers, the value of role an ARIA role.
 // Framework scope (leadAmendments A9): a paragraph under a heading (h3 or h4, in any
 // section) whose text is a framework name (JavaScript, React, Vue, Angular), or whose text names a framework, is scoped to
 // those frameworks: a member or export must belong to one of them. A name that
@@ -703,6 +704,22 @@ export function markupTerms(code) {
 
 const camel = (name) => name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 
+/**
+ * The values that a published module compares a data-* attribute with, as
+ * dataset.<camelName> or getAttribute('<name>') followed by === or !== and a string
+ * literal (root.dataset.hwMultiple === 'true' gives "true" for data-hw-multiple).
+ */
+export function comparedValues(vocab, attribute) {
+  vocab.compared ??= new Map();
+  if (vocab.compared.has(attribute)) return vocab.compared.get(attribute);
+  const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const read = String.raw`(?:dataset\.${escape(camel(attribute.slice(5)))}(?![\w$])|getAttribute\(['"]${escape(attribute)}['"]\))`;
+  const values = new Set();
+  for (const match of vocab.moduleText.matchAll(new RegExp(String.raw`${read}\s*[!=]==?\s*(?:'([^']*)'|"([^"]*)")`, 'g'))) values.add(match[1] ?? match[2]);
+  vocab.compared.set(attribute, values);
+  return values;
+}
+
 /** Whether a data-* or aria-* attribute is selected by the stylesheet or occurs in a published module. */
 function knownAttribute(vocab, name) {
   if (vocab.stylesheetAttributes.has(name)) return 'the stylesheet';
@@ -728,6 +745,8 @@ export function judge(vocab, term, where) {
     if (listed?.includes(value)) return null;
     // name="value": only the values of that attribute or member count (G4 of the 5a fix round).
     if (attribute && enumeratedSets(vocab, where.vocabulary, attribute).some((set) => set.has(value))) return null;
+    // A value that a published module compares the data-* attribute with (dataset.hwMultiple === 'true').
+    if (attribute?.startsWith('data-') && comparedValues(vocab, attribute).has(value)) return null;
     if (!attribute && where.vocabulary.values.has(value)) return null;
     return `"${value}" is not a value of a member type or of an enumerated attribute of this component${attribute ? ` (attribute ${attribute})` : ''}`;
   };
@@ -833,8 +852,10 @@ function judgeName(vocab, term, where, helpers) {
 /**
  * The enumerated values of an attribute or member: the values the stylesheet selects
  * it with, the values of the contract row or of the member of that name, and for a
- * vanilla hook data-hw-<name> the values of the member <name> or of a member that
- * starts with it (data-hw-activation and activationMode). Empty values do not count.
+ * vanilla hook data-hw-<name> the values of the member <name> or, when no adapter has a
+ * member <name>, of a member that starts with it (data-hw-activation and activationMode;
+ * data-hw-sort names the key of a column, not the member sortDirection, since the
+ * controller has its own member sort). Empty values do not count.
  */
 function enumeratedSets(vocab, vocabulary, attribute) {
   const nonEmpty = (set) => new Set([...(set ?? [])].filter((value) => value !== ''));
@@ -842,7 +863,8 @@ function enumeratedSets(vocab, vocabulary, attribute) {
   const hook = /^data-hw-([a-z-]+)$/.exec(attribute)?.[1];
   if (hook) {
     const member = camel(hook);
-    for (const [name, values] of vocabulary.attributeValues) if (name === member || name.startsWith(member)) sets.push(nonEmpty(values));
+    const exact = FRAMEWORKS.some((framework) => vocabulary.names[framework].has(member));
+    for (const [name, values] of vocabulary.attributeValues) if (name === member || (!exact && name.startsWith(member))) sets.push(nonEmpty(values));
   }
   return sets.filter((set) => set.size > 0);
 }
@@ -851,9 +873,10 @@ function enumeratedSets(vocab, vocabulary, attribute) {
  * The value of a data-* attribute of an html block: when the attribute has an
  * enumerated set (the values the stylesheet selects it with, the values of the
  * contract row, or for a vanilla hook data-hw-<name> the literal values of the member
- * <name>, or a member that starts with it, as data-hw-activation and activationMode),
+ * <name>, or, when no adapter has that member, of a member that starts with it, as
+ * data-hw-activation and activationMode),
  * the value is one of them; an attribute without such a set takes any value (a tab's
- * data-hw-value, an overflow label).
+ * data-hw-value, an overflow label, the column key of data-hw-sort).
  */
 function dataValueProblem(vocab, vocabulary, term) {
   const sets = enumeratedSets(vocab, vocabulary, term.name);

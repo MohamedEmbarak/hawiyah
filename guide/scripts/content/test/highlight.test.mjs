@@ -52,6 +52,24 @@ describe('tokens', () => {
     expect(list.find((token) => token.text === 'Go').kind).toBe('text');
   });
 
+  // The Arabic page of Notification list: the highlighter breaks a string at each line end, so
+  // a bound value and an Angular template over several lines were read one string per line.
+  it('keeps a string written over several lines as one token, and an Angular template over several lines as HTML', () => {
+    const bound = tokens('vue', '<NotificationList\n  :items="[\n    { read: true },\n  ]"\n/>');
+    expect(bound.filter((token) => token.kind === 'string').map((token) => token.text)).toEqual(['"[\n    { read: true },\n  ]"']);
+    const template = tokens('ts', 'template: `<hw-notification-list\n  label="Notifications"\n/>`');
+    expect(template.map((token) => [token.kind, token.text])).toEqual([
+      ['code', 'template'], ['punctuation', ':'], ['punctuation', '`'], ['punctuation', '<'], ['tag', 'hw-notification-list'],
+      ['attribute', 'label'], ['punctuation', '='], ['string', '"Notifications"'], ['punctuation', '/>'], ['punctuation', '`'],
+    ]);
+  });
+
+  it('reads an Angular template that closes a tag with /> as a Vue template does', () => {
+    const list = tokens('ts', 'template: `<div class="hw-stack">\n  <hw-divider tone="primary" />\n  <hw-divider tone="gold" />\n</div>`');
+    expect(list.filter((token) => token.kind === 'text')).toEqual([]);
+    expect(list.filter((token) => token.kind === 'tag').map((token) => token.text)).toEqual(['div', 'hw-divider', 'hw-divider', 'div']);
+  });
+
   it('marks JSX text as text', () => {
     expect(tokens('tsx', '<Button>Continue now</Button>').filter((token) => token.kind === 'text')).toEqual([{ kind: 'text', text: 'Continue now' }]);
   });

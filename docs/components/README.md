@@ -319,11 +319,17 @@ exist in the installed packages:
 - A quoted literal is a value of a member type or of an enumerated attribute of
   the component. The value of an attribute or member (`aria-busy="true"`,
   `[role="tab"]`, `orientation="vertical"`) is a value of that attribute or
-  member only; the value of a `data-*` attribute of an `html` block is one of
-  the values the stylesheet selects it with, of its contract row, or of the
-  member a `data-hw-<name>` hook configures, when such values exist. The
-  expression of a binding (`[loading]="saving"`) is application code and is not
-  judged.
+  member only, or, for a `data-*` attribute, a value that a published module
+  compares it with (`data-hw-multiple="true"`, which `createToggleGroup` reads as
+  `dataset.hwMultiple === 'true'`); the value of a `data-*` attribute of an `html`
+  block is one of the values the stylesheet selects it with, of its contract row,
+  or of the member a `data-hw-<name>` hook configures, when such values exist. A
+  hook configures the member of its name (`data-hw-overflow` and `overflow`) or,
+  when no adapter has a member of that name, a member whose name starts with it
+  (`data-hw-activation` and `activationMode`), so `data-hw-sort`, which holds the
+  key of a column, takes the values of no member: the DataTable controller has a
+  member `sort`. The expression of a binding (`[loading]="saving"`) is application
+  code and is not judged.
 - The names of the rows of the page's own API tables (a content selector such as
   `[hwStatValue]`, and its bare name) are accepted in the scope of their table,
   and so are the type words `boolean`, `string`, `number`, `true`, `false`,
@@ -566,7 +572,9 @@ one: where a
 rewritten block aligns with the Arabic block, a string the map leaves in English
 keeps the Arabic string of the page (the command prints it to be checked), and a
 block that changed its shape is reported. Vue and Angular templates may close any
-tag with `/>`. Apart from that, each Arabic
+tag with `/>`. A string written over several lines (a bound value such as
+`:items="[ ... ]"`, an Angular template) is one token, and an Angular template is
+compared as markup. Apart from that, each Arabic
 block has the same tokens as the English block of the same framework. Only
 these tokens may differ (`HWC-PAR4`):
 
@@ -838,7 +846,9 @@ Besides the rules above, the Arabic page mirrors the English page:
   the blocks of each item, code, tables, alerts and headings (`HWC-PAR7`);
 - an Arabic letter in every paragraph, list item, heading h2 to h6 and table
   cell outside code and API tables, and in the reader text of every live block
-  (`HWC-PAR8`): its text, the text content of a `textarea` included; the values
+  (`HWC-PAR8`): its text, the text content of a `textarea` included and the
+  interpolations of a Vue or Angular template (`{{ item }}`, which are code) left
+  out; the values
   of `label`, `aria-label`, `title`,
   `placeholder`, `alt`, `description`, `heading`, `caption`, `hint`, `message`,
   `text` and of every name that ends in `label`, `message`, `text` or `title`;
@@ -847,8 +857,9 @@ Besides the rules above, the Arabic page mirrors the English page:
   `name` and `defaultValue` as properties of a data object, except a value that is
   Latin by nature: the value of an input or a component whose `type` is `email`,
   `url`, `tel` or `number`, in every form (`value`, `defaultValue`,
-  `default-value`, the Angular `value` and `[value]`), and a value without any
-  letter (`3`, `1,250.00`); the `name` of a component when the group reads that
+  `default-value`, the Angular `value` and `[value]`), a value without any
+  letter (`3`, `1,250.00`), and markup text that is one host name
+  (`portal.example.test`); the `name` of a component when the group reads that
   string as reader text (the `name` of an Avatar, which the `html` block writes as
   its accessible name); and any phrase of
   two Latin words under another name that is not a token name (`class`, `id`,
@@ -858,12 +869,13 @@ Besides the rules above, the Arabic page mirrors the English page:
   `defaultValue` or `default-value` of a component, and the Angular `value`, when
   a block of the same group writes that string as the value of an `option` or of
   an input of type `checkbox` or `radio` (the `value` of a Radio, the
-  `defaultValue` of a Select), and the value of a `data-*` attribute that the
+  `defaultValue` of a Select) or as the `data-hw-value` of an item of a vanilla
+  controller (the `value` of an Angular `hw-tab`), and the value of a `data-*` attribute that the
   installed `@hawiyah/styles/dist/styles.css` selects (`data-message`, a styling
   hook). What the group reads is taken from the English group when the Arabic
   block has the same tokens as the English block, and from the Arabic group
   otherwise. The value of a bound attribute (in Vue `:name`, `v-bind:name`,
-  `@event` and the directives `v-*`; in Angular `[name]`, `(event)` and `*name`)
+  `@event`, the directives `v-*` and the slot `#name`; in Angular `[name]`, `(event)` and `*name`)
   is an expression, not text: `HWC-PAR8` judges the string literals inside it,
   each under the object key that holds it or else under the name of the binding
   (`:label="'…'"`, the template literal of a formatter), and nothing else of it

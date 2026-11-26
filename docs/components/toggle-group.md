@@ -7,7 +7,7 @@ ToggleGroup is a group of choices shown as joined segments. By default it select
 A group has a visible legend that names the choice. In the default single mode each option is a native radio input inside a label, so at most one option is selected, and the group submits that option's value under its name.
 
 ```html live example=basic static differences=toggle-group-adapter-markup
-<fieldset class="hw-toggle-group" data-hw="toggle-group" data-variant="segmented" aria-describedby="basic-contact-hint">
+<fieldset class="hw-toggle-group" data-hw="toggle-group" aria-describedby="basic-contact-hint">
   <legend class="hw-label">Preferred contact method</legend>
   <label><input type="radio" name="basic-contact" value="email" checked>Email</label>
   <label><input type="radio" name="basic-contact" value="phone">Phone</label>
@@ -35,7 +35,7 @@ template: `<hw-toggle-group label="Preferred contact method" name="basic-contact
 With `multiple` each option is a button with `aria-pressed`, and the value is an array of the pressed option values. A form receives one entry for each pressed value under the name of the group.
 
 ```html live example=multiple static differences=toggle-group-adapter-markup
-<fieldset class="hw-toggle-group" data-hw="toggle-group" data-hw-multiple="true" data-hw-name="notices" data-variant="segmented">
+<fieldset class="hw-toggle-group" data-hw="toggle-group" data-hw-multiple="true" data-hw-name="notices">
   <legend class="hw-label">Notifications</legend>
   <button class="hw-button" type="button" data-variant="secondary" data-size="md" data-hw-value="status" aria-pressed="true">Status changes</button>
   <button class="hw-button" type="button" data-variant="secondary" data-size="md" data-hw-value="documents" aria-pressed="false">Document requests</button>
@@ -57,7 +57,7 @@ template: `<hw-toggle-group label="Notifications" name="notices" [multiple]="tru
 
 ### Outline
 
-`variant` selects the `outline` appearance instead of the `segmented` appearance.
+Without a variant the group shows its options as joined segments. `variant="outline"` selects the outline appearance, and in markup `data-variant="outline"` on the root does the same.
 
 ```html live example=outline static differences=toggle-group-adapter-markup
 <fieldset class="hw-toggle-group" data-hw="toggle-group" data-variant="outline">
@@ -85,7 +85,7 @@ template: `<hw-toggle-group label="Preferred contact method" name="outline-conta
 A read-only group keeps its options focusable and its selected value in the form, but the reader cannot change the selection.
 
 ```html live example=readonly static differences=toggle-group-adapter-markup
-<fieldset class="hw-toggle-group" data-hw="toggle-group" data-variant="segmented" data-hw-readonly="true">
+<fieldset class="hw-toggle-group" data-hw="toggle-group" data-hw-readonly="true">
   <legend class="hw-label">Preferred contact method</legend>
   <label><input type="radio" name="readonly-contact" value="email">Email</label>
   <label><input type="radio" name="readonly-contact" value="phone">Phone</label>

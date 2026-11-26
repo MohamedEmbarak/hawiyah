@@ -141,6 +141,40 @@ export function angularTextParts(text) {
   return parts;
 }
 
+/**
+ * The runs of a listing with every string that spans lines joined into one run: the
+ * highlighter breaks a string at each line end, so a multi-line attribute value
+ * (:items="[ ... ]") or template literal (an Angular template) would otherwise be
+ * read as one string per line. A string run opens with a quote and runs on, through
+ * line ends and string runs, to the run that ends with the same quote.
+ * @param {{ t: string, r?: string, from: number }[]} out
+ */
+function joinStrings(out) {
+  const joined = [];
+  for (let i = 0; i < out.length; i += 1) {
+    const run = out[i];
+    const quote = run.r === 'string' ? /^['"`]/.exec(run.t)?.[0] : undefined;
+    const closed = (text) => text.length > 1 && text.endsWith(quote) && !text.endsWith(`\\${quote}`);
+    if (!quote || closed(run.t)) {
+      joined.push(run);
+      continue;
+    }
+    let text = run.t;
+    let j = i + 1;
+    while (j < out.length && (out[j].t === '\n' || out[j].r === 'string') && !closed(text)) {
+      text += out[j].t;
+      j += 1;
+    }
+    if (!closed(text)) {
+      joined.push(run);
+      continue;
+    }
+    joined.push({ t: text, r: 'string', from: run.from });
+    i = j - 1;
+  }
+  return joined;
+}
+
 /** Ranges of markup text nodes (TEXT_NODES) in a parsed listing. */
 function textRanges(tree) {
   const ranges = [];
@@ -161,9 +195,10 @@ function textRanges(tree) {
  * Token sequence of a listing for the parity check: [{ kind, text }], where kind
  * is a role, 'text' (markup text, one token per text run) or 'code' (other
  * unhighlighted source split at white space). The text content of a textarea is
- * markup text. Template literals in TypeScript that contain markup (Angular
- * templates) are tokenised as HTML, and the control flow in their text
- * (angularTextParts) is code.
+ * markup text. A string written over several lines is one token (joinStrings).
+ * Template literals in TypeScript that contain markup (Angular templates) are
+ * tokenised as HTML that closes any tag with '/>', and the control flow in their
+ * text (angularTextParts) is code.
  * @param {string | null} lang
  * @param {string} code
  * @param {{ angular?: boolean }} [options] angular: the code is an Angular template
@@ -190,12 +225,13 @@ export function tokens(lang, code, options = {}) {
     pendingText = '';
   };
   const script = SCRIPT.has((lang ?? '').toLowerCase());
-  for (const run of out) {
+  for (const run of joinStrings(out)) {
     if (run.r) {
       flushText();
       if (run.r === 'string' && script && run.t.startsWith('`') && run.t.endsWith('`') && run.t.includes('<')) {
         result.push({ kind: 'punctuation', text: '`' });
-        result.push(...tokens('html', run.t.slice(1, -1), { angular: true }));
+        // An Angular template closes any tag with '/>' (<hw-divider />), as a Vue template does.
+        result.push(...tokens('vue', run.t.slice(1, -1), { angular: true }));
         result.push({ kind: 'punctuation', text: '`' });
       } else {
         result.push({ kind: run.r, text: run.t });

@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { memberCache } from '../cli.mjs';
 import { coverageLines, coverageOf } from '../coverage.mjs';
-import { checkVocabulary, componentVocabulary, createVocabularyContext, documentedAttributes, judge, markupTerms, readVocabularyExceptions, readmeBlocks, terms, textInputBlocks } from '../vocabulary.mjs';
+import { checkVocabulary, comparedValues, componentVocabulary, createVocabularyContext, documentedAttributes, judge, markupTerms, readVocabularyExceptions, readmeBlocks, terms, textInputBlocks } from '../vocabulary.mjs';
 import { processPair } from '../../content/pipeline.mjs';
 import { repoDir, testReaders } from './helpers.mjs';
 
@@ -302,6 +302,35 @@ describe('data-hw-* attributes that an installed README documents for the compon
     expect(judge(vocab, name('data-hw-previous-label'), where('tabs'))).toMatch(/^data-hw-previous-label is neither selected/);
     // createDatePicker has no closeLabel, so the table gives no data-hw-close-label.
     expect(judge(vocab, name('data-hw-close-label'), where('date-picker'))).toMatch(/^data-hw-close-label is neither selected/);
+  });
+});
+
+// The English pages of ToggleGroup and DataTable: createToggleGroup reads
+// root.dataset.hwMultiple === 'true', and data-hw-sort holds the key of a column, which the
+// prefix rule took for a value of sortDirection.
+describe('the values of data-* attributes that the published modules read', () => {
+  const where = (id, scope = []) => ({ scope, vocabulary: componentVocabulary(vocab, id, declared(id)), linked: [] });
+  const attribute = (text) => terms(text)[0];
+
+  it('accepts a value that a published module compares the attribute with, and no other', () => {
+    expect(comparedValues(vocab, 'data-hw-multiple')).toEqual(new Set(['true']));
+    expect(judge(vocab, attribute('data-hw-multiple="true"'), where('toggle-group', ['vanilla']))).toBeNull();
+    expect(judge(vocab, attribute('data-hw-multiple="yes"'), where('toggle-group', ['vanilla']))).toBe(
+      '"yes" is not a value of a member type or of an enumerated attribute of this component (attribute data-hw-multiple)',
+    );
+    expect(judge(vocab, attribute('orientation="true"'), where('tabs'))).toMatch(/^"true" is not a value/);
+  });
+
+  it('takes the values of a member that starts with the hook only when no adapter has a member of the hook\'s name', () => {
+    // The html block of one live group on an otherwise empty page of the component.
+    const markup = (id, code) => messages(run({ pages: [{ id, lang: 'en', page: { summary: [], sections: [] } }], liveGroups: [{ id, lang: 'en', example: 'probe', blocks: { vanilla: { code } } }] }))
+      .map((message) => message.replace(`HWC-VOCAB docs/components/${id}.md: live example probe (html): `, ''));
+    expect(markup('data-table', '<table class="hw-table" data-hw="data-table"><tr><th data-hw-key="reference"><button type="button" data-hw-sort="reference">Reference</button></th></tr></table>')).toEqual([]);
+    // data-hw-activation still takes the values of activationMode: Tabs has no member activation.
+    expect(markup('tabs', '<div class="hw-tabs" data-hw="tabs" data-hw-activation="manual"></div>')).toEqual([]);
+    expect(markup('tabs', '<div class="hw-tabs" data-hw="tabs" data-hw-activation="sideways"></div>')).toEqual([
+      '`data-hw-activation="sideways"`: "sideways" is not a value of data-hw-activation ("automatic", "manual")',
+    ]);
   });
 });
 

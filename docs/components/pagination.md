@@ -370,7 +370,7 @@ Table: Inputs, outputs and content of hw-pagination
 
 ## Accessibility
 
-Pagination is a `nav` element named by `label`, `aria-label` or `aria-labelledby`. Generated page buttons and arrows, and those of the three adapters, are native `button` elements with `type="button"`; authored vanilla page controls may be links. Each has an accessible name written by the application: `previousLabel`, `nextLabel` and `getPageLabel`. The current page carries `aria-current="page"`.
+Pagination is a `nav` element named by `label`, `aria-label` or `aria-labelledby`. Generated page buttons and arrows, and those of React, Vue and Angular, are native `button` elements with `type="button"`; authored vanilla page controls may be links. Each has an accessible name written by the application: in React, Vue and Angular `previousLabel`, `nextLabel` and `getPageLabel`; in vanilla the authored `aria-label` of each arrow and `getPageLabel` for each generated page button. The current page carries `aria-current="page"`.
 
 Table: Keyboard interaction of Pagination
 

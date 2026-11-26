@@ -9,14 +9,16 @@
 // message, text or title, or any string that holds a phrase of Latin words outside
 // the token names of TOKEN_NAMES), unless arabic-exceptions.json lists the text
 // with a reason. A value that is Latin by nature is not reader text: the value of an
-// input or component of type email, url, tel or number (LATIN_VALUE_TYPES), and a
-// value without any letter. Only reader text is judged: the value of a bound attribute
+// input or component of type email, url, tel or number (LATIN_VALUE_TYPES), a
+// value without any letter, and markup text that is one host name (HOST_NAME). Only
+// reader text is judged: the value of a bound attribute
 // (EXPRESSION_ATTRIBUTE) is an expression, of which only the string literals count; the
-// value of a component that its group writes as an option value, and the value of a
+// value of a component that its group writes as an option value or as the data-hw-value
+// of a vanilla item, and the value of a
 // data-* attribute that the stylesheet selects (styleHooks), are tokens; the name of a
 // component is reader text only where its group reads it so (groupReading); the text of
-// a textarea is markup text and the control flow of an Angular template is code
-// (highlight.mjs).
+// a textarea is markup text, and the control flow of an Angular template and the
+// interpolations of a template (INTERPOLATION) are code (highlight.mjs).
 
 import { readFileSync } from 'node:fs';
 import { FRAMEWORKS, finding } from './config.mjs';
@@ -88,6 +90,14 @@ const onlyKeyNames = (text) => text.split(/\s*[,،+/]\s*|\s+(?:و|or|and)\s+/).e
 const ARABIC_LETTER = /(?=\p{Script=Arabic})\p{L}/u;
 const notArabic = (text, keyCell = false) => LETTER.test(text) && !ARABIC_LETTER.test(text) && !(keyCell && onlyKeyNames(text));
 
+/** An interpolation of a Vue or Angular template in markup text ({{ item }}): code, whose value the application supplies. */
+export const INTERPOLATION = /\{\{[\s\S]*?\}\}/g;
+/**
+ * Markup text that is one host name (portal.example.test): Latin by nature, as the
+ * value of an input of type url is, so it needs no Arabic letter.
+ */
+export const HOST_NAME = /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/;
+
 /** Attributes and properties of a live block whose string values are reader text. */
 export const READER_NAMES = new Set(['label', 'aria-label', 'title', 'placeholder', 'alt', 'description', 'heading', 'caption', 'hint', 'message', 'text']);
 /** A name that ends in one of these words (overflowLabel, data-hw-overflow-label, copiedMessage, ...) also holds reader text. */
@@ -152,12 +162,12 @@ function shownValue(list, index, name, bare) {
 /** The attribute or property token that names the string token at index: the nearest one before it. */
 const nameTokenOf = (list, index) => list.slice(0, index).reverse().find((item) => item.kind === 'attribute' || item.kind === 'property');
 /**
- * Attributes whose value is an expression, not text: a Vue bound prop or directive
- * (:name, v-bind:name, @event, v-on:event, v-if) and an Angular property, event or
+ * Attributes whose value is an expression, not text: a Vue bound prop, directive or
+ * slot (:name, v-bind:name, @event, v-on:event, v-if, #name) and an Angular property, event or
  * structural binding ([name], (event), *ngIf). Only the string literals inside the
  * expression can be reader text.
  */
-export const EXPRESSION_ATTRIBUTE = /^(?::|v-bind:|@|v-on:|v-|\[|\(|\*)/;
+export const EXPRESSION_ATTRIBUTE = /^(?::|v-bind:|@|v-on:|v-|#|\[|\(|\*)/;
 /** The types of an input whose value is an option value, which the reader does not see. */
 const CHOICE_TYPES = new Set(['checkbox', 'radio']);
 
@@ -182,7 +192,8 @@ export function styleHooks(file = STYLESHEET) {
  * What the blocks of one live group read as reader text and as option values, for
  * HWC-PAR8: reader, the markup text, the values of reader names and the values that a
  * native element shows (a text input, a text area, an output); options, the values of
- * an option, a check box or a radio button.
+ * an option, a check box or a radio button, and the data-hw-value of an item of a
+ * vanilla controller (a tab).
  * @param {{ blocks: Record<string, { lang: string, code: string }> }} group
  */
 export function groupReading(group) {
@@ -202,6 +213,8 @@ export function groupReading(group) {
       if (isComponentTag(tag)) return;
       if (shownValue(list, index, name, bare)) reader.add(value);
       if (bare === 'value' && (tag === 'option' || (tag === 'input' && CHOICE_TYPES.has(String(type ?? '').toLowerCase())))) options.add(value);
+      // The value of an item of a vanilla controller (a tab, a toggle, a tree item): the value of the item, which no element shows.
+      if (bare === 'data-hw-value') options.add(value);
     });
   }
   return { reader, options };
@@ -390,7 +403,9 @@ export function checkParity(en, ar, sources) {
       const judge = (items, references, owner = null) => items.forEach((token, index) => {
         const text = unquote(token.text);
         if (token.kind === 'text') {
-          requireArabic(at, text, `${where} text`);
+          // The reader reads the text around an interpolation ({{ item }}), whose value the application supplies.
+          const shown = text.replace(INTERPOLATION, ' ').replace(/\s+/g, ' ').trim();
+          if (notArabic(shown) && !HOST_NAME.test(shown)) requireArabic(at, text, `${where} text`);
           return;
         }
         if (token.kind !== 'string') return;
