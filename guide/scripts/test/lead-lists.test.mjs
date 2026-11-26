@@ -46,7 +46,7 @@ const PINS = {
   'scripts/api-tables/targets.mjs UNOWNED_EXPORTS': '4f53cda18c2baa0c',
   'scripts/content/arabic-exceptions.json': '1275c3fe71888ec0',
   'scripts/content/claim-exceptions.json': '37517e5f3dc66819',
-  'scripts/content/live-component-exceptions.json': 'ad7c7cf7fb1c742f',
+  'scripts/content/live-component-exceptions.json': '9924a5b8b5e71573',
   'scripts/content/marketing-terms.json': '9376a99a82e48201',
   'scripts/page-guards/latin-allowlist.json': '37517e5f3dc66819',
   'scripts/equivalence/keyboard-exceptions.json': 'e2cd8a4267419155',
