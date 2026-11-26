@@ -8,6 +8,7 @@
     "pagination",
     "service-details",
     "site-verification",
+    "toast-region",
     "toggle-group"
   ]
 }
