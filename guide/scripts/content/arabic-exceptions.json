@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "file": "docs/components/tree-view.ar.md",
+    "text": "application-form",
+    "reason": "The default value of the tree is the id of the selected item, which the items of the same example declare; it is a token, not reader text, and stays as written in the English page.",
+    "approvedBy": "lead"
+  }
+]
