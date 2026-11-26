@@ -1,7 +1,8 @@
 import { Component, DOCUMENT, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HwAlertComponent, HwButtonDirective, HwContainerComponent, HwLinkDirective, HwPageHeaderComponent, HwTabComponent, HwTabsComponent } from '@hawiyah/angular';
-import { navigationPage } from '../../content/content-loader';
+import { navigationDocument, navigationPage } from '../../content/content-loader';
+import { pagePathOf, parseKey } from '../../content/kinds';
 import type { CodeRun } from '../../content/model';
 import { buildInfo } from '../../core/build-info';
 import { HeadService } from '../../core/head';
@@ -108,7 +109,12 @@ export class EditorPage {
   protected readonly pkg = computed(() => FRAMEWORK_PACKAGES[this.store.query().framework]);
   protected readonly integrity = computed(() => buildInfo.packages[this.pkg()]?.integrity ?? '');
 
-  private readonly entry = computed(() => navigationPage(this.store.query().id));
+  /** The page of the example: a component page, or a guide or a template by its key. */
+  private readonly entry = computed(() => {
+    const id = this.store.query().id;
+    const key = parseKey(id);
+    return key.kind === 'component' ? navigationPage(id) : navigationDocument(key.kind, key.id);
+  });
   protected readonly componentName = computed(() => this.entry()?.title[this.lang()] ?? this.store.query().id);
   private readonly section = computed(() => {
     const query = this.store.query();
@@ -125,11 +131,14 @@ export class EditorPage {
    */
   private readonly live = signal(false);
   protected readonly description = computed(() => (this.live() ? this.t().description(this.componentName(), this.section().text) : this.t().descriptionAnyExample));
-  protected readonly componentLink = computed(() => (this.live() ? this.t().backToComponent(this.componentName()) : this.t().componentPages));
+  protected readonly componentLink = computed(() => {
+    if (!this.live()) return this.t().componentPages;
+    return parseKey(this.store.query().id).kind === 'component' ? this.t().backToComponent(this.componentName()) : this.t().backToDocument(this.componentName());
+  });
   protected readonly componentHref = computed(() => {
     if (!this.live()) return page(this.lang(), 'components');
     const section = this.section().id;
-    return `${page(this.lang(), `components/${this.store.query().id}/reference`)}${section ? `#${section}` : ''}`;
+    return `${page(this.lang(), pagePathOf(this.store.query().id))}${section ? `#${section}` : ''}`;
   });
 
   /** The run state: a sentence, then a message of a compiler or the frame isolated left to right, then the runtime note. */

@@ -11,6 +11,7 @@
 import { readFileSync } from 'node:fs';
 import { latinRuns, readAllowlist } from '../page-guards/guards.mjs';
 import { excludedLines } from './glossary.mjs';
+import { KINDS, parseKey } from './kinds.mjs';
 import { parseMarkdown } from './parse.mjs';
 import { textUnits } from './prose.mjs';
 
@@ -32,11 +33,15 @@ export function referenceOpening(text) {
   return index < 0 ? null : { text: lines[index], line: index + 1 };
 }
 
-/** HWT-COMPLIANCE findings of one page. */
-export function complianceFindings(text, lang, file) {
+/**
+ * HWT-COMPLIANCE findings of one page. A component page and a template open their
+ * section Platforms Code reference with the compliance sentence; a guide has no such
+ * section, and its text holds the marker words nowhere (kind 'guide').
+ */
+export function complianceFindings(text, lang, file, kind = 'component') {
   const findings = [];
   const opening = referenceOpening(text);
-  if (!opening || !opening.text.startsWith(`${COMPLIANCE[lang]} `)) {
+  if (kind !== 'guide' && (!opening || !opening.text.startsWith(`${COMPLIANCE[lang]} `))) {
     findings.push({ code: 'HWT-COMPLIANCE', file, line: opening?.line ?? 1, message: 'the section Platforms Code reference opens with the compliance sentence of src/app/i18n/compliance.json, word for word, followed by the sentence that introduces the sources' });
   }
   const rest = text.split(COMPLIANCE[lang]).join('');
@@ -55,7 +60,10 @@ export function glossaryFindings(text, file) {
 /** HWP-LATIN findings of the reader text of an Arabic page (Markdown, not the examples). */
 export function latinFindings(text, file, id, allowlist = readAllowlist(LATIN_ALLOWLIST_FILE)) {
   const findings = [];
-  const listed = (run) => allowlist.some((entry) => run === entry.text && (!entry.pages || entry.pages.some((page) => page.includes(`components/${id}/`))));
+  // The address of the page: components/<id>/ of a component page, guides/<id>/ and templates/<id>/ of the other kinds.
+  const key = parseKey(id) ?? { kind: 'component', id };
+  const address = `${KINDS[key.kind].route}/${key.id}/`;
+  const listed = (run) => allowlist.some((entry) => run === entry.text && (!entry.pages || entry.pages.some((page) => page.includes(address))));
   for (const unit of textUnits(parseMarkdown(text, file).tree)) {
     for (const run of latinRuns(unit.text)) {
       if (!listed(run)) findings.push({ code: 'HWP-LATIN', file, line: unit.line, message: `the Latin-script run "${run.slice(0, 80)}" stands in Arabic reader text; write it in Arabic or as code, or propose a latin-allowlist.json entry` });
@@ -65,9 +73,9 @@ export function latinFindings(text, file, id, allowlist = readAllowlist(LATIN_AL
 }
 
 /** The three rules on the sources of one page: { en?: text, ar?: text } with their files. */
-export function pageRuleFindings({ id, en, ar }) {
+export function pageRuleFindings({ id, kind = 'component', en, ar }) {
   const findings = [];
-  if (en) findings.push(...complianceFindings(en.text, 'en', en.file));
-  if (ar) findings.push(...complianceFindings(ar.text, 'ar', ar.file), ...glossaryFindings(ar.text, ar.file), ...latinFindings(ar.text, ar.file, id));
+  if (en) findings.push(...complianceFindings(en.text, 'en', en.file, kind));
+  if (ar) findings.push(...complianceFindings(ar.text, 'ar', ar.file, kind), ...glossaryFindings(ar.text, ar.file), ...latinFindings(ar.text, ar.file, id));
   return findings;
 }

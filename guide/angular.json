@@ -34,7 +34,7 @@
                 "output": "assets"
               },
               {
-                "glob": "{hawiyah-wordmark.svg,hawiyah-wordmark-reverse.svg,favicon.svg}",
+                "glob": "{hawiyah-wordmark.svg,hawiyah-wordmark-reverse.svg,hawiyah-wordmark-mono.svg,hawiyah-wordmark-white.svg,hawiyah-loader.gif,hawiyah-loader-white.gif,favicon.svg}",
                 "input": "node_modules/@hawiyah/styles/dist/assets",
                 "output": "brand"
               }

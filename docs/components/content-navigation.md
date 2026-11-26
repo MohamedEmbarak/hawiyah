@@ -7,8 +7,8 @@ ContentNavigation is a navigation landmark of links to the sections of the curre
 Each item names an `id` of a section of the page, and the link points to it. The marker stands on the current section, and the link of that section carries `aria-current="location"`. The groups below set no `scrollRoot`, so the controller tracks the scroll of the window; their results do not scroll, and each shows the first section as current.
 
 ```html live example=basic static
-<nav class="hw-content-nav" data-hw="content-navigation" aria-label="On this page">
-  <h2 class="hw-content-nav-heading">On this page</h2>
+<nav class="hw-content-nav" data-hw="content-navigation" aria-label="Sections of the request">
+  <h2 class="hw-content-nav-heading">Sections of the request</h2>
   <ul class="hw-content-nav-list"><li><a class="hw-content-nav-link" href="#cn-basic-overview" data-hw-section="cn-basic-overview"><span class="hw-content-nav-marker" aria-hidden="true"></span><span class="hw-content-nav-label">Overview</span></a></li><li><a class="hw-content-nav-link" href="#cn-basic-documents" data-hw-section="cn-basic-documents"><span class="hw-content-nav-marker" aria-hidden="true"></span><span class="hw-content-nav-label">Required documents</span></a></li><li><a class="hw-content-nav-link" href="#cn-basic-fees" data-hw-section="cn-basic-fees"><span class="hw-content-nav-marker" aria-hidden="true"></span><span class="hw-content-nav-label">Fees and payment</span></a></li></ul>
 </nav>
 <section id="cn-basic-overview"><h3>Overview</h3><p>The request is reviewed after it is submitted.</p></section>
@@ -19,7 +19,7 @@ Each item names an `id` of a section of the page, and the link points to it. The
 ```tsx live example=basic
 <>
   <ContentNavigation
-    label="On this page"
+    label="Sections of the request"
     items={[
     { id: 'cn-basic-overview', label: 'Overview' },
     { id: 'cn-basic-documents', label: 'Required documents' },
@@ -34,7 +34,7 @@ Each item names an `id` of a section of the page, and the link points to it. The
 
 ```vue live example=basic
 <ContentNavigation
-  label="On this page"
+  label="Sections of the request"
   :items="[
     { id: 'cn-basic-overview', label: 'Overview' },
     { id: 'cn-basic-documents', label: 'Required documents' },
@@ -48,7 +48,7 @@ Each item names an `id` of a section of the page, and the link points to it. The
 
 ```ts live example=basic framework=angular
 template: `<hw-content-navigation
-  label="On this page"
+  label="Sections of the request"
   [items]="[
     { id: 'cn-basic-overview', label: 'Overview' },
     { id: 'cn-basic-documents', label: 'Required documents' },

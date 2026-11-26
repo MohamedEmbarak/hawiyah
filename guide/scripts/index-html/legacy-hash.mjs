@@ -13,9 +13,11 @@ export const LEGACY_FORMS = Object.freeze([
   { old: ["#components", "#components/<anything>"], target: "page when <anything> is a built page, else catalogue" },
   { old: ["#component/<id>"], target: "page when <id> is built, else catalogue" },
   { old: ["#inputs"], target: "catalogue" },
-  { old: ["#foundations", "#brand", "#layouts"], target: "home" },
-  { old: ["#docs", "#docs/<topic>"], target: "home" },
-  { old: ["#templates", "#templates/<id>"], target: "home" },
+  { old: ["#foundations"], target: "'<lang>/foundations/' when the build has the foundations page, else home" },
+  { old: ["#brand"], target: "'<lang>/brand/' when the build has the brand page, else home" },
+  { old: ["#layouts"], target: "home" },
+  { old: ["#docs", "#docs/<topic>"], target: "'<lang>/guides/<topic>/' when the guide <topic> is built, else the guides page when the build has it, else home" },
+  { old: ["#templates", "#templates/<id>"], target: "'<lang>/templates/<id>/' when the template <id> is built, else the templates page when the build has it, else home" },
   { old: ["#discover", "#apply", "#workspace"], target: "home" },
   { old: ["any other hash"], target: "home" },
 ]);
@@ -35,11 +37,16 @@ export const LEGACY_TEMPLATES = Object.freeze([
  * Maps an old hash to a base-relative path ending in '/'.
  * @param {string} hash location.hash of the old address ('' or '#...').
  * @param {'ar' | 'en'} lang The chosen language.
- * @param {{ components: string[], landing: boolean }} available What the build prerendered.
+ * @param {{ components: string[], landing: boolean, guides?: string[], templates?: string[], guideIndex?: boolean,
+ *           templateIndex?: boolean, brand?: boolean, foundations?: boolean }} available What the build prerendered:
+ *   the ids of the built guides and templates, and whether the guides page, the templates page, the brand
+ *   page and the foundations page exist.
  * @returns {string}
  */
 export function mapLegacyHash(hash, lang, available) {
   var components = available && available.components ? available.components : [];
+  var guides = available && available.guides ? available.guides : [];
+  var templates = available && available.templates ? available.templates : [];
   var home = available && available.landing ? lang + "/" : lang + "/components/";
   var catalogue = lang + "/components/";
   var raw = String(hash || "");
@@ -62,5 +69,17 @@ export function mapLegacyHash(hash, lang, available) {
     return catalogue;
   }
   if (head === "inputs") return catalogue;
+  if (head === "docs" || head === "templates") {
+    var ids = head === "docs" ? guides : templates;
+    var route = head === "docs" ? "guides" : "templates";
+    var page = parts[1] || "";
+    for (var j = 0; j < ids.length; j += 1) {
+      if (page !== "" && ids[j] === page) return lang + "/" + route + "/" + page + "/";
+    }
+    var index = head === "docs" ? available && available.guideIndex : available && available.templateIndex;
+    return index ? lang + "/" + route + "/" : home;
+  }
+  if (head === "foundations" && available && available.foundations) return lang + "/foundations/";
+  if (head === "brand" && available && available.brand) return lang + "/brand/";
   return home;
 }

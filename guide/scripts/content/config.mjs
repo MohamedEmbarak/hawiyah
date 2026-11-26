@@ -153,8 +153,8 @@ export const KEYBOARD_TABLE = {
  * Components whose groups may carry frame (5a.9, leadAmendments A12): the
  * page-level components, which render a main landmark, a skip link or an h1 of
  * their own. Their Angular result is rendered in the sandboxed frame instead of
- * in the guide page. Template groups (docs/templates, stage 5e) are allowed as
- * well. Any other use fails HWC-LIVE1.
+ * in the guide page. Template groups (docs/templates) carry it as well: their outline
+ * requires it. Any other use fails HWC-LIVE1.
  */
 export const FRAMED_COMPONENTS = ['app-shell', 'portal-layout', 'portal-header', 'portal-footer', 'page-header', 'mobile-top-bar'];
 
@@ -168,6 +168,9 @@ export const CODES = [
   'HWC-PAR1', 'HWC-PAR2', 'HWC-PAR3', 'HWC-PAR4', 'HWC-PAR5', 'HWC-PAR6', 'HWC-PAR7', 'HWC-PAR8', 'HWC-STALE', 'HWC-KEYS',
   'HWC-CLAIM', 'HWC-EMPTY', 'HWC-TODO', 'HWC-TONE', 'HWC-LIVE7',
 ];
+
+/** Failure codes of step 20 that only a guide or a template can cause (scripts/content/test/kinds.test.mjs). */
+export const DOCUMENT_CODES = ['HWC-COMP'];
 
 /** A finding: printed as '<code> <file>:<line>: <message>'. */
 export function finding(code, file, line, message) {

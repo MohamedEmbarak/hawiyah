@@ -1,15 +1,20 @@
 // Writes the outputs of the content step (contentPipeline.model):
-//   <outDir>/pages/<id>.<lang>.json   the page models
+//   <outDir>/pages/<id>.<lang>.json   the page models (a guide guide.<id>.<lang>.json, a template
+//                                     template.<id>.<lang>.json: kinds.mjs, pathKey)
 //   <outDir>/manifest.json            { pages, liveGroupsFile }: a build-time file of the
 //                                     scripts and tests; no browser bundle imports it
 //   <outDir>/navigation.json          the navigation index that the catalogue, the side
-//                                     navigation, the drawer and the editor read (lazy)
-//   <outDir>/routes.json              [{ id, langs }]: what the route matcher reads (eager)
-//   <outDir>/loaders.ts               { '<id>/<lang>': () => import('./pages/<id>.<lang>.json') }
+//                                     navigation, the drawer, the editor and the guide and
+//                                     template pages read (lazy): component pages by category,
+//                                     guides and templates in the order of their index.json
+//   <outDir>/routes.json              [{ id, langs }] of the component pages: what their route matcher reads (eager)
+//   <outDir>/document-routes.json     { guides, templates: [{ id, langs }] }: the same for the guides and templates
+//   <outDir>/loaders.ts               { '<key>/<lang>': () => import('./pages/<id>.<lang>.json') }
 //   <liveGroupsFile>                  the live groups for step 25
 
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
+import { pathKey } from './kinds.mjs';
 
 const toPosix = (path) => path.split('\\').join('/');
 const json = (value) => `${JSON.stringify(value, null, 2)}\n`;
@@ -23,7 +28,7 @@ export function loadersModule(keys, modelPath) {
     'type Loaded = Promise<{ default: ContentPage }>;',
     '',
     'export const contentLoaders: ContentLoaders = {',
-    ...keys.map(({ id, lang }) => `  '${id}/${lang}': () => import('./pages/${id}.${lang}.json') as Promise<unknown> as Loaded,`),
+    ...keys.map(({ id, lang }) => `  '${id}/${lang}': () => import('./pages/${pathKey(id)}.${lang}.json') as Promise<unknown> as Loaded,`),
     '};',
     '',
   ];
@@ -42,7 +47,18 @@ export function navigationIndex(manifestPages, components) {
   const order = new Map(components.map((entry, index) => [entry.id, index]));
   const category = new Map(components.map((entry) => [entry.id, entry.category]));
   const categories = [...new Set(components.map((entry) => entry.category))];
-  const pages = [...manifestPages]
+  const examples = (page) => page.liveGroups.map((group) => {
+    const headings = Object.fromEntries(Object.entries(page.headings).map(([lang, list]) => [lang, list.find((heading) => heading.id === group.section)]));
+    const own = Object.values(headings).every((heading) => heading && heading.level > 2);
+    return own
+      ? { example: group.example, section: group.section, title: Object.fromEntries(Object.entries(headings).map(([lang, heading]) => [lang, heading.text])) }
+      : { example: group.example, section: group.section };
+  });
+  // Guides and templates: in the order of their index.json, with their key (id), their id inside the kind (slug) and their groups.
+  const documents = (kind) => manifestPages.filter((page) => page.kind === kind).map((page) => ({
+    id: page.id, slug: page.slug, langs: page.langs, title: page.title, summary: page.summaryText, examples: examples(page),
+  }));
+  const pages = [...manifestPages].filter((page) => !page.kind)
     .sort((a, b) => categories.indexOf(category.get(a.id)) - categories.indexOf(category.get(b.id)) || (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
     .map((page) => ({
       id: page.id,
@@ -50,15 +66,9 @@ export function navigationIndex(manifestPages, components) {
       category: category.get(page.id),
       title: page.title,
       summary: page.summaryText,
-      examples: page.liveGroups.map((group) => {
-        const headings = Object.fromEntries(Object.entries(page.headings).map(([lang, list]) => [lang, list.find((heading) => heading.id === group.section)]));
-        const own = Object.values(headings).every((heading) => heading && heading.level > 2);
-        return own
-          ? { example: group.example, section: group.section, title: Object.fromEntries(Object.entries(headings).map(([lang, heading]) => [lang, heading.text])) }
-          : { example: group.example, section: group.section };
-      }),
+      examples: examples(page),
     }));
-  return { categories: categories.filter((id) => pages.some((page) => page.category === id)), pages };
+  return { categories: categories.filter((id) => pages.some((page) => page.category === id)), pages, guides: documents('guide'), templates: documents('template') };
 }
 
 /**
@@ -69,12 +79,15 @@ export function writeOutputs({ guideDir, outDir, liveGroupsFile, pages, manifest
   const pagesDir = join(outDir, 'pages');
   rmSync(pagesDir, { recursive: true, force: true });
   mkdirSync(pagesDir, { recursive: true });
-  for (const { id, lang, page } of pages) writeFileSync(join(pagesDir, `${id}.${lang}.json`), json(page));
+  for (const { id, lang, page } of pages) writeFileSync(join(pagesDir, `${pathKey(id)}.${lang}.json`), json(page));
   const manifest = { pages: manifestPages, liveGroupsFile: toPosix(relative(guideDir, liveGroupsFile)) };
   writeFileSync(join(outDir, 'manifest.json'), json(manifest));
   const navigation = navigationIndex(manifestPages, components);
   writeFileSync(join(outDir, 'navigation.json'), json(navigation));
   writeFileSync(join(outDir, 'routes.json'), json(navigation.pages.map(({ id, langs }) => ({ id, langs }))));
+  // The ids and languages of the built guides and templates, read by their route matchers.
+  const routesOf = (list) => list.map(({ slug, langs }) => ({ id: slug, langs }));
+  writeFileSync(join(outDir, 'document-routes.json'), json({ guides: routesOf(navigation.guides), templates: routesOf(navigation.templates) }));
   let modelPath = toPosix(relative(outDir, join(guideDir, 'src', 'app', 'content', 'model')));
   if (!modelPath.startsWith('.')) modelPath = `./${modelPath}`;
   writeFileSync(join(outDir, 'loaders.ts'), loadersModule(pages.map(({ id, lang }) => ({ id, lang })), modelPath));

@@ -884,6 +884,9 @@ function dataValueProblem(vocab, vocabulary, term) {
   return `"${term.value}" is not a value of ${term.name} (${[...new Set(sets.flatMap((set) => [...set]))].map((value) => `"${value}"`).join(', ')})`;
 }
 
+/** The declared members of a page without a component (a guide or a template). */
+const NO_MEMBERS = Object.freeze(Object.fromEntries(FRAMEWORKS.map((framework) => [framework, { members: [], exports: [] }])));
+
 /**
  * The vocabulary pass over page models.
  * @param {{ pages: { id: string, lang: string, page: any }[], vocab: any, declared: (id: string) => any,
@@ -909,7 +912,9 @@ export function checkVocabulary(input) {
   for (const { id, lang, page } of pages) {
     const file = page.sourcePath ?? `docs/components/${id}${lang === 'ar' ? '.ar' : ''}.md`;
     files.add(file);
-    const vocabulary = componentVocabulary(vocab, id, declared(id));
+    // A guide or a template documents no component of its own: its names are judged as those of
+    // any page (exports, classes, specifications) and through the component pages a sentence links to.
+    const vocabulary = componentVocabulary(vocab, id, page.kind ? NO_MEMBERS : declared(id));
     const values = codeValues(page);
     const rowNames = values.rows;
     for (const item of values) {

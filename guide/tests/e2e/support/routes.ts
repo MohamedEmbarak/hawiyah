@@ -34,8 +34,23 @@ export interface IndexedPage {
   readonly examples: { example: string; section: string; title?: Record<Lang, string> }[];
 }
 
-/** The navigation index of the build: the component pages by category. */
-export const navigation = read(join('content', 'navigation.json')) as { categories: string[]; pages: IndexedPage[] };
+/** One built guide or template of the navigation index: its key (guide:<id>), its id inside the kind (slug). */
+export interface IndexedDocument {
+  readonly id: string;
+  readonly slug: string;
+  readonly langs: Lang[];
+  readonly title: Record<Lang, string>;
+  readonly summary: Record<Lang, string>;
+  readonly examples: { example: string; section: string; title?: Record<Lang, string> }[];
+}
+
+/** The navigation index of the build: the component pages by category, the guides and the templates in the order of their index.json. */
+export const navigation = read(join('content', 'navigation.json')) as { categories: string[]; pages: IndexedPage[]; guides: IndexedDocument[]; templates: IndexedDocument[] };
+
+/** The page model of a guide or a template (src/generated/content/pages/<kind>.<id>.<lang>.json). */
+export function documentModel(key: string, lang: Lang): PageModel {
+  return pageModel(key.replace(':', '.'), lang);
+}
 
 /** An inline node of the page model. */
 export interface ModelInline {

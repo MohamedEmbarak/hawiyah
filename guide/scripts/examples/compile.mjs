@@ -4,6 +4,7 @@
 // (HWC-U1) and Angular (HWC-A1). Findings are collected for every group before the
 // caller fails; each prints '<code> <file>:<line>: <message>'.
 import { join } from 'node:path';
+import { pathKey } from '../content/kinds.mjs';
 import { classicBundle } from './classic.mjs';
 import { compileAngular } from './compile-angular.mjs';
 import { compileReact } from './compile-react.mjs';
@@ -18,10 +19,12 @@ import {
 
 const LANGS = ['ar', 'en'];
 const NAME = /^[a-z][a-z0-9-]{0,39}$/;
-const ID = /^[a-z][a-z0-9-]*$/;
+/** The key of a page: a component id, guide:<id> or template:<id> (scripts/content/kinds.mjs). */
+const ID = /^(?:(?:guide|template):)?[a-z][a-z0-9-]*$/;
 
 export const groupKey = (group) => `${group.id}/${group.lang}/${group.example}`;
-export const nativeSelector = (group) => `guide-example-${group.id}-${group.example}`;
+/** The element name of a native example; the colon of a guide or template key is written as an underscore. */
+export const nativeSelector = (group) => `guide-example-${group.id.replace(':', '_')}-${group.example}`;
 
 /** Markdown file of a group: its sourcePath, else docs/components/<id>.md or <id>.ar.md. */
 export const sourceFile = (group) => group.sourcePath ?? `docs/components/${group.id}${group.lang === 'ar' ? '.ar' : ''}.md`;
@@ -81,7 +84,7 @@ export async function compileGroups(groups, { guideDir, workDir }) {
   for (const group of groups) {
     for (const framework of FRAMEWORKS) {
       const block = group.blocks[framework];
-      const entry = { group, framework, block, key: groupKey(group), dir: `${group.id}/${group.lang}/${group.example}`, failed: false };
+      const entry = { group, framework, block, key: groupKey(group), dir: `${pathKey(group.id)}/${group.lang}/${group.example}`, failed: false };
       entries.push(entry);
       const form = detectForm(framework, block.code);
       if (block.form && block.form !== form) {

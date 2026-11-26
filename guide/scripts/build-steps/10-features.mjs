@@ -13,7 +13,8 @@ export default {
       generatedDir: join(ctx.guideDir, ctx.generatedDir),
       docsDir: ctx.docsDir ?? join(ctx.guideDir, "../docs/components"),
       componentsFile: join(ctx.guideDir, "../components.json"),
+      kindDirs: ctx.kindDirs,
     });
-    ctx.log(`${features.length} feature(s): ${features.map((f) => f.id).join(", ")}; ${pages.components.length} component page source(s)`);
+    ctx.log(`${features.length} feature(s): ${features.map((f) => f.id).join(", ")}; ${pages.components.length} component page source(s), ${pages.guides.length} guide(s), ${pages.templates.length} template(s)`);
   },
 };

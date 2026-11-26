@@ -41,9 +41,12 @@ import { createReaders } from './api-tables/members.mjs';
 import { checkVocabulary, createVocabularyContext, readVocabularyExceptions } from './api-tables/vocabulary.mjs';
 import { formatFinding, LANGS } from './content/config.mjs';
 import { componentsDirOf } from './content/hash.mjs';
+import { isKey, kindDirs, pageKey, parseKey, pathKey, readIndex } from './content/kinds.mjs';
 import { buildModel, inlineText } from './content/model.mjs';
 import { parseMarkdown } from './content/parse.mjs';
-import { isPlaceholderAllowed, keyboardOf, pageTextFindings, processPair, readComponents, readFixture, readPending } from './content/pipeline.mjs';
+import {
+  builtDocuments, groupEntry, isPlaceholderAllowed, keyboardOf, pageTextFindings, processPair, readComponents, readFixture, readPending,
+} from './content/pipeline.mjs';
 import { pageRuleFindings } from './content/page-rules.mjs';
 import { componentNames } from './content/prose.mjs';
 import { analysePage } from './content/structure.mjs';
@@ -72,7 +75,7 @@ export function parseArgs(argv) {
     else if (!arg.startsWith('--') && options.id === null) options.id = arg;
     else throw new Error(`check:page: unknown argument ${arg}`);
   }
-  if (!options.id || !/^[a-z0-9-]+$/.test(options.id)) throw new Error('usage: npm run check:page -- <id> [--lang en] [--draft] [--docs <dir>] [--workers <n>]');
+  if (!options.id || !isKey(options.id)) throw new Error('usage: npm run check:page -- <id> | guide:<id> | template:<id> [--lang en] [--draft] [--docs <dir>] [--workers <n>]');
   if (options.lang !== null && options.lang !== 'en') throw new Error('check:page: --lang takes en (the English page alone); without it every language that exists is checked');
   return options;
 }
@@ -177,27 +180,23 @@ export async function takeEquivalenceLock({ dir = LOCK_DIR, log = () => {}, time
 // The content step for one page.
 
 /** The English page alone: its model and live groups, without parity (a page pending translation, or --lang en). */
-export function processEnglish({ id, entry, enText, enPath, componentsDir, built }) {
+export function processEnglish({ id: slug, kind = 'component', entry, enText, enPath, componentsDir, dirs, built, known = null }) {
+  const id = pageKey(kind, slug);
   const file = toPosix(relative(repoDir, enPath));
   const parsed = parseMarkdown(enText, file);
-  const outline = analysePage({ tree: parsed.tree, frontMatter: parsed.frontMatter, lang: 'en', file, id, entry });
-  const model = buildModel(outline, { id, repoDir, componentsDir, built, entry, filePath: enPath, sourcePath: file });
-  const names = componentNames(id, entry, join(guideDir, 'node_modules'));
-  const fixture = readFixture(componentsDir, repoDir);
+  const outline = analysePage({ tree: parsed.tree, frontMatter: parsed.frontMatter, lang: 'en', file, id: slug, entry, kind });
+  const model = buildModel(outline, { id, slug, kind, repoDir, componentsDir, dirs, built, entry: kind === 'component' ? entry : null, filePath: enPath, sourcePath: file });
+  const names = kind === 'component' ? componentNames(slug, entry, join(guideDir, 'node_modules')) : null;
+  const fixture = kind === 'component' ? readFixture(componentsDir, repoDir) : null;
   const fixtureNames = fixture ? componentNames(fixture.showsComponent, readComponents(join(repoDir, 'components.json')).get(fixture.showsComponent), join(guideDir, 'node_modules')) : null;
-  const text = pageTextFindings({ tree: parsed.tree, outline, lang: 'en', file, used: new Set(), placeholderAllowed: isPlaceholderAllowed(componentsDir, repoDir), names, fixtureNames });
-  const groups = outline.groups.map((group) => {
-    const item = { id, lang: 'en', example: group.example };
-    if (group.check !== undefined) item.check = group.check;
-    if (group.static) item.static = true;
-    if (group.differences !== undefined) item.differences = group.differences;
-    if (group.frame) item.frame = true;
-    if (group.width !== undefined) item.width = group.width;
-    item.blocks = Object.fromEntries(Object.entries(group.blocks).map(([framework, block]) => [framework, { lang: block.lang, form: block.form, code: block.code, line: block.line }]));
-    return item;
+  const ownDir = kind === 'component' ? componentsDir : dirs[kind];
+  const text = pageTextFindings({
+    tree: parsed.tree, outline, lang: 'en', file, used: new Set(), placeholderAllowed: isPlaceholderAllowed(ownDir, repoDir), names, fixtureNames,
+    known: known ?? readComponents(join(repoDir, 'components.json')), nodeModules: join(guideDir, 'node_modules'),
   });
+  const groups = outline.groups.map((group) => groupEntry(group, { id, kind, lang: 'en', sourcePath: file }));
   const manifestPage = {
-    id, langs: ['en'], title: { en: model.page.title }, summaryText: { en: inlineText(model.page.summary) }, headings: { en: model.page.headings },
+    id, ...(kind === 'component' ? {} : { kind, slug }), langs: ['en'], title: { en: model.page.title }, summaryText: { en: inlineText(model.page.summary) }, headings: { en: model.page.headings },
     liveGroups: outline.groups.map((group) => ({ example: group.example, frameworks: 4, ...(group.check !== undefined ? { check: group.check } : {}), ...(group.static ? { static: true } : {}), ...(group.frame ? { frame: true } : {}), ...(group.width !== undefined ? { width: group.width } : {}) })),
     keyboard: keyboardOf({ en: outline }),
   };
@@ -209,47 +208,60 @@ export function processEnglish({ id, entry, enText, enPath, componentsDir, built
  * @param {{ id: string, lang: string | null, componentsDir: string, componentsFile: string, pendingFile?: string }} options
  */
 export function pageContent(options) {
-  const { id, componentsDir } = options;
+  const { componentsDir } = options;
+  const key = parseKey(options.id);
+  const { kind, id: slug } = key;
+  const id = options.id;
+  const dirs = { ...kindDirs({ repoDir }), ...(options.dirs ?? {}), component: componentsDir };
   const known = readComponents(options.componentsFile);
-  const entry = known.get(id);
-  if (!entry) throw new Error(`check:page: "${id}" is not a component id in components.json`);
-  const enPath = join(componentsDir, `${id}.md`);
-  const arPath = join(componentsDir, `${id}.ar.md`);
-  const dirLabel = toPosix(relative(repoDir, componentsDir));
-  if (!existsSync(enPath)) throw new Error(`check:page: ${dirLabel}/${id}.md does not exist`);
+  const entry = kind === 'component' ? known.get(slug) : null;
+  if (kind === 'component' && !entry) throw new Error(`check:page: "${id}" is not a component id in components.json`);
+  const ownDir = kind === 'component' ? componentsDir : dirs[kind];
+  const enPath = join(ownDir, `${slug}.md`);
+  const arPath = join(ownDir, `${slug}.ar.md`);
+  const dirLabel = toPosix(relative(repoDir, ownDir));
+  if (!existsSync(enPath)) throw new Error(`check:page: ${dirLabel}/${slug}.md does not exist`);
   const pending = readPending(options.pendingFile);
   const findings = [];
   const hasArabic = existsSync(arPath);
+  if (kind !== 'component' && !readIndex(ownDir).ids.includes(slug)) {
+    findings.push({ code: 'HWC-FILE', file: `${dirLabel}/${slug}.md`, line: 1, message: `${slug} is not listed in ${dirLabel}/index.json; add it to "pages" in the order of the guide` });
+  }
   if (!hasArabic && !pending.has(id)) {
     // --lang en is the run of the writer of the English page, who lists the id while the Arabic page is written.
     const next = options.lang === 'en' ? `; while it is written, add ${id} to guide/scripts/content/pending-translation.json (the writer of the Arabic page removes it)` : '';
-    findings.push({ code: 'HWC-FILE', file: `${dirLabel}/${id}.md`, line: 1, message: `the English page has no Arabic sibling ${id}.ar.md${next}` });
+    findings.push({ code: 'HWC-FILE', file: `${dirLabel}/${slug}.md`, line: 1, message: `the English page has no Arabic sibling ${slug}.ar.md${next}` });
   }
   if (hasArabic && pending.has(id)) {
-    findings.push({ code: 'HWC-FILE', file: 'guide/scripts/content/pending-translation.json', line: 1, message: `${id} is listed as pending translation, but ${dirLabel}/${id}.ar.md exists; remove the entry` });
+    findings.push({ code: 'HWC-FILE', file: 'guide/scripts/content/pending-translation.json', line: 1, message: `${id} is listed as pending translation, but ${dirLabel}/${slug}.ar.md exists; remove the entry` });
   }
   const names = readdirSync(componentsDir);
-  const built = new Set(names.filter((name) => /^[a-z0-9-]+\.md$/.test(name)).map((name) => name.slice(0, -3)).filter((other) => names.includes(`${other}.ar.md`) && known.has(other)));
+  const built = new Set([
+    ...names.filter((name) => /^[a-z0-9-]+\.md$/.test(name)).map((name) => name.slice(0, -3)).filter((other) => names.includes(`${other}.ar.md`) && known.has(other)),
+    ...builtDocuments(dirs),
+  ]);
   const both = hasArabic && options.lang !== 'en';
   const enText = readFileSync(enPath, 'utf8');
   const result = both
-    ? processPair({ id, entry, enText, arText: readFileSync(arPath, 'utf8'), enPath, arPath, repoDir, componentsDir, built })
-    : processEnglish({ id, entry, enText, enPath, componentsDir, built });
+    ? processPair({ id: slug, kind, entry, enText, arText: readFileSync(arPath, 'utf8'), enPath, arPath, repoDir, componentsDir, dirs, built, known })
+    : processEnglish({ id: slug, kind, entry, enText, enPath, componentsDir, dirs, built, known });
   findings.push(...result.findings);
   const langs = both ? [...LANGS] : ['en'];
-  // A fragment of a link to another built page names one of its headings.
+  // A fragment of a link to another built page (of any kind) names one of its headings.
   for (const link of result.crossLinks) {
     if (!built.has(link.id)) continue;
+    const target = parseKey(link.id);
+    const targetDir = target.kind === 'component' ? componentsDir : dirs[target.kind];
     const other = processPair({
-      id: link.id, entry: known.get(link.id), enText: readFileSync(join(componentsDir, `${link.id}.md`), 'utf8'), arText: readFileSync(join(componentsDir, `${link.id}.ar.md`), 'utf8'),
-      enPath: join(componentsDir, `${link.id}.md`), arPath: join(componentsDir, `${link.id}.ar.md`), repoDir, componentsDir, built, exceptions: [],
+      id: target.id, kind: target.kind, entry: known.get(target.id) ?? null, enText: readFileSync(join(targetDir, `${target.id}.md`), 'utf8'), arText: readFileSync(join(targetDir, `${target.id}.ar.md`), 'utf8'),
+      enPath: join(targetDir, `${target.id}.md`), arPath: join(targetDir, `${target.id}.ar.md`), repoDir, componentsDir, dirs, built, known, exceptions: [],
     });
     const headings = new Set(Object.values(other.manifestPage.headings).flat().map((heading) => heading.id));
     if (!headings.has(link.fragment)) findings.push({ code: 'HWC-LINK', file: link.file, line: link.line, message: `the link "${link.url}" names no heading of the page ${link.id}` });
   }
   const groups = langs.flatMap((lang) => result.groupEntries[lang]);
   const manifestPage = { ...result.manifestPage, langs };
-  return { entry, langs, findings, models: result.models, groups, manifest: { pages: [manifestPage] }, pending: !hasArabic };
+  return { entry, kind, slug, dir: ownDir, langs, findings, models: result.models, groups, manifest: { pages: [manifestPage] }, pending: !hasArabic };
 }
 
 // ---------------------------------------------------------------------------
@@ -274,14 +286,16 @@ export async function checkPage(options) {
   const release = await takeLock(id, { dir: options.lockDir ?? LOCK_DIR, log });
   const startedAll = Date.now();
   try {
-    const pageDir = join(guideDir, '.cache', `page-${id}`);
+    const pageDir = join(guideDir, '.cache', `page-${pathKey(id)}`);
     rmSync(pageDir, { recursive: true, force: true });
     mkdirSync(pageDir, { recursive: true });
 
     // 1. Content.
     let started = Date.now();
     const componentsDir = options.docs ? componentsDirOf(resolve(options.docs)) : join(repoDir, 'docs', 'components');
-    const content = pageContent({ id, lang: options.lang ?? null, componentsDir, componentsFile: join(repoDir, 'components.json'), pendingFile: options.pendingFile });
+    // Guides and templates: below --docs when it holds components/, else the repository's.
+    const dirs = kindDirs({ repoDir, docsDir: options.docs && componentsDir !== resolve(options.docs) ? resolve(options.docs) : null });
+    const content = pageContent({ id, lang: options.lang ?? null, componentsDir, dirs, componentsFile: join(repoDir, 'components.json'), pendingFile: options.pendingFile });
     const contentLines = content.findings.map(formatFinding);
     failures.push(...contentLines);
     contentLines.forEach((line) => log(line));
@@ -293,10 +307,10 @@ export async function checkPage(options) {
     // the glossary and compliance assertions of the script tests and the Latin-script guard of step 72.
     started = Date.now();
     const source = (lang) => {
-      const path = join(componentsDir, `${id}${lang === 'ar' ? '.ar' : ''}.md`);
+      const path = join(content.dir, `${content.slug}${lang === 'ar' ? '.ar' : ''}.md`);
       return content.langs.includes(lang) && existsSync(path) ? { text: readFileSync(path, 'utf8'), file: toPosix(relative(repoDir, path)) } : null;
     };
-    const ruleLines = pageRuleFindings({ id, en: source('en'), ar: source('ar') }).map(formatFinding);
+    const ruleLines = pageRuleFindings({ id, kind: content.kind, en: source('en'), ar: source('ar') }).map(formatFinding);
     failures.push(...ruleLines);
     ruleLines.forEach((line) => log(line));
     timings.rules = Date.now() - started;
@@ -329,8 +343,8 @@ export async function checkPage(options) {
     timings.api = Date.now() - started;
     stage(log, 'api-tables and vocabulary', started, apiLines, ` ${api.tables} tables, ${api.rows} rows, ${vocabulary.stats.codes} code values, ${vocabulary.stats.markup} markup names`);
 
-    // 4. Coverage report (leadAmendments A5): a report, never a failure.
-    if (content.models.en) {
+    // 4. Coverage report (leadAmendments A5): a report, never a failure; a component page only.
+    if (content.models.en && content.kind === 'component') {
       const groupsEn = content.groups.filter((group) => group.lang === 'en');
       for (const line of coverageLines(coverageOf({ id, page: content.models.en, groups: groupsEn, declared: declared(id) }))) log(line);
     }

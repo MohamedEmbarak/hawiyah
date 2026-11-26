@@ -194,7 +194,12 @@ export interface ContentHeading {
 }
 
 export interface ContentSection {
-  readonly id: SectionId;
+  /**
+   * A section id of the fixed h2 set of a component page; on a template also
+   * 'composition', on a guide the GitHub slug of its English h2, on a page generated
+   * from the packages its own id.
+   */
+  readonly id: SectionId | (string & {});
   readonly level: 2;
   readonly title: readonly Inline[];
   readonly blocks: readonly Block[];
@@ -265,7 +270,12 @@ export interface PageEvidence {
 
 /** src/generated/content/pages/<id>.<lang>.json */
 export interface ContentPage {
+  /** The key of the page: the component id, guide:<id> or template:<id>. */
   readonly id: string;
+  /** A guide or a template (absent on a component page). */
+  readonly kind?: 'guide' | 'template';
+  /** The id of a guide or a template inside its kind. */
+  readonly slug?: string;
   readonly lang: ContentLang;
   readonly dir: ContentDir;
   /** The h1: components.json name (en) or labelAr (ar). */
@@ -367,6 +377,23 @@ export interface NavigationPage {
 export interface NavigationIndex {
   readonly categories: readonly string[];
   readonly pages: readonly NavigationPage[];
+  /** The built guides (docs/guides), in the order of their index.json. */
+  readonly guides?: readonly NavigationDocument[];
+  /** The built templates (docs/templates), in the order of their index.json. */
+  readonly templates?: readonly NavigationDocument[];
+}
+
+/** One built guide or template in the navigation index. */
+export interface NavigationDocument {
+  /** The key of the page: guide:<id> or template:<id>. */
+  readonly id: string;
+  /** The id inside the kind, the last segment of its address. */
+  readonly slug: string;
+  readonly langs: readonly ContentLang[];
+  /** The h1 of each language. */
+  readonly title: Readonly<Record<ContentLang, string>>;
+  readonly summary: Readonly<Record<ContentLang, string>>;
+  readonly examples: readonly NavigationExample[];
 }
 
 /** src/generated/content/loaders.ts: { '<id>/<lang>': () => import('./pages/<id>.<lang>.json') } */

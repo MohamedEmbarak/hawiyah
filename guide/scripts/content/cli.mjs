@@ -19,6 +19,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { formatFinding } from './config.mjs';
 import { componentsDirOf } from './hash.mjs';
+import { kindDirs } from './kinds.mjs';
 import { runContent } from './pipeline.mjs';
 
 export const guideDir = resolve(fileURLToPath(new URL('../..', import.meta.url)));
@@ -49,7 +50,9 @@ export function resolvePaths(options, cwd = process.cwd()) {
   else if (componentsDir !== docs && existsSync(join(docs, 'components.json'))) componentsFile = join(docs, 'components.json');
   const outDir = options.out ? resolve(cwd, options.out) : join(guideDir, 'src', 'generated', 'content');
   const liveGroupsFile = options.out ? join(outDir, 'live-groups.json') : join(guideDir, '.cache', 'content', 'live-groups.json');
-  return { guideDir, repoDir, componentsDir, componentsFile, outDir, liveGroupsFile };
+  // Guides and templates: below --docs when it holds components/, else the repository's.
+  const dirs = { ...kindDirs({ repoDir, docsDir: componentsDir !== docs ? docs : null }), component: componentsDir };
+  return { guideDir, repoDir, componentsDir, componentsFile, outDir, liveGroupsFile, dirs };
 }
 
 function main() {

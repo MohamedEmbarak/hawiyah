@@ -1,3 +1,4 @@
+import { sameDocument } from './kinds.mjs';
 // Cheap gates on the text of a page (fix round of stage 5a, items G2 and G3).
 // They prove that a page is not hollow, not a placeholder, not a page of another
 // component and free of a small set of words; they do not prove that a sentence is
@@ -142,7 +143,7 @@ export function textFindings(page) {
     for (const pattern of CLAIM_PATTERNS[lang]) {
       const match = pattern.exec(text);
       if (!match) continue;
-      const entry = claimExceptions.find((item) => item.file === file && item.text === unit.full);
+      const entry = claimExceptions.find((item) => sameDocument(item.file, file) && item.text === unit.full);
       if (entry) {
         used.add(entry);
         break;
@@ -276,7 +277,7 @@ export function liveComponentFindings({ groups, file, names, exceptions, used, f
     const missing = Object.entries(group.blocks).filter(([framework, block]) => !blockShows(framework, block.code, names)
       && !(fixtureNames && blockShows(framework, block.code, fixtureNames)));
     if (missing.length === 0) continue;
-    const entry = exceptions.find((item) => item.file === file && item.example === group.example);
+    const entry = exceptions.find((item) => sameDocument(item.file, file) && item.example === group.example);
     if (entry) {
       used.add(entry);
       continue;

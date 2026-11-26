@@ -84,17 +84,20 @@ test('the harness page is not part of the deployed guide', async ({ page }) => {
 // result natively in the page (prerendered and hydrated), and a group with frame never
 // does (pages/framed.spec.ts covers its frame).
 const builtManifest = JSON.parse(readFileSync(fileURLToPath(new URL('../../../src/generated/content/manifest.json', import.meta.url)), 'utf8')) as {
-  pages: { id: string; langs: ('ar' | 'en')[]; liveGroups: { example: string; frame?: true }[] }[];
+  pages: { id: string; kind?: 'guide' | 'template'; slug?: string; langs: ('ar' | 'en')[]; liveGroups: { example: string; frame?: true }[] }[];
 };
+// A guide or a template is one page at <lang>/guides/<id>/ or <lang>/templates/<id>/; its key
+// (guide:<id>) names its native examples with an underscore in place of the colon.
+const pathOf = (entry: (typeof builtManifest.pages)[number]): string => (entry.kind ? `${entry.kind}s/${entry.slug}/` : `components/${entry.id}/reference/`);
 for (const entry of builtManifest.pages) {
   for (const lang of entry.langs) {
     test(`${entry.id} ${lang}: every unframed group renders Angular natively, a framed group does not`, async ({ page }) => {
-      await page.goto(`${lang}/components/${entry.id}/reference/`);
+      await page.goto(`${lang}/${pathOf(entry)}`);
       await hydrated(page);
       const blocks = page.locator('guide-example-block');
       await expect(blocks).toHaveCount(entry.liveGroups.length);
       for (const [index, group] of entry.liveGroups.entries()) {
-        const native = blocks.nth(index).locator(`guide-native-result guide-example-${entry.id}-${group.example}`);
+        const native = blocks.nth(index).locator(`guide-native-result guide-example-${entry.id.replace(':', '_')}-${group.example}`);
         await expect(native, `${entry.id}/${group.example}`).toHaveCount(group.frame ? 0 : 1);
       }
     });

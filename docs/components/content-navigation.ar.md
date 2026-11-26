@@ -1,7 +1,7 @@
 ---
 source:
   summary: f7fa430a36dd
-  example: 716ef98b6c2e
+  example: cab566649344
   variants-and-states: 9cbab55e50f6
   api: 90427386b9c6
   accessibility: 0f41444ab5bd
@@ -17,8 +17,8 @@ source:
 يذكر كل بند المعرّف `id` لقسم من أقسام الصفحة، ويشير الرابط إليه. وتقع العلامة على القسم الحالي، ويحمل رابط ذلك القسم الخاصية `aria-current="location"`. ولا تضبط الأمثلة التالية `scrollRoot`، فيتتبّع المتحكم تمرير النافذة؛ ولا تتحرّك نتائجها بالتمرير، ويعرض كل منها القسم الأول قسمًا حاليًا.
 
 ```html live example=basic static
-<nav class="hw-content-nav" data-hw="content-navigation" aria-label="في هذه الصفحة">
-  <h2 class="hw-content-nav-heading">في هذه الصفحة</h2>
+<nav class="hw-content-nav" data-hw="content-navigation" aria-label="أقسام الطلب">
+  <h2 class="hw-content-nav-heading">أقسام الطلب</h2>
   <ul class="hw-content-nav-list"><li><a class="hw-content-nav-link" href="#cn-basic-overview" data-hw-section="cn-basic-overview"><span class="hw-content-nav-marker" aria-hidden="true"></span><span class="hw-content-nav-label">نظرة عامة</span></a></li><li><a class="hw-content-nav-link" href="#cn-basic-documents" data-hw-section="cn-basic-documents"><span class="hw-content-nav-marker" aria-hidden="true"></span><span class="hw-content-nav-label">المستندات المطلوبة</span></a></li><li><a class="hw-content-nav-link" href="#cn-basic-fees" data-hw-section="cn-basic-fees"><span class="hw-content-nav-marker" aria-hidden="true"></span><span class="hw-content-nav-label">الرسوم والدفع</span></a></li></ul>
 </nav>
 <section id="cn-basic-overview"><h3>نظرة عامة</h3><p>يُراجَع الطلب بعد تقديمه.</p></section>
@@ -29,7 +29,7 @@ source:
 ```tsx live example=basic
 <>
   <ContentNavigation
-    label="في هذه الصفحة"
+    label="أقسام الطلب"
     items={[
     { id: 'cn-basic-overview', label: 'نظرة عامة' },
     { id: 'cn-basic-documents', label: 'المستندات المطلوبة' },
@@ -44,7 +44,7 @@ source:
 
 ```vue live example=basic
 <ContentNavigation
-  label="في هذه الصفحة"
+  label="أقسام الطلب"
   :items="[
     { id: 'cn-basic-overview', label: 'نظرة عامة' },
     { id: 'cn-basic-documents', label: 'المستندات المطلوبة' },
@@ -58,7 +58,7 @@ source:
 
 ```ts live example=basic framework=angular
 template: `<hw-content-navigation
-  label="في هذه الصفحة"
+  label="أقسام الطلب"
   [items]="[
     { id: 'cn-basic-overview', label: 'نظرة عامة' },
     { id: 'cn-basic-documents', label: 'المستندات المطلوبة' },

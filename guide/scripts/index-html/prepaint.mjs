@@ -66,6 +66,12 @@ export function prepaintScript(available) {
   const data = JSON.stringify({
     components: [...(available.components ?? [])],
     landing: Boolean(available.landing),
+    guides: [...(available.guides ?? [])],
+    templates: [...(available.templates ?? [])],
+    guideIndex: Boolean(available.guideIndex),
+    templateIndex: Boolean(available.templateIndex),
+    brand: Boolean(available.brand),
+    foundations: Boolean(available.foundations),
   }).replace(/</g, "\\u003c");
   return `(${prepaint.toString()})(${data}, ${mapLegacyHash.toString()});`;
 }

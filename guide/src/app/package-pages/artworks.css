@@ -1,0 +1,35 @@
+/* The wordmark files on their surfaces and the loader: guide elements in a component of
+   their own. The host stands in the package prose and is not styled; its wrapper is. */
+.artworks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--hw-space-4);
+}
+
+.artwork,
+.loader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hw-space-2);
+  margin-block: 0;
+  margin-inline: 0;
+}
+
+.surface {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hw-space-6);
+  padding-block: var(--hw-space-6);
+  padding-inline: var(--hw-space-6);
+  border-radius: var(--hw-radius-md);
+  background-color: var(--hw-color-canvas);
+  outline: 1px solid var(--hw-color-border);
+}
+
+.surface img {
+  display: block;
+  inline-size: 9rem;
+  block-size: auto;
+}

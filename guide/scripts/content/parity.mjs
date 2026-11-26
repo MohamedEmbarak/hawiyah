@@ -1,3 +1,4 @@
+import { sameDocument } from './kinds.mjs';
 // Parity of the Arabic page with the English page (contentPipeline.parity):
 // HWC-PAR1 to HWC-PAR8 and the section hash check HWC-STALE. Findings are
 // reported against the Arabic file. HWC-PAR7: the same sequence of blocks in
@@ -357,7 +358,7 @@ export function checkParity(en, ar, sources) {
   // HWC-PAR8 Arabic script in the reader text of the Arabic page.
   const exceptions = sources.exceptions ?? [];
   // An entry names the whole text of a paragraph, item, cell or string (G13 of the 5a fix round), never a part of it.
-  const excepted = (text) => exceptions.some((entry) => entry.file === ar.file && text === entry.text.replace(/\s+/g, ' ').trim());
+  const excepted = (text) => exceptions.some((entry) => sameDocument(entry.file, ar.file) && text === entry.text.replace(/\s+/g, ' ').trim());
   const requireArabic = (node, text, where, keyCell = false) => {
     const value = text.replace(/\s+/g, ' ').trim();
     if (notArabic(value, keyCell) && !excepted(value)) push('HWC-PAR8', lineOf(node), `${where} has no Arabic script: "${value.slice(0, 80)}"; translate it, or list it in scripts/content/arabic-exceptions.json with a reason`);
@@ -448,8 +449,9 @@ export function checkParity(en, ar, sources) {
 
   // HWC-STALE section hashes (only when the front matter itself is valid).
   if (ar.source) {
-    const current = sectionHashes(enText);
-    const arSections = splitSections(arText);
+    // A guide's h2 are free text: its Arabic sections take the ids of the English sections by position.
+    const current = sectionHashes(enText, { kind: en.kind });
+    const arSections = splitSections(arText, en.kind === 'guide' ? { ids: splitSections(enText, { kind: 'guide' }).map((section) => section.id) } : {});
     for (const section of arSections) {
       const now = current[section.id];
       if (now === undefined) continue;

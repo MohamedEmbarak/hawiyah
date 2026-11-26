@@ -1,0 +1,16 @@
+/* The icons in a grid of name cards: guide elements in a component of their own. The
+   host stands in the package prose and is not styled; the list is. */
+.icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+  gap: var(--hw-space-3);
+  margin-block: var(--hw-space-4);
+  padding-inline-start: 0;
+}
+
+/* The icon and its name stay inline in the package's line of type: no guide layout
+   reaches them. */
+.icon {
+  display: block;
+  min-inline-size: 0;
+}

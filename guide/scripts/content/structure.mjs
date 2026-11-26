@@ -3,12 +3,14 @@
 // analysePage() checks one file and returns its outline for the model and the
 // parity checks.
 
+import GithubSlugger from 'github-slugger';
 import { parse as parseYaml } from 'yaml';
 import {
   ALERTS, API_COLUMNS, API_H3, API_HEADERS, API_KINDS, CAPTION_PREFIX, EM_DASH, H2, finding,
 } from './config.mjs';
 import { keyNameFindings, keyboardTable } from './keys.mjs';
 import { EVIDENCE_HEADINGS } from './evidence.mjs';
+import { TEMPLATE_H2 } from './kinds.mjs';
 import { groupLive, isLive } from './live.mjs';
 import { plainText } from './parse.mjs';
 
@@ -150,11 +152,30 @@ function checkApiSection(section, lang, push) {
 }
 
 /**
+ * The section id of each h2 of a guide (English): the slug GitHub generates, with every
+ * heading of the page counted in document order (the same ids as the model's).
+ */
+export function guideSectionIds(headingNodes) {
+  const slugger = new GithubSlugger();
+  const ids = new Map();
+  for (const node of headingNodes) {
+    const slug = slugger.slug(plainText(node).trim());
+    if (node.depth === 2) ids.set(node, slug);
+  }
+  return ids;
+}
+
+/**
  * Checks one page and returns its outline.
- * @param {{ tree: any, frontMatter: any, lang: 'ar'|'en', file: string, id: string, entry: { name: string, labelAr: string } }} page
+ * @param {{ tree: any, frontMatter: any, lang: 'ar'|'en', file: string, id: string, entry?: { name: string, labelAr: string } | null,
+ *           kind?: 'component' | 'guide' | 'template' }} page
+ *   kind: a component page (the default) has the outline of components.json and the h2 table; a guide a
+ *   free outline; a template the fixed outline of TEMPLATE_H2 (kinds.mjs).
  */
 export function analysePage(page) {
   const { tree, lang, file, entry } = page;
+  const kind = page.kind ?? 'component';
+  const outlineH2 = kind === 'template' ? TEMPLATE_H2 : H2;
   const findings = [];
   const push = (code, line, message) => findings.push(finding(code, file, line, message));
   const source = checkFrontMatter(page, push);
@@ -164,12 +185,14 @@ export function analysePage(page) {
   const h1s = body.filter((node) => node.type === 'heading' && node.depth === 1);
   const h1 = body[0]?.type === 'heading' && body[0].depth === 1 ? body[0] : null;
   const expectedLine = page.frontMatter ? (tree.children[0].position.end.line + 1) : 1;
-  const expectedTitle = lang === 'en' ? entry.name : entry.labelAr;
   if (!h1) push('HWC-H1', lineOf(body[0]), 'the page starts with its h1 on the first line after the front matter');
   else {
     if (lineOf(h1) !== expectedLine) push('HWC-H1', lineOf(h1), `the h1 must be on line ${expectedLine}, the first line after the front matter`);
     const title = plainText(h1).trim();
-    if (title !== expectedTitle) push('HWC-H1', lineOf(h1), `the h1 is "${title}"; components.json gives "${expectedTitle}" (${lang === 'en' ? 'name' : 'labelAr'})`);
+    if (kind === 'component') {
+      const expectedTitle = lang === 'en' ? entry.name : entry.labelAr;
+      if (title !== expectedTitle) push('HWC-H1', lineOf(h1), `the h1 is "${title}"; components.json gives "${expectedTitle}" (${lang === 'en' ? 'name' : 'labelAr'})`);
+    } else if (!title) push('HWC-H1', lineOf(h1), `the h1 of a ${kind} is its title; write it`);
   }
   for (const extra of h1s.filter((node) => node !== h1)) push('HWC-H1', lineOf(extra), 'a page has exactly one h1');
 
@@ -198,31 +221,44 @@ export function analysePage(page) {
 
   const sections = [];
   let current = null;
+  // A guide's h2 are free text: the English section id is the GitHub slug, the Arabic one the id
+  // of the English h2 at the same position.
+  // page.sectionIds: the English section ids, by position, for the Arabic page; an h2 past
+  // them keeps its own slug (HWC-PAR1 reports the difference).
+  const guideIds = kind === 'guide' ? guideSectionIds(body.filter((node) => node.type === 'heading')) : null;
   for (const node of firstH2 < 0 ? [] : body.slice(firstH2)) {
     if (node.type === 'heading' && node.depth === 2) {
       const text = plainText(node).trim();
-      const known = H2.find((entry) => entry[lang] === text);
+      if (kind === 'guide') {
+        const position = sections.length;
+        current = { id: (lang === 'ar' ? page.sectionIds?.[position] : null) ?? guideIds.get(node), text, node, children: [] };
+        sections.push(current);
+        continue;
+      }
+      const known = outlineH2.find((entry) => entry[lang] === text);
       current = { id: known?.id ?? null, text, node, children: [] };
       sections.push(current);
       if (!known) {
-        const other = H2.find((entry) => entry[lang === 'en' ? 'ar' : 'en'] === text);
+        const other = outlineH2.find((entry) => entry[lang === 'en' ? 'ar' : 'en'] === text);
         push('HWC-H2', lineOf(node), other
           ? `the h2 "${text}" is in the other language; write "${other[lang]}"`
-          : `the h2 "${text}" is not one of ${H2.map((entry) => `"${entry[lang]}"`).join(', ')}`);
+          : `the h2 "${text}" is not one of ${outlineH2.map((entry) => `"${entry[lang]}"`).join(', ')}${kind === 'template' ? ' (the outline of a template)' : ''}`);
       }
     } else current.children.push(node);
   }
-  let lastIndex = -1;
-  for (const section of sections) {
-    if (!section.id) continue;
-    const index = H2.findIndex((entry) => entry.id === section.id);
-    if (index === lastIndex) push('HWC-H2', lineOf(section.node), `the h2 "${section.text}" appears more than once`);
-    else if (index < lastIndex) push('HWC-H2', lineOf(section.node), `the h2 "${section.text}" is out of order; the order is ${H2.map((entry) => entry[lang]).join(', ')}`);
-    lastIndex = Math.max(lastIndex, index);
-  }
-  for (const entry of H2.filter((item) => item.required)) {
-    if (!sections.some((section) => section.id === entry.id)) push('HWC-H2', lineOf(h1), `the required h2 "${entry[lang]}" is missing`);
-  }
+  if (kind !== 'guide') {
+    let lastIndex = -1;
+    for (const section of sections) {
+      if (!section.id) continue;
+      const index = outlineH2.findIndex((entry) => entry.id === section.id);
+      if (index === lastIndex) push('HWC-H2', lineOf(section.node), `the h2 "${section.text}" appears more than once`);
+      else if (index < lastIndex) push('HWC-H2', lineOf(section.node), `the h2 "${section.text}" is out of order; the order is ${outlineH2.map((entry) => entry[lang]).join(', ')}`);
+      lastIndex = Math.max(lastIndex, index);
+    }
+    for (const entry of outlineH2.filter((item) => item.required)) {
+      if (!sections.some((section) => section.id === entry.id)) push('HWC-H2', lineOf(h1), `the required h2 "${entry[lang]}" is missing`);
+    }
+  } else if (sections.length === 0) push('HWC-H2', lineOf(h1), 'a guide has at least one h2 section after its summary');
 
   // Headings per section: free text only where allowed; h4 only under h3.
   for (const section of sections) {
@@ -230,8 +266,10 @@ export function analysePage(page) {
     for (const node of section.children) {
       if (node.type !== 'heading') continue;
       if (node.depth === 3) seenH3 = true;
-      if (section.id === 'example' && (node.depth === 3 || node.depth === 4)) {
+      if (kind === 'component' && section.id === 'example' && (node.depth === 3 || node.depth === 4)) {
         push('HWC-H2', lineOf(node), 'the Example section contains paragraphs and one live group only, without headings');
+      } else if (kind === 'template' && section.id === 'example' && node.depth === 4) {
+        push('HWC-H2', lineOf(node), 'the Example section of a template contains paragraphs, h3 headings and framed live groups; it has no h4');
       } else if (node.depth === 4 && !seenH3 && section.id !== 'api') {
         push('HWC-H5', lineOf(node), 'an h4 stands under an h3');
       }
@@ -261,16 +299,16 @@ export function analysePage(page) {
 
   // Key elements and the keyboard table (5a.7, 5a.8).
   findings.push(...keyNameFindings(body, lang, file));
-  const keyboard = keyboardTable(tables, lang, entry, file);
+  const keyboard = kind === 'component' ? keyboardTable(tables, lang, entry, file) : { table: null, findings: [] };
   findings.push(...keyboard.findings);
 
   // API section.
-  const apiSection = sections.find((section) => section.id === 'api');
+  const apiSection = kind === 'component' ? sections.find((section) => section.id === 'api') : null;
   const apiTables = apiSection ? checkApiSection(apiSection, lang, push) : [];
   for (const table of tables) table.api = apiTables.find((item) => item.node === table.node)?.h3 ?? null;
 
   // Live groups and their placement.
-  const live = groupLive(body, file, { id: page.id, kind: page.kind ?? 'component' });
+  const live = groupLive(body, file, { id: page.id, kind });
   findings.push(...live.findings);
   const placement = new Map();
   for (const group of live.groups) {
@@ -280,11 +318,19 @@ export function analysePage(page) {
       const before = section.children.slice(0, section.children.indexOf(group.first));
       h3 = [...before].reverse().find((node) => node.type === 'heading' && node.depth === 3) ?? null;
     }
-    const allowed = section?.id === 'example' || (section?.id === 'variants-and-states' && h3);
+    // A guide may hold a live group under any heading; a template only in its Example section.
+    const allowed = kind === 'guide' ? Boolean(section)
+      : kind === 'template' ? section?.id === 'example'
+        : section?.id === 'example' || (section?.id === 'variants-and-states' && h3);
     if (!allowed) {
-      push('HWC-LIVE2', group.line, `the live group "${group.example}" stands in the Example section or under an h3 of Variants and states`);
+      push('HWC-LIVE2', group.line, kind === 'guide'
+        ? `the live group "${group.example}" stands in a section of the guide, after its summary`
+        : kind === 'template'
+          ? `the live group "${group.example}" stands in the Example section of the template`
+          : `the live group "${group.example}" stands in the Example section or under an h3 of Variants and states`);
       continue;
     }
+    if (kind === 'template' && !group.frame) push('HWC-LIVE2', group.line, `the live group "${group.example}" of a template is a state of the page and carries frame on its html block`);
     group.section = section.id;
     group.h3 = h3;
     const key = h3 ?? section.node;
@@ -298,7 +344,8 @@ export function analysePage(page) {
       if (found) push('HWC-LIVE2', block.line, `the live block "${group.example}" uses ${found[0].trim()}; an example does not depend on today's date, the time zone, random values or a request, so its screenshots can be compared`);
     }
   }
-  const exampleSection = sections.find((section) => section.id === 'example');
+  const exampleSection = kind === 'component' ? sections.find((section) => section.id === 'example') : null;
+  if (kind === 'template') findings.push(...templateExampleFindings(sections.find((section) => section.id === 'example'), placement, file));
   if (exampleSection) {
     const count = (placement.get(exampleSection.node) ?? []).length;
     if (count !== 1) push('HWC-LIVE2', lineOf(exampleSection.node), `the Example section contains exactly one live group (found ${count})`);
@@ -306,7 +353,7 @@ export function analysePage(page) {
       if (node.type !== 'paragraph' && !isLive(node) && node.type !== 'heading') push('HWC-H2', lineOf(node), `the Example section contains paragraphs and one live group only (found ${node.type})`);
     }
   }
-  const variants = sections.find((section) => section.id === 'variants-and-states');
+  const variants = kind === 'component' ? sections.find((section) => section.id === 'variants-and-states') : null;
   if (variants) {
     for (const node of variants.children.filter((child) => child.type === 'heading' && child.depth === 3)) {
       const count = (placement.get(node) ?? []).length;
@@ -344,13 +391,76 @@ export function analysePage(page) {
   // The guide generates the evidence and the open items after the section Platforms Code
   // reference; the section keeps no heading of its own for them (G20 of the 5a fix round).
   for (const heading of headings) {
-    if (heading.section === 'platforms-code-reference' && EVIDENCE_HEADING_TEXT.test(heading.text)) {
+    if (kind === 'component' && heading.section === 'platforms-code-reference' && EVIDENCE_HEADING_TEXT.test(heading.text)) {
       push('HWC-H2', lineOf(heading.node), `the heading "${heading.text}" restates the evidence panel, which the guide generates after the section; keep the sources of the mapping in this section and leave out the evidence and the open items`);
     }
   }
 
+  const composition = kind === 'template' ? compositionOf(sections.find((section) => section.id === 'composition'), file) : null;
+  if (composition) findings.push(...composition.findings);
+
   return {
-    lang, file, source, h1, summaryNodes, sections, headings, tables, alerts, codeBlocks, keyboard: keyboard.table,
+    kind, lang, file, source, h1, summaryNodes, sections, headings, tables, alerts, codeBlocks, keyboard: keyboard.table,
     groups: live.groups.filter((group) => group.section), groupOf: live.groupOf, findings,
+    ...(composition ? { composition: composition.items } : {}),
   };
+}
+
+/**
+ * The Example section of a template (HWC-LIVE2, HWC-H2): paragraphs, h3 headings and one or
+ * more framed live groups, each a state of the page; with more than one group, each stands
+ * under an h3 of its own that names the state, and every h3 holds exactly one group.
+ */
+function templateExampleFindings(section, placement, file) {
+  if (!section) return [];
+  const findings = [];
+  const push = (code, line, message) => findings.push(finding(code, file, line, message));
+  for (const node of section.children) {
+    if (node.type !== 'paragraph' && node.type !== 'heading' && !isLive(node)) push('HWC-H2', lineOf(node), `the Example section of a template contains paragraphs, h3 headings and framed live groups only (found ${node.type})`);
+  }
+  const h3s = section.children.filter((node) => node.type === 'heading' && node.depth === 3);
+  const direct = placement.get(section.node) ?? [];
+  const total = direct.length + h3s.reduce((sum, node) => sum + (placement.get(node) ?? []).length, 0);
+  if (total === 0) push('HWC-LIVE2', lineOf(section.node), 'the Example section of a template contains at least one framed live group, each a state of the page');
+  if (h3s.length === 0 && direct.length > 1) push('HWC-LIVE2', direct[1].line, 'the Example section of a template with more than one live group gives each group an h3 of its own that names the state of the page');
+  if (h3s.length > 0) {
+    if (direct.length > 0) push('HWC-LIVE2', direct[0].line, `the live group "${direct[0].example}" stands before the first h3; with h3 headings, each group stands under the h3 of its state`);
+    for (const node of h3s) {
+      const count = (placement.get(node) ?? []).length;
+      if (count !== 1) push('HWC-LIVE2', lineOf(node), `the h3 "${plainText(node).trim()}" of the Example section contains exactly one live group (found ${count})`);
+    }
+  }
+  return findings;
+}
+
+/** A link destination that names a component page: ../components/<id>.md or <id>.ar.md, with an optional fragment. */
+const COMPONENT_LINK = /^\.\.\/components\/([a-z0-9-]+)(?:\.ar)?\.md(?:#[^#]*)?$/;
+
+/**
+ * The Composition section of a template (HWC-COMP): lists whose every item names one
+ * component the template uses by a link to its component page, the first link of the
+ * item's paragraph (the rest of the item is free text). Returns the components in the
+ * order of the items: [{ id, line }].
+ */
+export function compositionOf(section, file) {
+  const findings = [];
+  const items = [];
+  if (!section) return { findings, items };
+  const push = (line, message) => findings.push(finding('HWC-COMP', file, line, message));
+  const lists = section.children.filter((node) => node.type === 'list');
+  if (lists.length === 0) push(lineOf(section.node), 'the Composition section lists the components the template uses, one list item per component, each with a link to its component page');
+  for (const list of lists) {
+    for (const item of list.children) {
+      const paragraph = item.children[0];
+      const link = paragraph?.type === 'paragraph' ? paragraph.children.find((child) => child.type === 'link') : null;
+      const match = link ? COMPONENT_LINK.exec(link.url) : null;
+      if (!match) {
+        push(lineOf(item), 'each item of the Composition section names a component by a link to its page (../components/<id>.md), the first link of the item');
+        continue;
+      }
+      if (items.some((entry) => entry.id === match[1])) push(lineOf(item), `the component ${match[1]} is listed more than once`);
+      else items.push({ id: match[1], line: lineOf(item) });
+    }
+  }
+  return { findings, items };
 }

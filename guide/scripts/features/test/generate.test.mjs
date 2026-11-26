@@ -79,6 +79,8 @@ describe("generateFeatures", () => {
         { id: "button", name: "Button", labelAr: "زر" },
         { id: "tabs", name: "Tabs", labelAr: "تبويبات" },
       ],
+      guides: [],
+      templates: [],
     });
     expect(JSON.parse(readFileSync(join(dir, "pages.json"), "utf8"))).toEqual(pages);
   });
@@ -92,7 +94,7 @@ describe("generateFeatures", () => {
   });
 
   it("returns no pages when the docs directory does not exist", () => {
-    expect(listPages({ docsDir: join(fixtures, "missing"), components: [{ id: "button" }] })).toEqual({ components: [] });
+    expect(listPages({ docsDir: join(fixtures, "missing"), components: [{ id: "button" }] })).toEqual({ components: [], guides: [], templates: [] });
   });
 
   it("fails when the id differs from the directory name", () => {

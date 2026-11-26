@@ -15,6 +15,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import GithubSlugger from 'github-slugger';
 import { H2 } from './config.mjs';
+import { TEMPLATE_H2, kindDirs, parseKey } from './kinds.mjs';
 import { normalise } from './parse.mjs';
 
 /** The lines of a file after its front matter block, with their 1-based line numbers. */
@@ -36,22 +37,28 @@ function trimBlank(lines) {
   return lines.slice(from, to);
 }
 
-/** Section id of an h2 text in either language; unknown headings take the GitHub slug. */
+/** Section id of an h2 text in either language (the h2 of a component page or a template); unknown headings take the GitHub slug. */
 export function sectionId(text) {
-  const known = H2.find((entry) => entry.en === text || entry.ar === text);
+  const known = [...H2, ...TEMPLATE_H2].find((entry) => entry.en === text || entry.ar === text);
   return known ? known.id : new GithubSlugger().slug(text);
 }
 
 /**
  * Splits a page into its summary and h2 sections.
+ * @param {string} text
+ * @param {{ kind?: 'component' | 'guide' | 'template', ids?: string[] }} [options] kind 'guide': the id
+ *   of an h2 is the slug GitHub generates with every heading of the page counted in order (the
+ *   ids of the page model); ids: the section ids by position, summary first (an Arabic guide
+ *   takes the ids of its English page).
  * @returns {{ id: string, text: string, line: number }[]}
  */
-export function splitSections(text) {
+export function splitSections(text, options = {}) {
   const lines = bodyLines(text);
   const sections = [];
   let current = null;
   let fence = null;
   let seenH1 = false;
+  const slugger = options.kind === 'guide' ? new GithubSlugger() : null;
   for (const entry of lines) {
     const fenceMatch = /^ {0,3}(`{3,}|~{3,})/.exec(entry.content);
     if (fence) {
@@ -63,6 +70,8 @@ export function splitSections(text) {
     if (fenceMatch) fence = fenceMatch[1];
     const h1 = !fenceMatch && /^ {0,3}#(?:\s|$)/.test(entry.content);
     const h2 = !fenceMatch && /^ {0,3}##(?:\s+(.*?))?(?:\s+#+)?\s*$/.exec(entry.content);
+    const anyHeading = !fenceMatch && /^ {0,3}#{1,6}(?:\s+(.*?))?(?:\s+#+)?\s*$/.exec(entry.content);
+    const slug = slugger && anyHeading ? slugger.slug((anyHeading[1] ?? '').trim()) : null;
     if (h1 && !seenH1) {
       seenH1 = true;
       current = { id: 'summary', lines: [], line: entry.line + 1 };
@@ -70,15 +79,15 @@ export function splitSections(text) {
       continue;
     }
     if (h2) {
-      current = { id: sectionId((h2[1] ?? '').trim()), lines: [entry], line: entry.line };
+      current = { id: slug ?? sectionId((h2[1] ?? '').trim()), lines: [entry], line: entry.line };
       sections.push(current);
       continue;
     }
     if (current) current.lines.push(entry);
   }
-  return sections.map((section) => {
+  return sections.map((section, index) => {
     const kept = trimBlank(section.lines);
-    return { id: section.id, text: kept.map((entry) => entry.content).join('\n'), line: kept[0]?.line ?? section.line };
+    return { id: options.ids?.[index] ?? section.id, text: kept.map((entry) => entry.content).join('\n'), line: kept[0]?.line ?? section.line };
   });
 }
 
@@ -87,18 +96,18 @@ export function hashText(text) {
   return createHash('sha256').update(text, 'utf8').digest('hex').slice(0, 12);
 }
 
-/** { [sectionId]: hash } for a page, in document order. */
-export function sectionHashes(text) {
+/** { [sectionId]: hash } for a page, in document order (options as for splitSections). */
+export function sectionHashes(text, options = {}) {
   const out = {};
-  for (const section of splitSections(text)) {
+  for (const section of splitSections(text, options)) {
     if (!(section.id in out)) out[section.id] = hashText(section.text);
   }
   return out;
 }
 
-/** The YAML front matter block for the Arabic page of an English source. */
-export function frontMatterBlock(englishText) {
-  const hashes = sectionHashes(englishText);
+/** The YAML front matter block for the Arabic page of an English source (kind: as for splitSections). */
+export function frontMatterBlock(englishText, kind = 'component') {
+  const hashes = sectionHashes(englishText, { kind });
   return ['---', 'source:', ...Object.entries(hashes).map(([id, hash]) => `  ${id}: ${hash}`), '---'].join('\n');
 }
 
@@ -112,19 +121,26 @@ function main(argv) {
   const guideDir = resolve(fileURLToPath(new URL('../..', import.meta.url)));
   let id = null;
   let docs = resolve(guideDir, '..', 'docs', 'components');
+  let docsGiven = false;
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === '--docs') {
       if (argv[i + 1] === undefined) throw new Error('--docs needs a directory');
       docs = resolve(argv[i + 1]);
+      docsGiven = true;
       i += 1;
-    } else if (argv[i].startsWith('--docs=')) docs = resolve(argv[i].slice(7));
+    } else if (argv[i].startsWith('--docs=')) {
+      docs = resolve(argv[i].slice(7));
+      docsGiven = true;
+    }
     else if (!argv[i].startsWith('--') && id === null) id = argv[i];
     else throw new Error(`unknown argument ${argv[i]}`);
   }
-  if (!id || !/^[a-z0-9-]+$/.test(id)) throw new Error('usage: npm run content:hash -- <id> [--docs <dir>]');
-  const file = resolve(componentsDirOf(docs), `${id}.md`);
-  if (!existsSync(file)) throw new Error(`content:hash: ${id}.md does not exist in ${componentsDirOf(docs)}`);
-  process.stdout.write(`${frontMatterBlock(readFileSync(file, 'utf8'))}\n`);
+  const key = parseKey(id);
+  if (!key) throw new Error('usage: npm run content:hash -- <id> | guide:<id> | template:<id> [--docs <dir>]');
+  const dir = key.kind === 'component' ? componentsDirOf(docs) : kindDirs({ repoDir: resolve(guideDir, '..'), docsDir: docsGiven ? docs : null })[key.kind];
+  const file = resolve(dir, `${key.id}.md`);
+  if (!existsSync(file)) throw new Error(`content:hash: ${key.id}.md does not exist in ${dir}`);
+  process.stdout.write(`${frontMatterBlock(readFileSync(file, 'utf8'), key.kind)}\n`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

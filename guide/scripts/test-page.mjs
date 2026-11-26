@@ -16,11 +16,19 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { KINDS, isKey, parseKey } from './content/kinds.mjs';
 
 const guideDir = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
-/** The title filter of the per-page tests of `id`: its routes and the describe of component-page.spec.ts. */
+/**
+ * The title filter of the per-page tests of `id`: its routes and the describe of
+ * component-page.spec.ts; for a guide or a template (guide:<id>, template:<id>), the
+ * route of its page (guides/<id>/, templates/<id>/), which every test of kinds/kinds.spec.ts
+ * on the page names.
+ */
 export function titleFilter(id) {
+  const key = parseKey(id);
+  if (key && key.kind !== 'component') return `(${KINDS[key.kind].route}/${key.id}/)`;
   return `(components/${id}/|component page ${id} \\()`;
 }
 
@@ -31,7 +39,7 @@ export function ownSpecs(id, root = guideDir) {
 
 function main(argv) {
   const [id, ...rest] = argv;
-  if (!id || !/^[a-z0-9-]+$/.test(id)) throw new Error('usage: npm run test:page -- <id> [<playwright option> ...]');
+  if (!id || !isKey(id)) throw new Error('usage: npm run test:page -- <id> | guide:<id> | template:<id> [<playwright option> ...]');
   const manifestFile = join(guideDir, 'src', 'generated', 'content', 'manifest.json');
   const manifest = existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : { pages: [] };
   if (!existsSync(join(guideDir, 'dist', 'browser', 'index.html')) || !manifest.pages.some((page) => page.id === id)) {

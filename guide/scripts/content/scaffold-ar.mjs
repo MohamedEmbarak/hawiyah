@@ -33,6 +33,7 @@ import { generatedNote, generatedNoteMarkdown, stylesVersion } from '../api-tabl
 import { captionLine } from '../api-tables/write.mjs';
 import { API_HEADERS, CAPTION_PREFIX, H2, KEYBOARD_TABLE, KEY_NAMES, keyId } from './config.mjs';
 import { componentsDirOf, frontMatterBlock } from './hash.mjs';
+import { TEMPLATE_H2, isKey, kindDirs, parseKey } from './kinds.mjs';
 import { normalise, parseMarkdown, plainText } from './parse.mjs';
 import { complianceSentence, tableProblems } from './scaffold.mjs';
 import { applyStringMap, groupContexts, liveBlocks, readerNames } from './string-map.mjs';
@@ -53,8 +54,11 @@ export function codeBodyEdit(source, node, body) {
   return { from: from + first + 1, to: from + last, text: body };
 }
 
-/** The top-level structure of a page: sections with their nodes. */
-export function outline(source) {
+/** The fixed h2 of a kind: those of a component page or of a template; a guide has none. */
+const fixedH2 = (kind) => (kind === 'template' ? TEMPLATE_H2 : kind === 'guide' ? [] : H2);
+
+/** The top-level structure of a page: sections with their nodes (kind: the fixed h2 it knows). */
+export function outline(source, kind = 'component') {
   const { tree } = parseMarkdown(source, 'page.md');
   const nodes = tree.children.filter((node) => node.type !== 'yaml');
   let section = null;
@@ -62,7 +66,7 @@ export function outline(source) {
   return nodes.map((node, index) => {
     if (node.type === 'heading' && node.depth === 2) {
       const text = plainText(node).trim();
-      section = H2.find((item) => item.en === text || item.ar === text)?.id ?? null;
+      section = fixedH2(kind).find((item) => item.en === text || item.ar === text)?.id ?? null;
       h3 = null;
     } else if (node.type === 'heading' && node.depth === 3) h3 = H3_IDS[plainText(node).trim()] ?? null;
     return { node, index, section, h3, next: nodes[index + 1] ?? null };
@@ -96,7 +100,7 @@ const noteText = (node) => plainText(node).replace(/\s+/g, ' ').trim().replace(/
  * @returns {{ text: string, missing: string[], left: string[], unused: string[] }} left: strings
  *   that render as reader text under a name the map does not replace ('<name>: <text>')
  */
-export function scaffoldArabic(englishText, { entry, declared, map, version, placeholder = false }) {
+export function scaffoldArabic(englishText, { entry, declared, map, version, placeholder = false, kind = 'component' }) {
   const source = normalise(englishText);
   const edits = [];
   const used = new Set();
@@ -107,25 +111,28 @@ export function scaffoldArabic(englishText, { entry, declared, map, version, pla
   const contexts = groupContexts(liveBlocks(source), names);
   const englishNote = generatedNote('en', version);
   const compliance = { en: complianceSentence('en'), ar: complianceSentence('ar') };
-  for (const item of outline(source)) {
+  // A guide or a template: its h1 (and a guide's h2) are free text, translated in place; no API table, no keyboard table caption.
+  const component = kind === 'component';
+  for (const item of outline(source, kind)) {
     const { node } = item;
     const from = node.position.start.offset;
     const to = node.position.end.offset;
-    if (node.type === 'heading' && node.depth === 1) edits.push({ from, to, text: `# ${entry.labelAr}` });
-    else if (node.type === 'heading' && node.depth === 2 && item.section) edits.push({ from, to, text: `## ${H2.find((h2) => h2.id === item.section).ar}` });
+    if (node.type === 'heading' && node.depth === 1) {
+      if (component) edits.push({ from, to, text: `# ${entry.labelAr}` });
+    } else if (node.type === 'heading' && node.depth === 2 && item.section) edits.push({ from, to, text: `## ${fixedH2(kind).find((h2) => h2.id === item.section).ar}` });
     else if (node.type === 'paragraph' && source.slice(from, from + CAPTION_PREFIX.en.length) === CAPTION_PREFIX.en) {
-      if (isApiTableCaption(item)) edits.push({ from, to, text: captionLine(item.h3, 'ar', declared, entry) });
-      else if (isKeyboardCaption(source, item)) {
+      if (component && isApiTableCaption(item)) edits.push({ from, to, text: captionLine(item.h3, 'ar', declared, entry) });
+      else if (component && isKeyboardCaption(source, item)) {
         // The keyboard table (5a.8): its fixed Arabic caption and headers.
         edits.push({ from, to, text: `${CAPTION_PREFIX.ar}${KEYBOARD_TABLE.ar.caption(entry)}` });
         const table = item.next.position.start.offset;
         edits.push({ from: table, to: source.indexOf('\n', table), text: `| ${KEYBOARD_TABLE.ar.headers.join(' | ')} |` });
       } else edits.push({ from, to: from + CAPTION_PREFIX.en.length, text: CAPTION_PREFIX.ar });
-    } else if (node.type === 'table' && item.section === 'api' && item.h3) {
+    } else if (component && node.type === 'table' && item.section === 'api' && item.h3) {
       const header = API_HEADERS.ar[item.h3];
       const lineEnd = source.indexOf('\n', from);
       edits.push({ from, to: lineEnd, text: `| ${header.join(' | ')} |` });
-    } else if (node.type === 'blockquote' && item.section === 'api' && noteText(node) === englishNote) {
+    } else if (component && node.type === 'blockquote' && item.section === 'api' && noteText(node) === englishNote) {
       edits.push({ from, to, text: generatedNoteMarkdown('ar', version) });
     } else if (node.type === 'code' && (node.meta ?? '').split(/\s+/).includes('live')) {
       const group = contexts.get(/(?:^|\s)example=([^\s]+)/.exec(node.meta ?? '')?.[1] ?? null);
@@ -150,7 +157,7 @@ export function scaffoldArabic(englishText, { entry, declared, map, version, pla
   if (placeholder) edits.push(...placeholderEdits(source, edits));
   let body = source;
   for (const edit of edits.sort((a, b) => b.from - a.from)) body = body.slice(0, edit.from) + edit.text + body.slice(edit.to);
-  const text = `${frontMatterBlock(source)}\n${body}`;
+  const text = `${frontMatterBlock(source, kind)}\n${body}`;
   return { text, missing: [...missing], left: [...left], unused: Object.keys(map).filter((key) => !used.has(key)) };
 }
 
@@ -211,12 +218,13 @@ function parseArgs(argv) {
     else if (arg === '--docs' || arg === '--strings') {
       if (argv[i + 1] === undefined) throw new Error(`${arg} needs a value`);
       options[arg.slice(2)] = resolve(argv[i + 1]);
+      if (arg === '--docs') options.docsGiven = true;
       i += 1;
     } else if (!arg.startsWith('--') && options.id === null) options.id = arg;
     else throw new Error(`content:scaffold-ar: unknown argument ${arg}`);
   }
-  if (!options.id || !/^[a-z0-9-]+$/.test(options.id) || (!options.strings && !options.placeholder)) {
-    throw new Error('usage: npm run content:scaffold-ar -- <id> --strings <map.json> [--docs <dir>] [--force]\n       npm run content:scaffold-ar -- <id> --placeholder --docs <dir outside the repository> [--strings <map.json>] [--force]');
+  if (!options.id || !isKey(options.id) || (!options.strings && !options.placeholder)) {
+    throw new Error('usage: npm run content:scaffold-ar -- <id> | guide:<id> | template:<id> --strings <map.json> [--docs <dir>] [--force]\n       npm run content:scaffold-ar -- <id> | guide:<id> | template:<id> --placeholder --docs <dir outside the repository> [--strings <map.json>] [--force]');
   }
   if (options.placeholder && !outsideRepository(options.docs)) {
     throw new Error(`content:scaffold-ar: --placeholder writes a stand-in sibling only into a directory outside the repository (got ${options.docs}); copy the pages there and build it with --docs`);
@@ -233,19 +241,25 @@ export function outsideRepository(dir) {
 function main(argv) {
   const options = parseArgs(argv);
   const nodeModules = join(guideDir, 'node_modules');
-  const readers = createReaders({ nodeModules, componentsFile: join(repoDir, 'components.json') });
-  const entry = readers.components.get(options.id);
-  if (!entry) throw new Error(`content:scaffold-ar: "${options.id}" is not a component id in components.json`);
-  const declared = declaredMembers(readers, options.id);
-  const problems = tableProblems(declared);
-  if (problems.length) throw new Error(`content:scaffold-ar: the tables of ${options.id} cannot be written:\n  ${problems.join('\n  ')}`);
-  const dir = componentsDirOf(options.docs);
-  const english = join(dir, `${options.id}.md`);
-  const arabic = join(dir, `${options.id}.ar.md`);
+  const { kind, id } = parseKey(options.id);
+  let entry = null;
+  let declared = null;
+  if (kind === 'component') {
+    const readers = createReaders({ nodeModules, componentsFile: join(repoDir, 'components.json') });
+    entry = readers.components.get(id);
+    if (!entry) throw new Error(`content:scaffold-ar: "${id}" is not a component id in components.json`);
+    declared = declaredMembers(readers, id);
+    const problems = tableProblems(declared);
+    if (problems.length) throw new Error(`content:scaffold-ar: the tables of ${id} cannot be written:\n  ${problems.join('\n  ')}`);
+  }
+  // A guide or a template is read from docs/guides or docs/templates (below --docs when it holds components/).
+  const dir = kind === 'component' ? componentsDirOf(options.docs) : kindDirs({ repoDir, docsDir: options.docsGiven ? options.docs : null })[kind];
+  const english = join(dir, `${id}.md`);
+  const arabic = join(dir, `${id}.ar.md`);
   if (!existsSync(english)) throw new Error(`content:scaffold-ar: ${english} does not exist`);
   if (existsSync(arabic) && !options.force) throw new Error(`content:scaffold-ar: ${arabic} exists; it is kept (use content:sync-ar to bring it up to date, or --force)`);
   const map = options.strings ? readStringMap(options.strings) : {};
-  const result = scaffoldArabic(readFileSync(english, 'utf8'), { entry, declared, map, version: stylesVersion(nodeModules), placeholder: options.placeholder });
+  const result = scaffoldArabic(readFileSync(english, 'utf8'), { entry, declared, map, version: stylesVersion(nodeModules), placeholder: options.placeholder, kind });
   writeFileSync(arabic, result.text);
   if (options.placeholder) {
     process.stdout.write(`content:scaffold-ar: wrote the placeholder sibling ${arabic} (not a translation; it never enters the repository or a deployable build: build it with --docs)\n`);

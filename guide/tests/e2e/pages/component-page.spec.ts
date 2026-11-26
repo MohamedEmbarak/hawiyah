@@ -46,7 +46,8 @@ for (const entry of navigation.pages) {
         await expect(article).toHaveAttribute('lang', lang);
         await expect(article.getByRole('heading', { level: 1 })).toHaveText(entry.title[lang]);
         await expect(article.getByRole('heading', { level: 1 })).toHaveAttribute('tabindex', '-1');
-        await expect(article.getByRole('heading', { level: 2 })).toHaveText([h2[0]?.text ?? '']);
+        // The page's own headings: a heading that a rendered example holds belongs to the example.
+        await expect(article.locator('h2:not(guide-example-block h2)')).toHaveText([h2[0]?.text ?? '']);
         const blocks = page.locator('guide-example-block');
         await expect(blocks).toHaveCount(1);
         const [first] = entry.examples;
@@ -102,7 +103,8 @@ for (const entry of navigation.pages) {
       test('reference view: every table with its caption, header and first column, the keyboard table included', async ({ page }) => {
         await page.goto(`${lang}/components/${entry.id}/reference/`);
         await hydrated(page);
-        const tables = page.locator('main article').getByRole('table');
+        // The page's own tables: a table that a rendered example holds belongs to the example.
+        const tables = page.locator('main article table:not(guide-example-block table)');
         await expect(tables).toHaveCount(model.tables.length);
         for (const [index, table] of model.tables.entries()) {
           const shown = tables.nth(index);

@@ -27,7 +27,12 @@ export function expectedDocuments({ features, manifest }) {
       for (const param of params) {
         if (param !== ":id") throw new Error(`verify-routes: route ${path} has a parameter ${param} the verification does not know`);
         if (!manifest) throw new Error(`verify-routes: route ${path} needs src/generated/content/manifest.json`);
-        const ids = manifest.pages.filter((p) => !p.langs || p.langs.includes(lang)).map((p) => p.id);
+        // :id names a page of the kind of the route's first segment: guides/:id a guide, templates/:id a
+        // template (their id inside the kind), any other route a component page.
+        const kind = { guides: "guide", templates: "template" }[path.split("/")[0]] ?? null;
+        const ids = manifest.pages
+          .filter((p) => (p.kind ?? null) === kind && (!p.langs || p.langs.includes(lang)))
+          .map((p) => (kind ? p.slug : p.id));
         values = values.flatMap((v) => ids.map((id) => ({ ...v, [param]: id })));
       }
       for (const value of values) {

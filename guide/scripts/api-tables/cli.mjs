@@ -20,6 +20,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { pathKey } from '../content/kinds.mjs';
 import { CODE, TABLES, apiTablesOf, blockText, compareTable, finding, formatFinding } from './compare.mjs';
 import { checkLeadLists, readLeadLists } from './lists.mjs';
 import { DEFAULT_DEFAULTS, DEFAULT_EXCLUSIONS, FRAMEWORKS, createReaders, declaredMembers } from './members.mjs';
@@ -70,6 +71,8 @@ export function checkPages(input) {
   };
   const stats = { tables: 0, rows: 0, stylesheetRows: 0, excluded: 0 };
   for (const { id, lang, page } of pages) {
+    // A guide or a template has no API section.
+    if (page.kind) continue;
     const file = page.sourcePath ?? `docs/components/${id}${lang === 'ar' ? '.ar' : ''}.md`;
     const pageTables = apiTablesOf(page);
     const members = declared(id);
@@ -154,7 +157,7 @@ export function runApiTables(options = {}) {
   const pages = [];
   for (const entry of manifest.pages ?? []) {
     for (const lang of entry.langs ?? []) {
-      pages.push({ id: entry.id, lang, page: JSON.parse(readFileSync(join(contentDir, 'pages', `${entry.id}.${lang}.json`), 'utf8')) });
+      pages.push({ id: entry.id, lang, page: JSON.parse(readFileSync(join(contentDir, 'pages', `${pathKey(entry.id)}.${lang}.json`), 'utf8')) });
     }
   }
   const readers = options.readers ?? createReaders({

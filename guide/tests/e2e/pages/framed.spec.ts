@@ -15,10 +15,17 @@ import { test, expect, axe, hydrated } from '../support/fixtures';
 
 const generated = fileURLToPath(new URL('../../../src/generated/content/', import.meta.url));
 const manifest = JSON.parse(readFileSync(join(generated, 'manifest.json'), 'utf8')) as {
-  pages: { id: string; langs: ('ar' | 'en')[]; liveGroups: { example: string; frame?: true }[] }[];
+  pages: { id: string; kind?: 'guide' | 'template'; langs: ('ar' | 'en')[]; liveGroups: { example: string; frame?: true }[] }[];
 };
 const FRAMED_COMPONENTS = ['app-shell', 'portal-layout', 'portal-header', 'portal-footer', 'page-header', 'mobile-top-bar'];
-const framedPages = manifest.pages.filter((page) => page.liveGroups.some((group) => group.frame));
+// The component pages with a framed group; the groups of a template are framed by its
+// outline (kinds/kinds.spec.ts covers them) and a guide has none.
+const framedPages = manifest.pages.filter((page) => !page.kind && page.liveGroups.some((group) => group.frame));
+
+test('only templates carry framed groups among the guides and templates', () => {
+  expect(manifest.pages.filter((page) => page.kind === 'guide' && page.liveGroups.some((group) => group.frame)).map((page) => page.id)).toEqual([]);
+  expect(manifest.pages.filter((page) => page.kind === 'template' && page.liveGroups.some((group) => !group.frame)).map((page) => page.id)).toEqual([]);
+});
 const NOTE = {
   en: 'This example renders a landmark or a main heading of its own, so its result is shown in a frame, which needs JavaScript. The Angular listing below shows its code.',
   ar: 'يعرض هذا المثال معلَمًا أو عنوانًا رئيسيًا خاصًا به، فتظهر نتيجته في إطار يحتاج إلى JavaScript، وتظهر أدناه شيفرته في Angular.',

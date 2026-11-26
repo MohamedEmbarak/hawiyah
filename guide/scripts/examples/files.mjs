@@ -1,8 +1,10 @@
-// Copies the example payloads of .cache/examples/frames into the built site:
+// Copies the example payloads of .cache/examples/frames into the built site (<id> is the
+// page key in its path form, guide.<id> for a guide, scripts/content/kinds.mjs):
 //   <browserDir>/examples/<id>/<lang>/<example>/<framework>.json
 //   <browserDir>/examples/<id>/<lang>/<example>/<framework>/<fileName>   (download files)
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { pathKey } from '../content/kinds.mjs';
 import { resetDir, writeFile } from './modules.mjs';
 
 const SAFE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
@@ -26,12 +28,12 @@ export function copyExampleFiles(framesDir, examplesDir) {
   for (const path of list) {
     const rel = relative(framesDir, path).split(/[\\/]/);
     const payload = JSON.parse(readFileSync(path, 'utf8'));
-    const expected = [payload.id, payload.lang, payload.example, `${payload.framework}.json`];
+    const expected = [pathKey(payload.id), payload.lang, payload.example, `${payload.framework}.json`];
     if (rel.join('/') !== expected.join('/')) throw new Error(`${rel.join('/')} holds the payload of ${expected.join('/')}`);
     writeFile(join(examplesDir, ...expected), readFileSync(path, 'utf8'));
     for (const [fileName, source] of Object.entries(payload.files)) {
       if (!SAFE_NAME.test(fileName)) throw new Error(`${rel.join('/')}: file name ${fileName} is not allowed`);
-      writeFile(join(examplesDir, payload.id, payload.lang, payload.example, payload.framework, fileName), source);
+      writeFile(join(examplesDir, pathKey(payload.id), payload.lang, payload.example, payload.framework, fileName), source);
       files += 1;
     }
   }

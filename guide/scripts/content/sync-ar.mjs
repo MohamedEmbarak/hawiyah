@@ -31,6 +31,7 @@ import { stylesVersion } from '../api-tables/notes.mjs';
 import { captionLine } from '../api-tables/write.mjs';
 import { rewriteApiTables } from './api-tables.mjs';
 import { componentsDirOf, sectionHashes } from './hash.mjs';
+import { isKey, kindDirs, parseKey } from './kinds.mjs';
 import { normalise, parseMarkdown } from './parse.mjs';
 import { codeBodyEdit, outline } from './scaffold-ar.mjs';
 import { tableProblems } from './scaffold.mjs';
@@ -56,10 +57,10 @@ function listings(source) {
  * Rewrites the code blocks and API tables of an Arabic page from its English page.
  * @returns {{ text: string, missing: string[], left: string[], kept: string[], dropped: string[], review: string[], unmatched: string[], conflicts: string[], unaligned: string[], stale: string[] }}
  */
-export function syncArabic(englishText, arabicText, { entry, declared, version }) {
+export function syncArabic(englishText, arabicText, { entry, declared, version, kind = 'component' }) {
   const english = normalise(englishText);
   let arabic = normalise(arabicText);
-  const current = sectionHashes(english);
+  const current = sectionHashes(english, { kind });
   const recorded = /^---\n([\s\S]*?)\n---/.exec(arabic)?.[1] ?? '';
   const stale = Object.entries(current).filter(([id, hash]) => !new RegExp(`^  ${id}: ${hash}$`, 'm').test(recorded)).map(([id]) => id);
   const derived = deriveStringMap(english, arabic);
@@ -126,7 +127,8 @@ export function syncArabic(englishText, arabicText, { entry, declared, version }
   } else unmatched.push(`the English page has ${enListings.length} code listings and the Arabic page ${arListings.length}; copy them by hand`);
   for (const edit of edits.sort((a, b) => b.from - a.from)) arabic = arabic.slice(0, edit.from) + edit.text + arabic.slice(edit.to);
 
-  // API tables, then their fixed captions.
+  // API tables, then their fixed captions (a component page only).
+  if (kind !== 'component') return { text: arabic, missing: [...missing], left: [...left], kept, dropped, review, unmatched, conflicts: derived.conflicts, unaligned: derived.unaligned, stale };
   arabic = rewriteApiTables(arabic, 'ar', declared, version).text;
   const captions = [];
   for (const item of outline(arabic)) {
@@ -147,29 +149,36 @@ function parseArgs(argv) {
     else if (arg === '--docs') {
       if (argv[i + 1] === undefined) throw new Error('--docs needs a directory');
       options.docs = resolve(argv[i + 1]);
+      options.docsGiven = true;
       i += 1;
     } else if (!arg.startsWith('--') && options.id === null) options.id = arg;
     else throw new Error(`content:sync-ar: unknown argument ${arg}`);
   }
-  if (!options.id || !/^[a-z0-9-]+$/.test(options.id)) throw new Error('usage: npm run content:sync-ar -- <id> [--docs <dir>] [--check]');
+  if (!options.id || !isKey(options.id)) throw new Error('usage: npm run content:sync-ar -- <id> | guide:<id> | template:<id> [--docs <dir>] [--check]');
   return options;
 }
 
 function main(argv) {
   const options = parseArgs(argv);
   const nodeModules = join(guideDir, 'node_modules');
-  const readers = createReaders({ nodeModules, componentsFile: join(repoDir, 'components.json') });
-  const entry = readers.components.get(options.id);
-  if (!entry) throw new Error(`content:sync-ar: "${options.id}" is not a component id in components.json`);
-  const declared = declaredMembers(readers, options.id);
-  const problems = tableProblems(declared);
-  if (problems.length) throw new Error(`content:sync-ar: the tables of ${options.id} cannot be written:\n  ${problems.join('\n  ')}`);
-  const dir = componentsDirOf(options.docs);
-  const englishFile = join(dir, `${options.id}.md`);
-  const arabicFile = join(dir, `${options.id}.ar.md`);
+  const { kind, id: slug } = parseKey(options.id);
+  let entry = null;
+  let declared = null;
+  if (kind === 'component') {
+    const readers = createReaders({ nodeModules, componentsFile: join(repoDir, 'components.json') });
+    entry = readers.components.get(slug);
+    if (!entry) throw new Error(`content:sync-ar: "${slug}" is not a component id in components.json`);
+    declared = declaredMembers(readers, slug);
+    const problems = tableProblems(declared);
+    if (problems.length) throw new Error(`content:sync-ar: the tables of ${slug} cannot be written:\n  ${problems.join('\n  ')}`);
+  }
+  // A guide or a template is read from docs/guides or docs/templates (below --docs when it holds components/).
+  const dir = kind === 'component' ? componentsDirOf(options.docs) : kindDirs({ repoDir, docsDir: options.docsGiven ? options.docs : null })[kind];
+  const englishFile = join(dir, `${slug}.md`);
+  const arabicFile = join(dir, `${slug}.ar.md`);
   for (const file of [englishFile, arabicFile]) if (!existsSync(file)) throw new Error(`content:sync-ar: ${file} does not exist`);
   const before = readFileSync(arabicFile, 'utf8');
-  const result = syncArabic(readFileSync(englishFile, 'utf8'), before, { entry, declared, version: stylesVersion(nodeModules) });
+  const result = syncArabic(readFileSync(englishFile, 'utf8'), before, { entry, declared, version: stylesVersion(nodeModules), kind });
   const changed = result.text !== normalise(before);
   const say = (line) => process.stdout.write(`content:sync-ar: ${line}\n`);
   for (const line of [...result.unaligned, ...result.conflicts.map((item) => `the string ${item}`), ...result.unmatched]) say(line);
@@ -179,12 +188,12 @@ function main(argv) {
   for (const text of result.dropped) say(`not carried: ${text}`);
   for (const text of result.review) say(`the translation ${text} was read only from blocks whose English section changed; check it`);
   if (options.check) {
-    say(changed ? `${options.id}.ar.md differs from what its English page gives` : `${options.id}.ar.md is in step with its English page`);
+    say(changed ? `${slug}.ar.md differs from what its English page gives` : `${slug}.ar.md is in step with its English page`);
     if (changed) process.exit(1);
     return;
   }
   if (changed) writeFileSync(arabicFile, result.text);
-  say(changed ? `rewrote the code blocks and API tables of ${options.id}.ar.md` : `${options.id}.ar.md is in step with its English page`);
+  say(changed ? `rewrote the code blocks${kind === 'component' ? ' and API tables' : ''} of ${slug}.ar.md` : `${slug}.ar.md is in step with its English page`);
   if (result.stale.length) say(`sections translated from an earlier English text: ${result.stale.join(', ')}; review them, then npm run content:hash -- ${options.id}`);
 }
 

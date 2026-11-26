@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+/* The guide's own wrapper sets the line length and the page padding. Nothing inside the
+   package prose of the article is styled here: the artwork, the loader and the icons are
+   components of their own (brand-blocks.ts). */
+.page {
+  margin-inline: auto;
+  max-inline-size: 60rem;
+  padding-block: var(--hw-space-8) var(--hw-space-10);
+  padding-inline: var(--hw-space-4);
+}

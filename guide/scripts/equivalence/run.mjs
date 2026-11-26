@@ -117,8 +117,8 @@ export function chromiumPath(env = process.env) {
   return undefined;
 }
 
-/** The Markdown file of a group, relative to the repository. */
-export const sourceFile = (group) => `docs/components/${group.id}${group.lang === 'ar' ? '.ar' : ''}.md`;
+/** The Markdown file of a group, relative to the repository: the sourcePath of a guide or template group, else docs/components/<id>.md. */
+export const sourceFile = (group) => group.sourcePath ?? `docs/components/${group.id}${group.lang === 'ar' ? '.ar' : ''}.md`;
 
 /** '<code> <file>:<line>: <message>' */
 export const failureLine = (code, group, message) => `${code} ${sourceFile(group)}:${group.blocks?.vanilla?.line ?? 1}: ${message}`;
@@ -703,7 +703,8 @@ async function loadChecks(names) {
 }
 
 export const groupKey = (group) => `${group.id}/${group.lang}/${group.example}`;
-const stem = (group, state) => [group.id, group.lang, group.example, ...(state === 'rest' ? [] : state.split('/'))].join('-');
+/** The file name stem of a group's diff images (a guide or template key in its path form, guide.<id>). */
+const stem = (group, state) => [group.id.replace(':', '.'), group.lang, group.example, ...(state === 'rest' ? [] : state.split('/'))].join('-');
 
 /** How long the harness waits for the documented outcome of a step (ms, lead decision L16 of 5a). */
 export const OUTCOME_TIMEOUT = 5_000;

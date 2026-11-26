@@ -29,6 +29,9 @@ function files(dir, test) {
 
 const sources = [
   ...files(docsDir, (name) => name.endsWith('.ar.md')),
+  // The Arabic guides and templates (docs/guides, docs/templates) and those of the fixture of scripts/test/kinds.
+  ...['guides', 'templates'].flatMap((dir) => [join(guideDir, '..', 'docs', dir), join(guideDir, 'scripts', 'test', 'kinds', 'fixtures', dir)])
+    .flatMap((dir) => files(dir, (name) => name.endsWith('.ar.md'))),
   ...files(appDir, (name) => name === 'i18n.ts'),
   ...files(join(appDir, 'i18n'), (name) => /\.(ts|json)$/.test(name) && !name.endsWith('.spec.ts')),
 ];

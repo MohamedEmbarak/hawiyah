@@ -92,8 +92,8 @@ describe("index document", () => {
 
   it("embeds component pages only when a feature routes them, and the landing when a feature claims ''", () => {
     const pages = { components: [{ id: "button" }] };
-    expect(availableRoutes({ features: [{ paths: ["components"] }], pages })).toEqual({ components: [], landing: false });
-    expect(availableRoutes({ features: [{ paths: ["components/:id"] }, { paths: [""] }], pages })).toEqual({ components: ["button"], landing: true });
+    expect(availableRoutes({ features: [{ paths: ["components"] }], pages })).toEqual({ components: [], landing: false, guides: [], templates: [], guideIndex: false, templateIndex: false, brand: false, foundations: false });
+    expect(availableRoutes({ features: [{ paths: ["components/:id"] }, { paths: [""] }], pages })).toEqual({ components: ["button"], landing: true, guides: [], templates: [], guideIndex: false, templateIndex: false, brand: false, foundations: false });
   });
 
   it("escapes markup in the embedded data", () => {

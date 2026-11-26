@@ -25,9 +25,9 @@ export interface EditorExample {
   readonly section: string;
 }
 
-/** Every live group of the navigation index, in its order. */
-export function editorExamples(index: Pick<NavigationIndex, 'pages'> = navigationIndex): EditorExample[] {
-  return index.pages.flatMap((page) => page.examples.map((group) => ({ id: page.id, example: group.example, section: group.section })));
+/** Every live group of the navigation index, in its order: the component pages, then the guides and the templates (their id is the key guide:<id> or template:<id>). */
+export function editorExamples(index: Pick<NavigationIndex, 'pages' | 'guides' | 'templates'> = navigationIndex): EditorExample[] {
+  return [...index.pages, ...(index.guides ?? []), ...(index.templates ?? [])].flatMap((page) => page.examples.map((group) => ({ id: page.id, example: group.example, section: group.section })));
 }
 
 export interface EditorQuery {

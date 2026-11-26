@@ -3,8 +3,9 @@
 // English compliance sentence of src/app/i18n/compliance.json (the footer
 // description) as the summary (contentPipeline.generated). Only pages the build
 // produced are listed.
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { KINDS, pageHref } from "../content/kinds.mjs";
 
 export const TITLE = "# Hawiyah — هوية";
 export const REPOSITORY = "https://github.com/MohamedEmbarak/hawiyah";
@@ -33,19 +34,34 @@ const oneLine = (text) => String(text).replace(/\s+/g, " ").trim();
  *   buildInfo: { pin: string, siteOrigin: string, basePath: string },
  *   install: { pin: string, packages: { name: string, spec: string }[], frameworks: string[], commands: Record<string, Record<string, string>> },
  *   summary: string,
+ *   generatedPages?: { title: string, path: string, summary: string }[],
  * }} input
+ *   manifest pages of a guide or a template carry kind and slug; generatedPages: the brand and
+ *   foundations pages of the build (English title, path below <lang>/, English introduction).
  */
-export function llmsText({ manifest, buildInfo, install, summary }) {
+export function llmsText({ manifest, buildInfo, install, summary, generatedPages = [] }) {
   if (install.pin !== buildInfo.pin) throw new Error(`llms: install.json pin ${install.pin} differs from build-info.json pin ${buildInfo.pin}`);
   const site = `${buildInfo.siteOrigin}${buildInfo.basePath}`;
-  const pages = [...manifest.pages].sort((a, b) => a.id.localeCompare(b.id));
-  const reference = (lang, id) => `${site}${lang}/components/${id}/reference/`;
-  const source = (lang, id) => `${REPOSITORY}/blob/main/docs/components/${id}${lang === "ar" ? ".ar" : ""}.md`;
+  // Component pages by id; guides and templates (kind, slug) in the order of their index.json.
+  const pages = manifest.pages.filter((page) => !page.kind).sort((a, b) => a.id.localeCompare(b.id));
+  const documents = (kind) => manifest.pages.filter((page) => page.kind === kind);
+  const kindOf = (page) => page.kind ?? "component";
+  const slugOf = (page) => page.slug ?? page.id;
+  const reference = (lang, page) => `${site}${pageHref(kindOf(page), lang, slugOf(page))}`;
+  const source = (lang, page) => `${REPOSITORY}/blob/main/docs/${KINDS[kindOf(page)].dir}/${slugOf(page)}${lang === "ar" ? ".ar" : ""}.md`;
   const pageLine = (lang, page) => {
     const name = oneLine(page.title[lang] ?? page.id);
     const text = oneLine(page.summaryText?.[lang] ?? "");
-    return `- [${name}](${reference(lang, page.id)}): ${text ? `${text} ` : ""}Markdown source: ${source(lang, page.id)}`;
+    return `- [${name}](${reference(lang, page)}): ${text ? `${text} ` : ""}Markdown source: ${source(lang, page)}`;
   };
+  const section = (title, list, lang) => {
+    const shown = list.filter((page) => page.langs.includes(lang));
+    return shown.length ? [`## ${title}`, "", ...shown.map((page) => pageLine(lang, page)), ""] : [];
+  };
+  // The pages generated from the installed packages (the brand and the foundations), when the build has them.
+  const generated = (generatedPages ?? []).length
+    ? ["## Generated from the packages", "", ...generatedPages.map((entry) => `- [${entry.title}](${site}en/${entry.path}): ${oneLine(entry.summary)} Arabic: ${site}ar/${entry.path}`), ""]
+    : [];
   const lines = [
     TITLE,
     "",
@@ -67,12 +83,31 @@ export function llmsText({ manifest, buildInfo, install, summary }) {
     "",
     ...pages.filter((page) => page.langs.includes("en")).map((page) => pageLine("en", page)),
     "",
+    ...section("Guides", documents("guide"), "en"),
+    ...section("Templates", documents("template"), "en"),
+    ...generated,
     "## Arabic",
     "",
     ...pages.filter((page) => page.langs.includes("ar")).map((page) => pageLine("ar", page)),
     "",
+    ...section("Arabic guides", documents("guide"), "ar"),
+    ...section("Arabic templates", documents("template"), "ar"),
   ];
   return lines.join("\n");
+}
+
+/**
+ * The pages generated from the installed packages that the build has (a feature of
+ * features.json whose id has an entry of src/app/i18n/package-pages.json, the guide's
+ * text source of their headings and introductions): [{ title, path, summary }] in English.
+ */
+export function packagePages(guideDir, features) {
+  const file = join(guideDir, "src", "app", "i18n", "package-pages.json");
+  if (!existsSync(file)) return [];
+  const texts = JSON.parse(readFileSync(file, "utf8"));
+  return features.filter((feature) => texts[feature.id] && feature.nav).map((feature) => ({
+    title: texts[feature.id].title.en, path: feature.nav.path, summary: texts[feature.id].intro.en,
+  }));
 }
 
 /**
@@ -86,6 +121,7 @@ export function writeLlms({ guideDir, generatedDir, browserDir }) {
     buildInfo: read("build-info.json"),
     install: read("install.json"),
     summary: complianceSentence(readFileSync(join(guideDir, "src", "app", "i18n", "compliance.json"), "utf8")),
+    generatedPages: existsSync(join(guideDir, generatedDir, "features.json")) ? packagePages(guideDir, read("features.json")) : [],
   });
   writeFileSync(join(guideDir, browserDir, "llms.txt"), text);
   return text;

@@ -4,6 +4,7 @@
 import GithubSlugger from 'github-slugger';
 import { DIRECTION, GITHUB_BLOB, H2, LANGUAGE_NAMES, finding } from './config.mjs';
 import { EVIDENCE_IDS, evidenceHeadings, evidenceOf } from './evidence.mjs';
+import { TEMPLATE_H2 } from './kinds.mjs';
 import { resolveLink } from './links.mjs';
 import { isLive } from './live.mjs';
 import { plainText } from './parse.mjs';
@@ -23,9 +24,11 @@ const ALIGN = { left: 'start', center: 'center', right: 'end' };
  */
 export function headingIds(outline, englishIds = null, englishLevels = null) {
   const slugger = new GithubSlugger();
+  // The fixed h2 of a component page or a template take their section ids; a guide's h2 are free text.
+  const fixed = outline.kind === 'template' ? TEMPLATE_H2 : outline.kind === 'guide' ? [] : H2;
   return outline.headings.map((heading, index) => {
-    const own = heading.level === 2 ? (H2.find((entry) => entry[outline.lang] === heading.text)?.id ?? null) : null;
-    const slug = slugger.slug(heading.level === 2 && own ? (H2.find((entry) => entry.id === own).en) : heading.text);
+    const own = heading.level === 2 ? (fixed.find((entry) => entry[outline.lang] === heading.text)?.id ?? null) : null;
+    const slug = slugger.slug(heading.level === 2 && own ? (fixed.find((entry) => entry.id === own).en) : heading.text);
     if (englishIds && englishLevels?.[index] === heading.level && englishIds[index]) return englishIds[index];
     return own ?? slug;
   });
@@ -57,9 +60,10 @@ export function buildModel(outline, ctx) {
   const ids = headingIds(outline, ctx.englishIds ?? null, ctx.englishLevels ?? null);
   const idOf = new Map(outline.headings.map((heading, index) => [heading.node, ids[index]]));
   const headingIdSet = new Set(ids);
+  const kind = ctx.kind ?? 'component';
   const linkCtx = {
-    lang: outline.lang, id: ctx.id, filePath: ctx.filePath, repoDir: ctx.repoDir,
-    componentsDir: ctx.componentsDir, built: ctx.built, headingIds: headingIdSet,
+    lang: outline.lang, id: ctx.slug ?? ctx.id, kind, filePath: ctx.filePath, repoDir: ctx.repoDir,
+    componentsDir: ctx.componentsDir, dirs: ctx.dirs, built: ctx.built, headingIds: headingIdSet,
   };
 
   const inlines = (nodes) => {
@@ -170,6 +174,8 @@ export function buildModel(outline, ctx) {
   }));
   const page = {
     id: ctx.id,
+    // A guide or a template: its kind and its id inside the kind (the page id is its key, guide:<id>).
+    ...(kind === 'component' ? {} : { kind, slug: ctx.slug }),
     lang: outline.lang,
     dir: DIRECTION[outline.lang],
     title: outline.h1 ? plainText(outline.h1).trim() : '',

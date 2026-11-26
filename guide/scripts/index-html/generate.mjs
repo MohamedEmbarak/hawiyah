@@ -36,7 +36,10 @@ export function renderIndexHtml(template, { available, preview }) {
  * What the build prerendered, for mapLegacyHash: component pages exist only when a
  * feature routes components/:id, and the language root is the landing only when a
  * feature claims ''.
- * @param {{ features: { paths: string[] }[], pages: { components: { id: string }[] } }} input
+ * Guides and templates exist when a feature routes guides/:id and templates/:id, their
+ * index pages when it routes guides and templates, the brand and foundations pages when a
+ * feature routes brand and foundations.
+ * @param {{ features: { paths: string[] }[], pages: { components: { id: string }[], guides?: { id: string }[], templates?: { id: string }[] } }} input
  */
 export function availableRoutes({ features, pages }) {
   const paths = features.flatMap((feature) => feature.paths);
@@ -44,6 +47,12 @@ export function availableRoutes({ features, pages }) {
   return {
     components: componentPages ? pages.components.map((page) => page.id) : [],
     landing: paths.includes(""),
+    guides: paths.includes("guides/:id") ? (pages.guides ?? []).map((page) => page.id) : [],
+    templates: paths.includes("templates/:id") ? (pages.templates ?? []).map((page) => page.id) : [],
+    guideIndex: paths.includes("guides"),
+    templateIndex: paths.includes("templates"),
+    brand: paths.includes("brand"),
+    foundations: paths.includes("foundations"),
   };
 }
 

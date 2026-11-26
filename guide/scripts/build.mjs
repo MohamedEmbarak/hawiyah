@@ -22,6 +22,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { contentManifestHash, limits, notDeployableReasons, removeRecord, scopeOf, writeRecord } from "./build-scope.mjs";
 import { componentsDirOf } from "./content/hash.mjs";
+import { isKey, kindDirs } from "./content/kinds.mjs";
 
 export const PLANNED_STEPS = [
   "00-env",
@@ -78,8 +79,8 @@ export function parseArgs(argv) {
     throw new Error(`--preview needs a commit sha (got ${options.preview})`);
   }
   if (options.pages !== null) {
-    const bad = options.pages.filter((id) => !/^[a-z0-9-]+$/.test(id));
-    if (options.pages.length === 0 || bad.length > 0) throw new Error(`--pages needs component ids separated by commas (got ${bad.join(",") || "none"})`);
+    const bad = options.pages.filter((id) => !isKey(id));
+    if (options.pages.length === 0 || bad.length > 0) throw new Error(`--pages needs page keys (a component id, guide:<id>, template:<id>) separated by commas (got ${bad.join(",") || "none"})`);
   }
   const scoped = options.pages !== null || options.docs !== null || options.deferEquivalence;
   if (scoped && options.only) throw new Error("--only cannot be combined with --pages, --docs or --defer-equivalence");
@@ -190,6 +191,9 @@ async function main() {
     logDir: ".cache/logs",
     generatedDir: "src/generated",
     docsDir,
+    // The directories of the guides and the templates (scripts/content/kinds.mjs): below the --docs
+    // directory when it holds components/, else the repository's docs/guides and docs/templates.
+    kindDirs: { ...kindDirs({ repoDir: resolve(guideDir, ".."), docsDir: options.docs && existsSync(join(resolve(options.docs), "components")) ? resolve(options.docs) : null }), component: docsDir },
     pages: options.pages,
     scope: scopeOf(options),
     deployable: notDeployable.length === 0,

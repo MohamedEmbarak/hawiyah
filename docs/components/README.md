@@ -72,7 +72,10 @@ marketing terms belong to no page). An entry of `arabic-exceptions.json` or
 `latin-allowlist.json` names the whole text it excepts (a whole paragraph, item,
 cell or string, or a whole Latin-script run), 12 characters at least.
 `guide/scripts/test/lead-lists.test.mjs` pins every list by the hash of its
-content, so a changed list fails until the lead renews its pin with the entry.
+content, so a changed list fails until the lead renews its pin with the entry. An entry names its page by
+repository path (`docs/components/rating.ar.md`); it also applies to the same page
+read from a copy of `docs/` (a fixture built with `--docs`), whose path below the
+docs directory is the same.
 
 ## Files
 
@@ -428,8 +431,8 @@ Each block of a group is a fenced code block whose info string is:
   the other three, instead of in the guide page. Use it only on a page-level
   component that renders a `main` landmark, a skip link or an `h1` of its own
   (AppShell, PortalLayout, PortalHeader, PortalFooter, PageHeader, MobileTopBar:
-  `FRAMED_COMPONENTS` of `guide/scripts/content/config.mjs`) and, from stage 5e,
-  on a template; anywhere else it fails (`HWC-LIVE1`). `width=390` (only with
+  `FRAMED_COMPONENTS` of `guide/scripts/content/config.mjs`) and on a template,
+  whose every group carries it (see [Guides and templates](#guides-and-templates)); anywhere else it fails (`HWC-LIVE1`). `width=390` (only with
   `frame`) compares the screenshots of the group a second time with frames 390 px
   wide; a framed group is first compared at 1280 px. Without script a framed group
   shows its Angular listing and one sentence instead of a result, and no status. `frame` and
@@ -1087,7 +1090,7 @@ Table: Failure codes of the content step (step 20) and the API step (step 30)
 
 | Code | Rule |
 | --- | --- |
-| `HWC-FILE` | File names, ids and language siblings, and the entries of `pending-translation.json` |
+| `HWC-FILE` | File names, ids and language siblings, the `index.json` of guides and templates, and the entries of `pending-translation.json` |
 | `HWC-FM1` | Front matter in an English page |
 | `HWC-FM2` | Missing or malformed Arabic front matter |
 | `HWC-H1` | The h1 |
@@ -1101,7 +1104,8 @@ Table: Failure codes of the content step (step 20) and the API step (step 30)
 | `HWC-LIVE1` | Live block info strings |
 | `HWC-LIVE2` | Live groups: placement, at most 8 per page, no date, time zone, random value or request |
 | `HWC-LIVE3` | Repeated example names |
-| `HWC-LIVE7` | A live group that does not show the page's component |
+| `HWC-LIVE7` | A live group that does not show the page's component (component pages) |
+| `HWC-COMP` | The Composition section of a template: an item without a link to a component page, an id that is not a component, a listed component that no group shows, a group block that shows none of them |
 | `HWC-PAR1` to `HWC-PAR8` | Parity of the Arabic page with the English page; `HWC-PAR8` an Arabic letter in reader text, a value that is Latin by nature excepted |
 | `HWC-STALE` | Arabic sections translated from an earlier English text |
 | `HWC-KEYS` | Key elements, their parity, the keyboard table and its rows (separator, order of an arrow cell, one sentence per Action cell) |
@@ -1149,11 +1153,110 @@ Table: Failure codes of the equivalence step that a page can cause
 `HWE-SCOPE` and `HWE-MERGE` concern a run, its selection and the merge of its
 shards, not a page; `guide/README.md` describes them.
 
-## Not yet in force
+## Guides and templates
 
-Milestone 5 adds two more kinds of document, guides (`docs/guides/`) and
-templates (`docs/templates/`), with the same parity, hash, link, vocabulary and
-equivalence rules, and checks the install listings of the getting-started guide
-against the generated install data (`HWC-INSTALL`). Both come with stage 5e; until
-then `docs/guides/glossary.md` is a plain Markdown file that the build does not
-render, and no template exists for `frame` to be used on.
+Two more kinds of document follow this contract: guides (`docs/guides/`) and
+templates (`docs/templates/`). Every rule above holds for them, except where this
+section says otherwise: the files and parity of the two languages, the front matter
+and section hashes, links, the forbidden constructs, the live group syntax and the
+rules for the code, the vocabulary, the equivalence of the four results and axe in
+step 80, and the writing style with its claim, tone and placeholder gates.
+
+### Files of a kind
+
+- `<id>.md` and `<id>.ar.md` in the directory of the kind, where `<id>` matches
+  `^[a-z][a-z0-9-]*$`. The directory's `index.json` is `{ "pages": ["<id>", ...] }`:
+  it lists every page of the kind once, in the order of the guide's index page of
+  the kind. A page that `index.json` does not list, an id that it lists without its
+  English page, a malformed `index.json` and a missing language sibling fail
+  (`HWC-FILE`). `README.md` and, in `docs/guides/`, `glossary.md` are files of the
+  contract, not pages.
+- The glossary stays a file of the contract and is not a guide page: it is the
+  writers' reference for the Arabic terms and the source of the glossary test, it
+  has one English text with Arabic cells rather than two language siblings, and its
+  rows carry notes for the lead and the owner that a reader of the guide does not
+  need.
+- The key of a page is `guide:<id>` or `template:<id>`. The key names the page
+  wherever a component page is named by its id: in
+  `guide/scripts/content/pending-translation.json` (an English guide waits for its
+  Arabic sibling while the file lists `guide:<id>`), in `npm run check:page --
+  guide:<id>`, `npm run content:hash -- guide:<id>`,
+  `npm run content:scaffold-ar -- template:<id> --strings <map.json>` and
+  `npm run content:sync-ar -- guide:<id>`, in `--pages` of the build, and in the
+  key of a live group, `guide:<id>/<lang>/<example>`, so a group of a guide or a
+  template never takes the key of a component page. In file names the colon is a
+  full stop (`guide.<id>`).
+- Pages appear at `<lang>/guides/<id>/` and `<lang>/templates/<id>/`, listed on
+  `<lang>/guides/` and `<lang>/templates/` in the order of `index.json`. The old
+  addresses `#docs/<topic>` and `#templates/<id>` of the previous guide lead to the
+  page whose id is that topic or template id; a guide that takes over a topic of the
+  previous guide keeps its id (`getting-started`, `react`, `theming` and the others of
+  `LEGACY_DOC_TOPICS` in `guide/scripts/index-html/legacy-hash.mjs`), and so does a
+  template (`LEGACY_TEMPLATES`).
+
+### Outline of a guide
+
+1. The h1: the title of the guide, free text in each language (`HWC-H1` when it is
+   missing or not on the first line after the front matter).
+2. The summary, as on a component page (`HWC-SUM`).
+3. At least one h2 section (`HWC-H2`); h2, h3 and h4 headings are free text, an h4
+   stands under an h3, and h5 and h6 are refused (`HWC-H5`). Every h2 section holds
+   a paragraph or a list of its own (`HWC-EMPTY`).
+4. Live groups stand under any heading after the summary, at most 8 per page
+   (`HWC-LIVE2`). A group shows what its text says; it need not show one component,
+   so `HWC-LIVE7` does not apply.
+
+The id of an English h2 is the slug GitHub generates, with every heading of the page
+counted in document order; each Arabic heading takes the id of the English heading at
+the same position, and so does each section of the Arabic front matter
+(`npm run content:hash -- guide:<id>` prints the block). A guide has no API section,
+no keyboard table bound to checks and no evidence panel. Its text does not repeat the
+compliance sentence or its marker words (`HWT-COMPLIANCE`).
+
+### Outline of a template
+
+A template is one page of a service shown in its states. Its outline is fixed:
+
+Table: The h2 sections of a template
+
+| English heading | Arabic heading | Section id | Content |
+| --- | --- | --- | --- |
+| Example | مثال | `example` | Paragraphs, h3 headings and one or more live groups, each a state of the page and each with `frame` on its `html` block. With more than one group, each stands under an h3 of its own that names the state, and every h3 holds exactly one group (`HWC-LIVE2`). |
+| Composition | المكوّنات المستخدمة | `composition` | A list of the components the template uses, one item per component; the first link of each item leads to its component page (`../components/<id>.md`), and text may follow it (`HWC-COMP`). |
+| Platforms Code reference | مرجع كود المنصات | `platforms-code-reference` | The compliance sentence, then the sources of the template, as on a component page; the evidence of each component is on its own page. |
+
+The three sections are required, in this order, each at most once (`HWC-H2`), and
+each holds a paragraph or list of its own (`HWC-EMPTY`). The h1 and the summary are
+those of a guide. `HWC-COMP` also fails when a listed id is not a component of
+`components.json`, when no group shows a listed component in all four frameworks
+(by the names `HWC-LIVE7` reads: a class or the hook in `html`, the export in React
+and Vue, the selector or the class in Angular), and when a block of a group shows
+none of the listed components. A template has no API section and no evidence panel.
+
+### Links between kinds
+
+A relative link to a page of any kind leads to it when it is built:
+`../components/<id>.md` to the reference view of the component page,
+`../guides/<id>.md` to the guide and `../templates/<id>.md` to the template, each in
+the language of the linking page; a fragment names a heading of that page
+(`HWC-LINK`). A link to a page that is not built leads to its file on GitHub.
+
+### What a writer of a guide or a template needs to know
+
+- Check the page with `npm run check:page -- guide:<id>` (or `template:<id>`) after
+  one production build; the coverage report and the keyboard report are those of a
+  component page and are not printed. For the browser tests, build the page with
+  `HAWIYAH_BASE_PATH=/hawiyah/ npm run build -- --pages guide:<id>`.
+- The vocabulary of a guide or a template is that of any page: a name in code
+  formatting is an export, a class, a custom property or a name of a specification,
+  and a member of a component is accepted only when the same sentence links to its
+  component page.
+- A group of a template renders in sandboxed frames 1280 px wide; `width=390`
+  compares it a second time at 390 px. The frame document is the page of the state:
+  its `main` and its `h1` stay out of the guide's outline. Write each state with the
+  components that the page writes in their own examples, so that the four results are
+  equal; a difference between adapters is proposed as for a component page, with the
+  key of the template as the `component` of its known difference.
+- An old topic or template id is kept, so that the old addresses keep working.
+- The install text of a guide follows the rule of every page: no typed install
+  command or pinned package address (`HWC-MD`).

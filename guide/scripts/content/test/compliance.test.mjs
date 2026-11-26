@@ -70,6 +70,22 @@ describe('the compliance sentence', () => {
     }
   });
 
+  // Guides and templates (docs/guides, docs/templates, and the fixture pages of
+  // scripts/test/kinds): a template opens its Platforms Code reference with the
+  // sentence; a guide has no such section and holds none of the marker words.
+  it('opens the Platforms Code reference of every template and stands in no guide', () => {
+    const kindPages = ['guides', 'templates'].flatMap((dir) => [join(guideDir, '..', 'docs', dir), join(guideDir, 'scripts', 'test', 'kinds', 'fixtures', dir)])
+      .flatMap((dir) => files(dir, (name) => /^[a-z][a-z0-9-]*(\.ar)?\.md$/.test(name) && name !== 'glossary.md'));
+    expect(kindPages.some((file) => file.includes('fixture-template'))).toBe(true);
+    for (const file of kindPages) {
+      const lang = langOf(file);
+      const text = readFileSync(file, 'utf8');
+      if (file.includes('/templates/')) expect(referenceOpening(text)?.startsWith(`${compliance[lang]} `), file).toBe(true);
+      const rest = remainder(text, [compliance[lang]]);
+      for (const marker of MARKERS[lang]) expect(marker.test(rest), `${file}: ${marker}`).toBe(false);
+    }
+  });
+
   it('is imported, not written, by the guide text sources', () => {
     const sources = files(appDir, (name) => name.endsWith('.ts') && !name.endsWith('.spec.ts'));
     const importers = [];

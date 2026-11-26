@@ -19,6 +19,11 @@
     "hw-code-token-type",
     "hw-code-token-function",
     "hw-icon",
+    "hw-brand-loader",
+    "hw-brand-loader-light",
+    "hw-brand-loader-dark",
+    "hw-brand-loader-motion",
+    "hw-brand-loader-static",
     "hw-sr-only",
     "hw-type"
   ],

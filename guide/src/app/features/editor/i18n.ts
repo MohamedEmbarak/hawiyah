@@ -13,6 +13,8 @@ export interface EditorTexts {
   readonly description: (component: string, section: string) => string;
   /** Link from the page header back to the component page. */
   readonly backToComponent: (component: string) => string;
+  /** The link back to the page of a guide or a template. */
+  readonly backToDocument: (title: string) => string;
   /** The description of the prerendered page, read also without script: one page answers every address, so it names no example. */
   readonly descriptionAnyExample: string;
   /** The link of the prerendered page: the catalogue of the component pages. */
@@ -97,6 +99,7 @@ export const editorTexts: Texts<EditorTexts> = {
     summary: 'Edit a Hawiyah example in JavaScript, React, Vue or Angular and run it with the published packages in a sandboxed frame.',
     description: (component, section) => `${component}: ${section}`,
     backToComponent: (component) => `${component} page`,
+    backToDocument: (title) => `${title} page`,
     descriptionAnyExample: 'Edit an example of the component pages and run it.',
     componentPages: 'Component pages',
     queryFallback: 'Part of the address named an example, framework, language or runtime that the editor does not have; the default is shown instead.',
@@ -156,6 +159,7 @@ export const editorTexts: Texts<EditorTexts> = {
     summary: 'حرّر مثالًا من أمثلة هوية بلغة JavaScript أو بإطار React أو Vue أو Angular، وشغّله بالحزم المنشورة داخل إطار معزول.',
     description: (component, section) => `${component}: ${section}`,
     backToComponent: (component) => `صفحة المكوّن: ${component}`,
+    backToDocument: (title) => `الصفحة: ${title}`,
     descriptionAnyExample: 'حرّر مثالًا من أمثلة صفحات المكوّنات وشغّله.',
     componentPages: 'صفحات المكوّنات',
     queryFallback: 'ذكر جزء من العنوان مثالًا أو إطار عمل أو لغة أو بيئة تشغيل غير متاحة في المحرر، فعُرضت القيمة الافتراضية بدلًا منها.',

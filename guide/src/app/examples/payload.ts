@@ -3,7 +3,9 @@
 // to .cache/examples/frames/<id>/<lang>/<example>/<framework>.json; step 45 copies
 // them to <browserDir>/examples/<id>/<lang>/<example>/<framework>.json and each
 // entry of `files` to <browserDir>/examples/<id>/<lang>/<example>/<framework>/<fileName>.
+// <id> is the page key in its path form (guide.<id> for guide:<id>, content/kinds.ts).
 import type { Type } from '@angular/core';
+import { pathKey } from '../content/kinds';
 
 export type ExampleFramework = 'vanilla' | 'react' | 'vue' | 'angular';
 export type ExampleLanguage = 'ar' | 'en';
@@ -56,13 +58,13 @@ export interface ExamplePayload {
   toolchain: ExampleToolchain;
 }
 
-/** URL of a payload relative to the base href. */
+/** URL of a payload relative to the base href (the key of a guide or template in its path form, guide.<id>). */
 export const examplePayloadPath = (id: string, lang: ExampleLanguage, example: string, framework: ExampleFramework): string =>
-  `examples/${id}/${lang}/${example}/${framework}.json`;
+  `examples/${pathKey(id)}/${lang}/${example}/${framework}.json`;
 
 /** URL of a downloadable source file relative to the base href. */
 export const exampleFilePath = (id: string, lang: ExampleLanguage, example: string, framework: ExampleFramework, fileName: string): string =>
-  `examples/${id}/${lang}/${example}/${framework}/${fileName}`;
+  `examples/${pathKey(id)}/${lang}/${example}/${framework}/${fileName}`;
 
 /** Module of src/generated/examples/<id>/<lang>/index.ts: native Angular example components by example name. */
 export interface NativeExampleModule {

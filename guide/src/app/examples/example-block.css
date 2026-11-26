@@ -36,7 +36,8 @@
 }
 
 /* Without script a framed group shows no status: its frame never loads, so a
-   loading status would never resolve (G23 of the 5a fix round). */
+   loading status would never resolve (G23 of the 5a fix round). The guide's slot
+   around the status line is hidden, not the package's status line itself. */
 @media (scripting: none) {
   .framed-note {
     display: block;

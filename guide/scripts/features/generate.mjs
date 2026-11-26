@@ -2,11 +2,15 @@
 // directory-name order and writes, without importing any of them:
 //   src/generated/features.ts   static imports, sorted by order at run time
 //   src/generated/features.json [{ id, order, paths, nav }] read from the source text
-//   src/generated/pages.json    { components: [{ id, name, labelAr }] } for every
-//                               docs/components/<id>.md whose id is in components.json
-//                               and whose <id>.ar.md exists
+//   src/generated/pages.json    { components: [{ id, name, labelAr }], guides: [{ id }],
+//                               templates: [{ id }] }: every docs/components/<id>.md whose
+//                               id is in components.json and whose <id>.ar.md exists, and
+//                               every id of docs/guides/index.json and docs/templates/index.json
+//                               whose <id>.md and <id>.ar.md exist
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { parseKey } from "../content/kinds.mjs";
+import { builtDocuments } from "../content/pipeline.mjs";
 
 const fail = (message) => {
   throw new Error(`features: ${message}`);
@@ -174,7 +178,7 @@ export function featuresModule(features) {
  * page pending translation (English only) is in no generated file (G14 of the 5a fix
  * round).
  */
-export function listPages({ docsDir, components }) {
+export function listPages({ docsDir, components, kindDirs = {} }) {
   const known = new Map(components.map((c) => [c.id, c]));
   const files = existsSync(docsDir) ? readdirSync(docsDir) : [];
   const ids = files
@@ -182,18 +186,22 @@ export function listPages({ docsDir, components }) {
     .map((name) => name.slice(0, -3))
     .filter((id) => known.has(id) && files.includes(`${id}.ar.md`))
     .sort();
+  // Guides and templates: the ids of their index.json, in its order, whose two languages exist.
+  const documents = (kind) => builtDocuments({ [kind]: kindDirs[kind] }).map((key) => ({ id: parseKey(key).id }));
   return {
     components: ids.map((id) => {
       const entry = known.get(id);
       return { id, name: entry.name, labelAr: entry.labelAr };
     }),
+    guides: documents("guide"),
+    templates: documents("template"),
   };
 }
 
 /**
  * @param {{ featuresDir: string, generatedDir: string, docsDir: string, componentsFile: string }} options
  */
-export function generateFeatures({ featuresDir, generatedDir, docsDir, componentsFile }) {
+export function generateFeatures({ featuresDir, generatedDir, docsDir, componentsFile, kindDirs = {} }) {
   const dirs = existsSync(featuresDir)
     ? readdirSync(featuresDir)
         .filter((name) => statSync(join(featuresDir, name)).isDirectory())
@@ -214,7 +222,7 @@ export function generateFeatures({ featuresDir, generatedDir, docsDir, component
   const sorted = [...features].sort((a, b) => a.order - b.order);
   const catalogue = JSON.parse(readFileSync(componentsFile, "utf8"));
   if (!Array.isArray(catalogue.components)) fail("components.json has no components array");
-  const pages = listPages({ docsDir, components: catalogue.components });
+  const pages = listPages({ docsDir, components: catalogue.components, kindDirs });
 
   mkdirSync(generatedDir, { recursive: true });
   writeFileSync(join(generatedDir, "features.ts"), featuresModule(features));
