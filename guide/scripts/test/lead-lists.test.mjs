@@ -44,7 +44,7 @@ const PINS = {
   'scripts/api-tables/targets.mjs TARGET_OVERRIDES': 'ed7cbbb124b96cbd',
   'scripts/api-tables/targets.mjs VUE_SLOT_PATTERNS': '5f504e63bf85f6b2',
   'scripts/api-tables/targets.mjs UNOWNED_EXPORTS': '4f53cda18c2baa0c',
-  'scripts/content/arabic-exceptions.json': '1275c3fe71888ec0',
+  'scripts/content/arabic-exceptions.json': '39231a34951b2255',
   'scripts/content/claim-exceptions.json': '37517e5f3dc66819',
   'scripts/content/live-component-exceptions.json': '9924a5b8b5e71573',
   'scripts/content/marketing-terms.json': '9376a99a82e48201',
