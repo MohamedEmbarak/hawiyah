@@ -820,8 +820,8 @@ function judgeName(vocab, term, where, helpers) {
   if (/^(data|aria)-/.test(name)) {
     if (knownAttribute(vocab, name) || allow.has(['aria-attribute', 'html-attribute'], name)) return null;
     if (where.vocabulary.names.vanilla.has(name)) return null;
-    if (/^data-hw-/.test(name) && where.vocabulary.documented?.has(name)) return null;
-    const readme = /^data-hw-/.test(name) ? ' documented for this component by an installed README,' : '';
+    if (/^data-hw-/.test(name) && [where.vocabulary, ...where.linked].some((vocabulary) => vocabulary.documented?.has(name))) return null;
+    const readme = /^data-hw-/.test(name) ? ' documented by an installed README for this component or a linked one,' : '';
     return `${name} is neither selected by the installed stylesheet, read by a published module,${readme} nor an attribute of vocabulary-allow.json`;
   }
   const members = [...new Set([...memberOf(where.vocabulary, name), ...where.linked.flatMap((vocabulary) => memberOf(vocabulary, name))])];
@@ -939,10 +939,15 @@ export function checkVocabulary(input) {
     for (const group of (input.liveGroups ?? []).filter((item) => item.id === id && item.lang === lang)) {
       const code = group.blocks?.vanilla?.code;
       if (!code) continue;
+      // The live markup of a guide or a template composes components: a data-hw-* attribute is
+      // known when an installed README documents it for a component whose hook (data-hw="<id>") the markup holds.
+      const pageLinked = page.kind
+        ? [...new Set(markupTerms(code).filter((term) => term.kind === 'hook').map((term) => term.name))].filter((other) => vocab.readers.components.has(other)).map((other) => componentVocabulary(vocab, other, declared(other)))
+        : [];
       for (const term of markupTerms(code)) {
         stats.markup += 1;
         const reason = term.kind === 'attribute'
-          ? judgeName(vocab, term, { scope: ['vanilla'], vocabulary, linked: [] }, { memberOf: () => [], exportOf: () => [], scoped: () => undefined })
+          ? judgeName(vocab, term, { scope: ['vanilla'], vocabulary, linked: pageLinked }, { memberOf: () => [], exportOf: () => [], scoped: () => undefined })
           : term.kind === 'data-value' ? dataValueProblem(vocab, vocabulary, term)
             : judge(vocab, term, { scope: ['vanilla'], vocabulary, linked: [] });
         if (reason) report(file, term.text, `live example ${group.example} (html)`, reason);

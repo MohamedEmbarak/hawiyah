@@ -335,11 +335,18 @@ export function documentReferenceError(reference, { changelog = readChangelog(),
  * it is compared with ({ 'hw-avatar': 'span' }).
  */
 export function designedOf(id, lists) {
+  // A guide or a template composes components, so the designed differences of every component apply to its groups.
+  const own = (entry) => entry.component === id || composes(id);
   return {
-    emptyClasses: lists.empty.filter((entry) => entry.component === id).map((entry) => entry.class),
-    vanillaAttributes: lists.hooks.filter((entry) => entry.component === id).map((entry) => entry.attribute),
-    angularHosts: Object.fromEntries((lists.hosts ?? []).filter((entry) => entry.component === id).map((entry) => [entry.element, entry.tag])),
+    emptyClasses: [...new Set(lists.empty.filter(own).map((entry) => entry.class))],
+    vanillaAttributes: [...new Set(lists.hooks.filter(own).map((entry) => entry.attribute))],
+    angularHosts: Object.fromEntries((lists.hosts ?? []).filter(own).map((entry) => [entry.element, entry.tag])),
   };
+}
+
+/** Whether a group id is that of a guide or a template ('template:home'), whose live examples compose components. */
+export function composes(id) {
+  return /^(guide|template):/.test(String(id));
 }
 
 /**
@@ -376,7 +383,8 @@ export function differenceOf(group, entries) {
   if (group.differences === undefined) return { entry: null };
   const entry = entries.get(group.differences);
   if (!entry) return { error: failureLine('HWE-KD', group, `differences=${group.differences} names no entry of scripts/equivalence/known-differences.json`) };
-  if (entry.component !== group.id) {
+  // A group of a guide or a template may name the documented difference of any component it composes.
+  if (entry.component !== group.id && !composes(group.id)) {
     return { error: failureLine('HWE-KD', group, `differences=${group.differences} documents component ${entry.component}, not ${group.id}`) };
   }
   return { entry };
@@ -669,7 +677,8 @@ export function compareCapture(captured, difference = null, designed = null) {
   const ignore = skipped.has('structure') ? [] : named.filter((entry) => entry.aspect === 'structure' && entry.ignore).flatMap((entry) => entry.ignore);
   const add = (aspect, results) => {
     for (const result of results) {
-      if (skipped.has(aspect)) rows.push({ aspect, pair: result.pair, result: 'skipped' });
+      // A skipped row keeps whether the results were equal, so that a difference no longer needed is found (staleDifferences).
+      if (skipped.has(aspect)) rows.push({ aspect, pair: result.pair, result: 'skipped', equal: result.equal });
       else rows.push({ aspect, ...result, result: result.equal ? 'equal' : 'different', ...(aspect === 'structure' && ignore.length > 0 ? { ignored: ignore } : {}) });
     }
   };
@@ -923,9 +932,11 @@ async function runGroup({ page, origin, base, pin, group, checks, differences = 
   const opened = await open(group.frame ? FRAMED_WIDTH : FRAME_WIDTH);
   if (opened.length > 0) return { rows, failures: opened, asserted: 0, axeFrames: 0, hosts: [] };
 
+  const skippedRows = [];
   const evaluate = async (state, captured) => {
     for (const element of captured.hosts ?? []) hosts.add(element);
     for (const row of compareCapture(captured, differences, designed)) {
+      if (row.result === 'skipped') skippedRows.push(row);
       const entry = { group: groupKey(group), state, ...row };
       delete entry.equal;
       delete entry.diff;
@@ -971,7 +982,28 @@ async function runGroup({ page, origin, base, pin, group, checks, differences = 
       await axe(`rest@${group.width}`);
     }
   }
+  failures.push(...staleDifferences(group, differences, skippedRows));
   return { rows, failures, asserted: checked.asserted, axeFrames: axeCount, hosts: [...hosts], fixedHeights: [...fixedHeights] };
+}
+
+/**
+ * The failure lines of the documented differences a group names without needing them:
+ * an entry without ignore leaves its aspect out of the comparison, and when the
+ * results of that aspect were equal in every pair and every state of the group, the
+ * entry hides nothing and is removed from the group. skippedRows are the rows of
+ * compareCapture with result 'skipped', each with equal. A structure entry with
+ * ignore is compared and is not judged here.
+ */
+export function staleDifferences(group, differences, skippedRows) {
+  const out = [];
+  for (const aspect of ASPECTS) {
+    const rows = skippedRows.filter((row) => row.aspect === aspect);
+    if (rows.length === 0 || rows.some((row) => row.equal !== true)) continue;
+    const ids = differences.filter((entry) => entry.aspect === aspect && !entry.ignore).map((entry) => entry.id);
+    if (ids.length === 0) continue;
+    out.push(failureLine('HWE-KD', group, `${group.example} (${group.lang}) differences=${ids.join(',')} leave the ${aspect} comparison out, but the four results are equal in ${aspect} in every state; remove ${ids.length === 1 ? 'it' : 'them'} from the group`));
+  }
+  return out;
 }
 
 /**

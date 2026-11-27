@@ -1250,13 +1250,19 @@ the language of the linking page; a fragment names a heading of that page
 - The vocabulary of a guide or a template is that of any page: a name in code
   formatting is an export, a class, a custom property or a name of a specification,
   and a member of a component is accepted only when the same sentence links to its
-  component page.
+  component page. In the `html` block of a group, a `data-hw-*` attribute that an
+  installed README documents for a component is accepted when the block holds the
+  hook of that component (`data-hw="date-picker"`).
 - A group of a template renders in sandboxed frames 1280 px wide; `width=390`
   compares it a second time at 390 px. The frame document is the page of the state:
   its `main` and its `h1` stay out of the guide's outline. Write each state with the
   components that the page writes in their own examples, so that the four results are
-  equal; a difference between adapters is proposed as for a component page, with the
-  key of the template as the `component` of its known difference.
+  equal. A group of a guide or a template composes components, so its
+  `differences=` may name the known difference of any component it shows
+  (`search-field-adapter-markup`), and the designed differences of every component
+  (`empty-elements.json`, `vanilla-hooks.json`, `angular-hosts.json`) apply to it. A
+  difference that no component page records is proposed as for a component page,
+  with the key of the template as the `component` of its known difference.
 - An old topic or template id is kept, so that the old addresses keep working.
 - The install text of a guide follows the rule of every page: no typed install
   command or pinned package address (`HWC-MD`).

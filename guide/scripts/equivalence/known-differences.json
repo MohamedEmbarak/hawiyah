@@ -30,6 +30,14 @@
     "approvedBy": "lead"
   },
   {
+    "id": "page-header-angular-actions-region",
+    "component": "page-header",
+    "aspect": "screenshot",
+    "description": "@hawiyah/angular 0.3.0 always renders the actions region of the page header, and the stylesheet keeps the empty region as a flex item, so in a narrow frame it wraps to its own line and adds one row gap below the title block. The structure comparison leaves the empty region out (empty-elements.json), and the accessibility tree is compared in full. Removed when the guide pins a release that renders the region only with actions.",
+    "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: PageHeader (Angular) always renders `div.hw-page-header-actions`, empty when",
+    "approvedBy": "lead"
+  },
+  {
     "id": "stack-vue-layout-attributes",
     "component": "stack",
     "aspect": "structure",

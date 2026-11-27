@@ -11,7 +11,7 @@ import { JSDOM } from 'jsdom';
 import { FRAMEWORKS } from '../compare.mjs';
 import { generatedNamePattern } from '../generated-names.mjs';
 import { normalize } from '../normalize.js';
-import { bundleHarness, capture, hostsIn, changelogSourceError, checkNames, compareCapture, comparisonFailures, differenceOf, differencesOf, englishPages, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
+import { bundleHarness, capture, hostsIn, changelogSourceError, checkNames, compareCapture, comparisonFailures, differenceOf, differencesOf, englishPages, failureLine, harnessUrl, mountSelector, runEquivalence, scopeErrors, staleDifferences, startHarnessServer, summaryLine, validateKnownDifferences as validateWith } from '../run.mjs';
 import { styledAttributes } from '../styled-attributes.mjs';
 
 const known = JSON.parse(readFileSync(new URL('../known-differences.json', import.meta.url), 'utf8'));
@@ -32,7 +32,7 @@ describe('known differences', () => {
   it('hold the entries the lead approved, valid, each with its CHANGELOG.md source', () => {
     expect(validateWith(known).errors).toEqual([]);
     expect(known.map((item) => item.id)).toEqual([
-      'tabs-bar-orientation', 'text-field-adapter-attributes', 'service-card-angular-variant-icon', 'stack-vue-layout-attributes', 'progress-adapter-max', 'icon-button-adapter-markup',
+      'tabs-bar-orientation', 'text-field-adapter-attributes', 'service-card-angular-variant-icon', 'page-header-angular-actions-region', 'stack-vue-layout-attributes', 'progress-adapter-max', 'icon-button-adapter-markup',
       'field-adapter-markup', 'textarea-adapter-attributes', 'number-field-adapter-attributes', 'input-group-adapter-attributes', 'switch-adapter-attributes',
       'checkbox-adapter-attributes', 'radio-adapter-markup', 'select-adapter-attributes', 'slider-adapter-attributes', 'file-upload-adapter-labelledby',
       'chip-adapter-tone', 'secondary-nav-adapter-variant', 'spacer-vue-layout-attributes', 'center-vue-layout-attributes',
@@ -48,7 +48,8 @@ describe('known differences', () => {
       'stepper-adapter-markup', 'copy-button-adapter-markup', 'tree-view-adapter-markup', 'side-navigation-adapter-markup', 'navigation-drawer-adapter-markup',
       'portal-header-adapter-markup', 'carousel-adapter-markup', 'data-table-adapter-markup', 'data-table-sort-indicator', 'feedback-adapter-markup',
     ]);
-    const [orientation, textField, serviceCard, , progress, iconButton] = known;
+    const [orientation, textField, serviceCard, pageHeader, , progress, iconButton] = known;
+    expect(pageHeader).toMatchObject({ component: 'page-header', aspect: 'screenshot', approvedBy: 'lead' });
     const byId = (id) => known.find((item) => item.id === id);
     expect(orientation).toMatchObject({ component: 'tabs', aspect: 'structure', approvedBy: 'lead', ignore: [{ class: 'hw-tab-bar', attribute: 'data-orientation' }] });
     expect(orientation.source).toMatch(/^CHANGELOG\.md, 0\.3\.0, Known defects in 0\.3\.0: The vanilla Tabs controller/);
@@ -205,6 +206,14 @@ describe('known differences', () => {
     expect(differenceOf({ ...group, differences: 'tabs-bar' }, entries).error).toMatch(/documents component button, not tabs/);
   });
 
+  // A template composes components, so its groups name the entries of the components they use.
+  it('let a group of a guide or a template name the entry of any component', () => {
+    const { entries } = validateKnownDifferences([{ ...entry, component: 'button' }]);
+    expect(differenceOf({ ...group, id: 'template:home', differences: 'tabs-bar' }, entries)).toEqual({ entry: { ...entry, component: 'button' } });
+    expect(differenceOf({ ...group, id: 'guide:getting-started', differences: 'tabs-bar' }, entries).error).toBeUndefined();
+    expect(differenceOf({ ...group, id: 'template:home', differences: 'missing' }, entries).error).toMatch(/names no entry/);
+  });
+
   // A group of Portal layout differs in several aspects: the structure, the accessibility tree and the rendering.
   it('judge each id of a list as one, in the order written', () => {
     const aria = { ...entry, id: 'tabs-aria', aspect: 'aria' };
@@ -311,6 +320,23 @@ describe('a structure entry with ignore (self-test, leadAmendments A8)', () => {
   it('skips the whole aspect for an entry without ignore, as before', () => {
     const rows = structure(compareCapture(capture([bar({}, 1)]), entry));
     expect(rows.map((row) => row.result)).toEqual(['skipped', 'skipped', 'skipped']);
+  });
+
+  // An entry that hides nothing is stale: the results it leaves out are equal in every state.
+  it('fails a group whose named difference leaves out an aspect that is equal in every state', () => {
+    const aria = { ...entry, id: 'tabs-aria', aspect: 'aria' };
+    const equalCapture = capture([bar({ 'data-orientation': 'horizontal' }, 1)]);
+    for (const framework of FRAMEWORKS) equalCapture.trees[framework] = equalCapture.trees.vanilla;
+    const stale = compareCapture(equalCapture, [entry, aria]).filter((row) => row.result === 'skipped');
+    expect(staleDifferences(group, [entry, aria], stale)).toEqual([
+      'HWE-KD docs/components/tabs.ar.md:19: basic (ar) differences=tabs-bar leave the structure comparison out, but the four results are equal in structure in every state; remove it from the group',
+      'HWE-KD docs/components/tabs.ar.md:19: basic (ar) differences=tabs-aria leave the aria comparison out, but the four results are equal in aria in every state; remove it from the group',
+    ]);
+    // One state that differs keeps the entry.
+    const needed = [...stale, ...compareCapture(capture([bar({}, 1)]), [entry]).filter((row) => row.result === 'skipped')];
+    expect(staleDifferences(group, [entry, aria], needed).filter((line) => line.includes('structure'))).toEqual([]);
+    // A structure entry with ignore is compared, not skipped, and is not judged.
+    expect(staleDifferences(group, [{ ...entry, ignore: [{ class: 'hw-tab-bar', attribute: 'data-orientation' }] }], [])).toEqual([]);
   });
 
   it('applies every entry of a list: each aspect without ignore is skipped, and the other aspects are compared', () => {

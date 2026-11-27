@@ -68,3 +68,10 @@ already carry the reviewer's preferred form.
 2. The caption of the keyboard table: «جدول: التفاعل من لوحة المفاتيح مع المكوّن: <الاسم>».
 3. The names of the arrow keys: «السهم الأيمن», «السهم الأيسر», «السهم لأعلى», «السهم لأسفل».
 4. The category labels of the catalogue: «الإجراءات، النماذج، التنقل، الطبقات المتراكبة، الإظهار والإخفاء، التخطيط، التغذية الراجعة، عرض البيانات، المحتوى، مكوّنات المنصات»; alternatives «التنبيهات والحالة» for feedback and «النوافذ المتراكبة» for overlays.
+
+## Renderings the translators were unsure of
+
+`handoff/pilot/arabic-uncertain.md` lists, page by page, the 166 lines whose rendering a translator could not settle from the glossary. Two choices recur across pages and need one answer each:
+
+1. Dialog: «نافذة مشروطة» on the Dialog page, «مربع حوار مشروط» on the Popover and Date picker pages.
+2. The outline variant: «المظهر ذو الإطار» (Alert, fields) or «الشكل ذو الإطار» (Badge).

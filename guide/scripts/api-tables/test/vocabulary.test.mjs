@@ -97,7 +97,7 @@ describe('each kind of invented name fails with HWC-VOCAB', () => {
     const input = fixture('tabs', (text) => once(text, '<div class="hw-tabs" data-hw="tabs" data-hw-overflow="scroll">', '<div class="hw-tabs hw-tabs-wide" data-hw="tabs" data-hw-overflow="scroll" data-hw-sticky="true">'));
     expect(messages(run(input))).toEqual([
       'HWC-VOCAB docs/components/tabs.md: live example basic (html): `class="hw-tabs hw-tabs-wide"`: hw-tabs-wide is not a class of the installed stylesheet',
-      'HWC-VOCAB docs/components/tabs.md: live example basic (html): `data-hw-sticky`: data-hw-sticky is neither selected by the installed stylesheet, read by a published module, documented for this component by an installed README, nor an attribute of vocabulary-allow.json',
+      'HWC-VOCAB docs/components/tabs.md: live example basic (html): `data-hw-sticky`: data-hw-sticky is neither selected by the installed stylesheet, read by a published module, documented by an installed README for this component or a linked one, nor an attribute of vocabulary-allow.json',
     ]);
   });
   it('a scoped package the guide does not install', () => {
@@ -253,10 +253,17 @@ describe('data-hw-* attributes that an installed README documents for the compon
 
   it('still refuses it on the page of another component, and refuses an invented attribute', () => {
     expect(judge(vocab, name('data-hw-range-label'), where('tabs'))).toBe(
-      'data-hw-range-label is neither selected by the installed stylesheet, read by a published module, documented for this component by an installed README, nor an attribute of vocabulary-allow.json',
+      'data-hw-range-label is neither selected by the installed stylesheet, read by a published module, documented by an installed README for this component or a linked one, nor an attribute of vocabulary-allow.json',
     );
     expect(judge(vocab, name('data-hw-range-labels'), where('range-slider'))).toMatch(/^data-hw-range-labels is neither selected/);
     expect(judge(vocab, name('data-hw-range-caption'), where('range-slider'))).toMatch(/^data-hw-range-caption is neither selected/);
+  });
+
+  // The live markup of a template composes components; checkVocabulary passes the components whose hook the markup holds as linked.
+  it('accepts it for a page that composes the component, through the linked vocabularies', () => {
+    const composed = { scope: ['vanilla'], vocabulary: where('tabs').vocabulary, linked: [componentVocabulary(vocab, 'range-slider', declared('range-slider'))] };
+    expect(judge(vocab, { kind: 'attribute', name: 'data-hw-range-label', text: 'data-hw-range-label' }, composed)).toBeNull();
+    expect(judge(vocab, { kind: 'attribute', name: 'data-hw-range-caption', text: 'data-hw-range-caption' }, composed)).toMatch(/^data-hw-range-caption is neither selected/);
   });
 
   it('reads a README by its blocks and takes an attribute only from a block that names the component', () => {

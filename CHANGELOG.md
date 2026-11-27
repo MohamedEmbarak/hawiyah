@@ -966,6 +966,11 @@ built type declarations of each package.
   (`.hw-tab-bar`) without the `data-orientation` attribute that the React, Vue
   and Angular adapters write. The appearance and the accessibility tree are the
   same; a later release corrects it.
+- The README of each package gives its install command without a version
+  (`npm install @hawiyah/styles @hawiyah/<adapter>`). While 0.3.0 carries the
+  dist-tag `next` and `latest` names 0.2.1, that command installs 0.2.1, whose
+  API differs; `@next` or the exact version (`@0.3.0`) installs 0.3.0. The
+  defect ends when `latest` names 0.3.0.
 - `.hw-code` sets `overflow-wrap: anywhere`, so inside a cell of an
   auto-layout `.hw-table` a value breaks into fragments (`data-|varian|t`,
   `'prima|ry'` at 390 px).
@@ -1038,6 +1043,10 @@ built type declarations of each package.
   another value is given, `autocomplete="off"`; React and Vue write none of the
   three. Vue writes `value=""` on an input without a value. The accessible name
   and the appearance are the same.
+- TextField (Angular) writes `type="text"` when no type is given, and sets the
+  value of the input only as a DOM property, so an input with an initial value
+  has no `value` attribute where the vanilla markup, React and Vue write one.
+  The value the reader sees is the same.
 - ServiceCard (Angular) always writes `data-variant` (`default` when no variant
   is given) and always renders `div.hw-service-card-icon`, empty when no
   `[hwServiceIcon]` content is projected; React, Vue and the vanilla markup write
@@ -1327,6 +1336,11 @@ built type declarations of each package.
   button neither `data-variant` nor `data-size`. React and Vue write
   `aria-labelledby` on the input next to the `for` of its label and an empty
   `value` attribute, which Angular and the vanilla markup do not write.
+- SearchField (Angular) sets the value of the input only as a DOM property, so
+  a field that holds a query has no `value` attribute where the vanilla markup,
+  React and Vue write one, and it writes an id on the label without
+  `aria-labelledby` on the input. The query the reader sees and the accessible
+  name are the same.
 - PinInput (Vue) writes `hw-pin-input` on the input instead of its root
   element, and writes `dir="ltr"` on the input, which React, Angular and the
   vanilla controller do not.

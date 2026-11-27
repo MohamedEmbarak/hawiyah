@@ -160,6 +160,11 @@ describe('angular-hosts.json', () => {
     expect(designedOf('badge', lists).angularHosts).toEqual({ 'hw-badge': 'span' });
     expect(designedOf('card', lists).angularHosts).toEqual({});
   });
+  it('gives a guide or a template the elements and tags of every component, since its examples compose them', () => {
+    const lists = { empty: [{ component: 'stat', class: 'hw-stat-trend' }, { component: 'empty-state', class: 'hw-empty-icon' }], hooks: [], hosts: [entry, { ...entry, component: 'badge', element: 'hw-badge' }] };
+    expect(designedOf('template:home', lists)).toEqual({ emptyClasses: ['hw-stat-trend', 'hw-empty-icon'], vanillaAttributes: [], angularHosts: { 'hw-avatar': 'span', 'hw-badge': 'span' } });
+    expect(designedOf('stat', lists).emptyClasses).toEqual(['hw-stat-trend']);
+  });
   it('fails an entry that matches nothing in the groups of its component, once every group of the component was compared', () => {
     const groups = [{ id: 'avatar', lang: 'en', example: 'basic' }, { id: 'avatar', lang: 'en', example: 'sizes' }, { id: 'badge', lang: 'en', example: 'basic' }];
     const all = new Set(groups.map((group) => `${group.id}/${group.lang}/${group.example}`));

@@ -40,5 +40,12 @@
     "reason": "@hawiyah/angular 0.3.0 always renders span.hw-verification-mark of hw-site-verification, empty when no [hwVerificationMark] content is projected; React and Vue render the region only with a mark, and the stylesheet hides it while it is empty.",
     "reference": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: SiteVerification (Angular): `hw-site-verification` always renders `span.hw-verification-mark`, empty when no `[hwVerificationMark]` content is projected",
     "approvedBy": "lead"
+  },
+  {
+    "component": "page-header",
+    "class": "hw-page-header-actions",
+    "reason": "@hawiyah/angular 0.3.0 always renders div.hw-page-header-actions, empty when nothing is projected; React and Vue render the region only with actions.",
+    "reference": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: PageHeader (Angular) always renders `div.hw-page-header-actions`, empty when",
+    "approvedBy": "lead"
   }
 ]
