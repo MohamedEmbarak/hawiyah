@@ -1,7 +1,7 @@
 # Public source, guide, and package releases
 
 Hawiyah is available from [MohamedEmbarak/hawiyah](https://github.com/MohamedEmbarak/hawiyah)
-as a **0.2 source preview**, with an interactive guide at
+as a **0.3 source preview**, with a guide at
 [GitHub Pages](https://mohamedembarak.github.io/hawiyah/). Original project code,
 documentation, and artwork use [Apache License 2.0](../LICENSE). Bundled fonts
 and calendar reference data retain their own licenses and attribution; see
@@ -22,28 +22,33 @@ same tarballs the package check verified.
 
 ## The public guide
 
-The guide contains getting-started instructions, live component recipes,
-component APIs and lifecycles, framework setup, themes, Arabic/RTL behavior,
-calendar provenance, layout composition, and extension guidance. The source
-lives in `apps/playground`; the brand guide is in `brand`.
+The guide has a page for each component, getting-started instructions, page
+templates, the foundations and the brand, in Arabic and English. Its source is
+`guide/` (Angular, outside the pnpm workspace); it installs the published
+`@hawiyah/*` packages at the version it pins, never the workspace sources, and
+renders every live example from them in vanilla JavaScript, React, Vue and
+Angular. [guide/README.md](../guide/README.md) describes its commands and checks.
+The earlier guide in `apps/playground` remains a local development entry point
+and is no longer deployed.
 
 GitHub Pages serves this project beneath `/hawiyah/`. A deployment must use that
-base path for scripts, styles, images, fonts, downloads, and guide navigation.
-Check direct links to component pages, reloads, search, narrow screens,
-Arabic/RTL, and reduced-motion behavior against the built site. Deploy only
-reviewed build output from this public repository. The documentation site does
-not perform npm publication or connect its simulated service journeys to a
-backend.
+base path for scripts, styles, images, fonts and guide navigation. The
+documentation site does not perform npm publication.
 
-The [Pages workflow](../.github/workflows/pages.yml) builds with:
+The [Guide workflow](../.github/workflows/guide.yml) checks and builds the guide
+on every change to its inputs:
 
 ```sh
-pnpm install --frozen-lockfile
-HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs
+cd guide
+npm ci
+HAWIYAH_BASE_PATH=/hawiyah/ npm run build
 ```
 
-It publishes `apps/playground/dist` through GitHub Pages. The separate `pnpm build`
-command also builds the three native framework examples for local verification.
+It compares every live example in four shards and runs the browser tests in eight
+shards on that one build. The [Pages workflow](../.github/workflows/pages.yml)
+runs when a run of the Guide workflow on `main` has passed every job, checks that
+the build is deployable, and deploys that run's build output through GitHub
+Pages without building it again.
 
 ## Continuous integration
 
@@ -65,7 +70,7 @@ pnpm test:browser
 
 It deploys and publishes nothing. The Pages and publish workflows do not wait
 for it, so check its result on the commit before merging to `main` or tagging a
-release.
+release. The Pages workflow waits for the Guide workflow only.
 
 ## Package contents
 

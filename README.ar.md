@@ -12,13 +12,11 @@ Developed by the Development Team in the National Platforms Sector — National 
 
 تستخدم الواجهة افتراضيًا أساس DGA المربوط بلقطات المصدر المزوّدة من كود المنصات. وتحتفظ سمة **Signature** (التوقيع) الاختيارية (`data-hw-theme="hawiyah"`) بالأخضر المزرق والعاجي الدافئ. شعار هوية هو كلمة **هوية** العربية باللون الأساسي لكود المنصات. تستخدم كتابة الشعار **Aref Ruqaa Bold محوّلًا إلى مسارات SVG**، فلا يحتاج عرضه إلى تحميل الخط. تبقى خطوط الواجهات IBM Plex Sans Arabic وIBM Plex Sans. يتضمن [دليل الهوية المحلي](brand/index.html) و[إرشادات الشعار](brand/README.md) و[حزمة الهوية ZIP](brand/hawiyah-brand-kit.zip) الشعار ومؤشرات تحميل تحرّك حروفه بخلفية شفافة.
 
-معاينات: [المحرّر المباشر بالعربية](docs/previews/component-editor-ar-dark.png)، و[المعرض بالعربية على الهاتف](docs/previews/playground-ar-mobile.png)، و[استوديو التخطيط](docs/previews/layouts.png)، و[منتقي التاريخ الميلادي وأم القرى](docs/previews/date-picker.png).
-
 تطبّق هوية **كود المنصات — Platforms Code** الصادر عن **هيئة الحكومة الرقمية — DGA**، وهو **نظام التصميم الموحد — Unified Design System** في **المملكة العربية السعودية — Kingdom of Saudi Arabia (KSA)**، في الأسس والمكوّنات وأنماط الخدمات. **يُوثَّق الامتثال متطلبًا متطلبًا، مع أدلة الاختبار والبنود المفتوحة.** تُطوَّر هوية بشكل مستقل، وليست منتجًا رسميًا للهيئة. راجع [توثيق المواءمة](docs/alignment.md) قبل وصف أي منتج بأنه متوافق. يسجل [مرجع DGA ودليل الانتقال](docs/dga-reference.md) لقطات المصدر المزوّدة بتاريخ 2026-10-29، والقيم الدلالية للوضعين الفاتح والداكن، ومعرّفات العناصر والفجوات. تاريخ التصدير ليس رقم إصدار رسميًا. فُكّ ترميز الملفات المحلية الـ23 جميعها، بما فيها الملفات الستة التي تعذّر نقلها سابقًا، ولم تُزوَّد مكتبة مستقلة لمكونات الويب. يوضح [جرد المصادر](docs/dga-source-inventory.md) و[متابعة التدقيق](docs/dga-audit-followup.md) الأدلة والفجوات المتبقية. قالب الحج خاص بتطبيق الحج وخارج نطاق هوية.
 
-استكشف [معرض القوالب](https://mohamedembarak.github.io/hawiyah/#templates) و[صفحة الخدمة بعرض كامل](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/service) و[نموذج الطلب](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/form). الأمثلة ثنائية اللغة وتعمل ببيانات تجريبية محلية؛ اربطها بخدمات تطبيقك عند استخدامها فعليًا.
+يضم الدليل صفحة لكل مكوّن من المكوّنات الخمسة والثمانين بالعربية والإنجليزية، مع أمثلة حية تُعرض من الحزم المنشورة بلغة JavaScript المجرّدة وReact وVue وAngular. وتجمع أربعة [قوالب](https://mohamedembarak.github.io/hawiyah/ar/templates/) هذه المكوّنات في [صفحة رئيسية](https://mohamedembarak.github.io/hawiyah/ar/templates/home/) لبوابة خدمات، و[صفحة خدمة](https://mohamedembarak.github.io/hawiyah/ar/templates/service/)، و[نموذج طلب](https://mohamedembarak.github.io/hawiyah/ar/templates/form/)، و[صفحة نتائج بحث](https://mohamedembarak.github.io/hawiyah/ar/templates/search/).
 
-يتضمن المعرض أيضًا [الصفحة الرئيسية](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/home) و[صفحة البحث](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/search)، مع حفظ عبارة البحث والتصفية وإزالة الاختيارات والترتيب والتنقل بين النتائج. توثّق أدلة `PORTAL.md` في حزم الأطر استخدام `PortalLayout` و`SecondaryNav` لإضافة هيكل البوابة مباشرة.
+توثّق أدلة `PORTAL.md` في حزم الأطر استخدام `PortalLayout` و`SecondaryNav` لإضافة هيكل البوابة مباشرة.
 
 ## حالة التطوير
 
@@ -26,7 +24,7 @@ Developed by the Development Team in the National Platforms Sector — National 
 
 تفصل [خريطة الطريق](docs/roadmap.md) بين المخطط والمنفذ والمتحقق منه. يعرض [components.json](components.json) هذه الحالات أيضًا بصيغة قابلة للقراءة آليًا. تُراجع تغطية كل إطار عمل والتحقق الفعلي من الفهرس، ولا تُستنتج من أسماء الحزم.
 
-يفتح الدليل بالعربية، مع حفظ اختيار الإنجليزية وإتاحة البحث باختصار Ctrl/Cmd + K. تتضمن صفحة كل مكوّن تبويبات للمعاينة والشفرة والتجربة الحية، مع محررات HTML وCSS وJavaScript، ونتيجة تفاعلية معزولة، وسجل للأخطاء، وإعادة ضبط المثال. تستخدم مساحة التجربة تطبيق المكوّن بلغة جافاسكريبت دون إطار عمل؛ وتبقى إرشادات الأطر وواجهاتها البرمجية في مقالاتها المخصصة. لا تدعم المعاينة المضمّنة استيراد المكتبات الخارجية. ترافق الدليل المنشور [تراخيص مكتبات المحرر](https://mohamedembarak.github.io/hawiyah/licenses/editor.txt).
+الدليل متاح بالعربية والإنجليزية، ولكلٍّ منهما وضعان فاتح وداكن. وتعرض صفحة كل مكوّن أمثلة حية بلغة JavaScript المجرّدة وReact وVue وAngular، تُعرض من الحزم المنشورة بالإصدار 0.3.0؛ وتُقارن النتائج الأربع لكل مثال عند بناء الدليل، ويشغّل المحرر أي مثال في أيٍّ من الأطر الأربعة. وتُسجَّل الفروق التي لا تزال قائمة بين المحوّلات في الإصدار 0.3.0 تحت Known defects في [سجل التغييرات](CHANGELOG.md).
 
 ## اتجاه النظام
 

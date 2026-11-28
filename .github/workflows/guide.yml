@@ -2,7 +2,8 @@ name: Guide
 
 # Checks and builds the new guide in guide/ from the published @hawiyah packages
 # and runs its script, unit and end-to-end tests. It deploys and publishes
-# nothing: the deployed guide is still built by pages.yml.
+# nothing itself: pages.yml deploys the build artifact (guide-build) of a run on
+# main that passed every job, so the artifact keeps its name and contents.
 #
 # The paths below are every input of the guide build and its tests, as listed in
 # guide/build-inputs.json (the single source; guide/scripts/test/build-inputs.test.mjs

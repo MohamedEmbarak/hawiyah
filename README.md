@@ -12,15 +12,13 @@ Developed by the Development Team in the National Platforms Sector — National 
 
 The default interface uses the DGA foundation mapped from supplied Platforms Code source snapshots. The optional **Signature** theme (`data-hw-theme="hawiyah"`) retains teal and warm ivory. Hawiyah's logo is the Arabic **هوية** wordmark in the Platforms Code primary color. Its **Aref Ruqaa Bold lettering is exported as SVG paths**, with no font dependency to display the logo. Interface typography remains IBM Plex Sans Arabic and IBM Plex Sans. The [brand guide](brand/index-en.html), [artwork guidance](brand/README.md), and [brand kit ZIP](brand/hawiyah-brand-kit.zip) include the wordmark and transparent loaders that animate its lettering.
 
-![Hawiyah playground preview](docs/previews/playground.png)
-
 Preview the [live editor in Arabic](docs/previews/component-editor-ar-dark.png), [layout studio](docs/previews/layouts.png) and [Gregorian/Umm al-Qura date picker](docs/previews/date-picker.png).
 
 Hawiyah implements the **DGA Platforms Code**, the **Unified Design System** for the **Kingdom of Saudi Arabia (KSA)** — **كود المنصات، نظام التصميم الموحد، هيئة الحكومة الرقمية** — across foundations, components, and service patterns. **Compliance is documented requirement by requirement, with test evidence and open items.** Hawiyah is maintained independently and is not an official DGA product. Read [DGA alignment](docs/alignment.md) before describing a product as compliant. The [DGA reference and migration guide](docs/dga-reference.md) records the supplied 2026-10-29 snapshots, semantic light/dark values, reference nodes, and remaining gaps. The export date is not an official release number. All 23 local files are now decoded; the earlier six-file transfer limit is resolved. No standalone web Components Library was supplied. See the [source inventory](docs/dga-source-inventory.md) and [audit follow-up](docs/dga-audit-followup.md) for evidence and remaining gaps. The application-specific Hajj template is outside Hawiyah scope.
 
-Explore the [template gallery](https://mohamedembarak.github.io/hawiyah/#templates), [full-width service page](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/service), and [application form](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/form). These bilingual examples use local demonstration state; connect your own services for production.
+The guide has a page for each of the 85 components, in Arabic and English, with live examples rendered from the published packages in vanilla JavaScript, React, Vue and Angular. Four [templates](https://mohamedembarak.github.io/hawiyah/en/templates/) compose them into a service portal [home page](https://mohamedembarak.github.io/hawiyah/en/templates/home/), a [service page](https://mohamedembarak.github.io/hawiyah/en/templates/service/), a [request form](https://mohamedembarak.github.io/hawiyah/en/templates/form/) and [search results](https://mohamedembarak.github.io/hawiyah/en/templates/search/).
 
-The gallery also includes a [portal home](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/home) and [search page](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/search). Search retains the query and provides type filters, removable selections, sorting, pagination and result states. Reusable `PortalLayout` and `SecondaryNav` APIs are documented in each adapter's `PORTAL.md` guide.
+Reusable `PortalLayout` and `SecondaryNav` APIs are documented in each adapter's `PORTAL.md` guide.
 
 ## Development status
 
@@ -28,7 +26,7 @@ Hawiyah is an **Apache 2.0 public source preview, version 0.3**. Seven packages 
 
 The [roadmap](docs/roadmap.md) separates planned scope, implemented work, and verified behavior. [components.json](components.json) provides the same distinctions in a form that tools and coding assistants can read. Exact framework coverage and verification must be checked there rather than inferred from the package names.
 
-The guide opens in Arabic, with a persistent English switch and keyboard search (Ctrl/Cmd + K). Every component includes Preview, Code, and Playground tabs. The playground offers project files with real imports and native previews for JavaScript/TypeScript, React JSX/TSX, Vue JavaScript/TypeScript, and Angular TypeScript. Each supported recipe runs its selected adapter in an isolated preview with console errors and reset controls; the editor explicitly identifies any recipe still awaiting a native example. Downloaded projects include their setup files. The embedded preview resolves bundled dependencies only; arbitrary external imports are unsupported. [Editor license notices](https://mohamedembarak.github.io/hawiyah/licenses/editor.txt) accompany the deployed guide.
+The guide is in Arabic and English, each with a light and a dark mode. Each component page shows live examples in vanilla JavaScript, React, Vue and Angular, rendered from the published 0.3.0 packages; the four results of every example are compared when the guide is built, and the editor runs an example in any of the four. The differences between adapters that 0.3.0 still has are recorded under Known defects in the [changelog](CHANGELOG.md).
 
 ## What the system is designed to provide
 

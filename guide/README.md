@@ -359,7 +359,7 @@ Run in `guide/` unless stated otherwise.
 | `npm run scan:log -- .cache/logs/build-production.log` | Scans a saved build log. | `log-scan: 0 findings (production)`; exit 0. A finding prints `log-scan: <rule id> line <n>: <text>` and exits 1. |
 | `npm run test:unit` | Generation steps, then `ng test --no-watch` (Vitest with jsdom). | Vitest summary with 0 failed; exit 0. |
 | `npm run test:e2e` | `playwright test --project=prod` against `dist/browser` served under `/hawiyah/`. Requires a prior production build with `HAWIYAH_BASE_PATH=/hawiyah/`. | `N passed` with 0 failed and 0 flaky; exit 0. Output goes to `GUIDE_TEST_OUTPUT` or `<os tmpdir>/hawiyah-guide-e2e`, never into the repository. |
-| `npm run check:page -- <id> [--lang en] [--draft] [--docs <dir>] [--workers <n>]` | `node scripts/check-page.mjs`: the proof of one page for its writer, after one production build; `<id>` is a component id, or the key `guide:<id>` or `template:<id>` of a guide or a template (see [Guides, templates and the generated pages](#guides-templates-and-the-generated-pages)), whose run has no API tables, coverage report or keyboard report: the content step for that page only (a finding in another page does not fail it), the glossary and compliance assertions of the script tests and the Latin-script guard of step 72 on the page's own Markdown (`scripts/content/page-rules.mjs`: `HWT-GLOSSARY`, `HWT-COMPLIANCE`, `HWP-LATIN`), the compile of its live groups, the API tables and the vocabulary pass of step 30, the coverage report, and step 80 on its groups in the languages that exist. It does not run the browser tests nor the parts of step 72 that need a prerendered document (icons, `svg`, emoji, the Latin-script guard over the examples and generated text): `npm run build -- --pages <id>` and `npm run test:page -- <id>` do. It writes only below `.cache/page-<id>/` and never into `dist/` or `src/generated/` (step 80 serves `dist/browser` with the page's own payloads in place of `dist/browser/examples/`). Step 80 takes a lock: while another `check:page` compares its groups, a run waits (leadAmendments A8); a second run of the same page waits for the first. `--lang en` checks the English page alone; an English page without its Arabic sibling is checked in English only while `scripts/content/pending-translation.json` lists it (the writer of the English page adds its id, and the writer of the Arabic page removes it; without the entry the run reports `HWC-FILE` and, with `--lang en`, names the file to add the id to). It prints each row of the page's keyboard table with the steps of the checks that press its keys, their outcomes and references. `--draft` leaves out `HWE-KEYS` (the keys of the keyboard table bound to the steps of the checks), for a page whose check is not written yet; the steps that exist still assert their outcomes. A writer's tool, never the gate of a stage. | One line per stage (`check:page: content ok (<ms> ms) ...`, `glossary, compliance and Latin-script rules`, `compile`, `api-tables and vocabulary`, the coverage section, the keyboard report, the summary line of step 80, `equivalence`), then `check:page: <id> OK in <s> s (...)`; exit 0. Otherwise every finding with its code and `check:page: <id> FAILED with <n> finding(s) ...`; exit 1. |
+| `npm run check:page -- <id> [--lang en] [--draft] [--docs <dir>] [--workers <n>]` | `node scripts/check-page.mjs`: the proof of one page for its writer, after one production build; `<id>` is a component id, or the key `guide:<id>` or `template:<id>` of a guide or a template (see [Guides, templates and the generated pages](#guides-templates-and-the-generated-pages)), whose run has no API tables, coverage report or keyboard report: the content step for that page only (a finding in another page does not fail it), the glossary and compliance assertions of the script tests and the Latin-script guard of step 72 on the page's own Markdown (`scripts/content/page-rules.mjs`: `HWT-GLOSSARY`, `HWT-COMPLIANCE`, `HWP-LATIN`), the compile of its live groups, the API tables and the vocabulary pass of step 30, the coverage report, and step 80 on its groups in the languages that exist. It does not run the browser tests nor the parts of step 72 that need a prerendered document (icons, `svg`, emoji, the Latin-script guard over the examples and generated text): `npm run build -- --pages <id>` and `npm run test:page -- <id>` do. It writes only below `.cache/page-<id>/` and never into `dist/` or `src/generated/` (step 80 serves `dist/browser` with the page's own payloads in place of `dist/browser/examples/`). Step 80 takes a lock: while another `check:page` compares its groups, a run waits; a second run of the same page waits for the first. `--lang en` checks the English page alone; an English page without its Arabic sibling is checked in English only while `scripts/content/pending-translation.json` lists it (the writer of the English page adds its id, and the writer of the Arabic page removes it; without the entry the run reports `HWC-FILE` and, with `--lang en`, names the file to add the id to). It prints each row of the page's keyboard table with the steps of the checks that press its keys, their outcomes and references. `--draft` leaves out `HWE-KEYS` (the keys of the keyboard table bound to the steps of the checks), for a page whose check is not written yet; the steps that exist still assert their outcomes. A writer's tool, never the gate of a stage. | One line per stage (`check:page: content ok (<ms> ms) ...`, `glossary, compliance and Latin-script rules`, `compile`, `api-tables and vocabulary`, the coverage section, the keyboard report, the summary line of step 80, `equivalence`), then `check:page: <id> OK in <s> s (...)`; exit 0. Otherwise every finding with its code and `check:page: <id> FAILED with <n> finding(s) ...`; exit 1. |
 | `npm run test:page -- <id> [<playwright option> ...]` | `node scripts/test-page.mjs`: the browser tests of one page against a production build that contains it: every test whose title names a document of the page (`components/<id>/`, `component page <id> (`; for `guide:<id>` and `template:<id>`, `guides/<id>/` and `templates/<id>/`), then the page's own specs (`tests/e2e/pages/<id>.spec.ts`, `tests/e2e/<id>/`) when they exist. It does not judge the union of the structural half of the styling rule. | Playwright `N passed` for each run, then `test:page: <id> OK (...)`; exit 0. |
 | `npm run test:check-page` | `GUIDE_BUILD_TESTS=1 vitest run --config vitest.scripts.config.ts`: the script tests that need a production build in `dist/` (`scripts/test/build/*.build-test.mjs`): three wrong copies of `tabs.md` read with `--docs` fail `check:page` with `HWC-APIX`, `HWC-R1` and `HWE-STRUCT`, a copy without the Home row of its keyboard table fails with `HWE-KEYS` and passes with `--draft`, and two concurrent runs pass with `dist/browser/examples` and `src/generated` unchanged. Run it after the production build. | Vitest summary with 0 failed; exit 0. |
 | `node scripts/test/scale/generate.mjs [--out <dir>] [--groups <n>]` | Writes the scale fixture (see [Scale](#scale)) to `.cache/scale/docs/components/` (ignored by Git). | `scale: 85 pages in 2 languages in ... (83 generated with 6 generic static groups each, 2 copied: button, tabs); build with --docs, never deployable`; exit 0. |
@@ -374,7 +374,7 @@ Run in `guide/` unless stated otherwise.
 | `npm run content:scaffold-ar -- <id> --strings <map.json> [--docs <dir>] [--force]` | `node scripts/content/scaffold-ar.mjs`: writes `<id>.ar.md` from the English page (for `guide:<id>` and `template:<id>` in `docs/guides/` and `docs/templates/`: the h1 and a guide's h2 stay for the writer to translate, a template's h2 take their fixed Arabic text, and there is no API or keyboard table): front matter hashes, h1, h2, API captions, headers and note from fixed lists; API bodies and code listings copied; live blocks copied with every reader string that `HWC-PAR8` reads replaced from the map `{ "<English>": "<Arabic>" }` in the four blocks of each group (`scripts/content/string-map.mjs`: markup text and the text of a `textarea`, reader names, also as the key of an object or the field of a class that holds the string (an Angular `overflowLabel` field), shown values, a component value that the native markup of the group shows as a value, the `name` of a component that the group reads as reader text (an Avatar), and a string under another name that is not a token name when the group reads it as reader text, such as a one-word `category` or `term`; never an id, a field name, a slot, an option value, the value of a `data-*` attribute that the stylesheet selects or the value of an input or component of type `email`, `url`, `tel` or `number`; the control flow of an Angular template, such as `@if (open()) {`, is not text); other text left for the writer to translate in place. | `content:scaffold-ar: wrote <file>; ...`, then one line per reader string of the English blocks that the map does not translate, per other string left in English that renders as reader text (`left in English: ...`) and per unused entry; exit 0. |
 | `npm run content:scaffold-ar -- <id> --placeholder --docs <dir> [--strings <map.json>]` | The same with every text left in English and every reader string the map does not translate replaced by the placeholder `نص مؤقت إلى حين الترجمة.`: a stand-in sibling for the browser tests of an English page before its translation. It writes only into a directory outside the repository; the build reads it with `--docs` (not deployable). Step 20 refuses the placeholder in a page of `docs/components/` (`HWC-TODO`). | `content:scaffold-ar: wrote the placeholder sibling <file> (not a translation; ...)`; exit 0. Exit 1 when `--docs` lies inside the repository. |
 | `npm run content:sync-ar -- <id> [--docs <dir>] [--check]` | `node scripts/content/sync-ar.mjs`: rewrites the live blocks, code listings and API tables of an existing `<id>.ar.md` from the English page (for `guide:<id>` and `template:<id>`, the live blocks and code listings), with the string map that the existing pair gives, replacing the same reader strings as `content:scaffold-ar`; translated prose and the front matter stay. | `content:sync-ar: rewrote ...` or `... is in step with its English page`, then the strings without a translation, the strings left in English that render as reader text, the Arabic strings it kept in place of an English one (`kept the Arabic string ...; check it`) or could not carry, and the stale sections; it never replaces an Arabic string by an English one; `--check` exits 1 when the page would change. |
-| `npm run content:coverage -- [<id> ...] [--docs <dir>]` | `node scripts/api-tables/coverage.mjs`: the coverage report of leadAmendments A5, per page: the enumerated values and boolean members of the API that no live group of the same framework shows (the default value counts as shown) and that the section Variants and states does not name. A report, never a gate; `check:page` prints the same section. | `coverage: <id>: <n> of <m> enumerated values and boolean members of the API are shown by no live group and not listed in Variants and states (a report, not a gate)`, then one line per framework with what is missing; exit 0. |
+| `npm run content:coverage -- [<id> ...] [--docs <dir>]` | `node scripts/api-tables/coverage.mjs`: the coverage report, per page: the enumerated values and boolean members of the API that no live group of the same framework shows (the default value counts as shown) and that the section Variants and states does not name. A report, never a gate; `check:page` prints the same section. | `coverage: <id>: <n> of <m> enumerated values and boolean members of the API are shown by no live group and not listed in Variants and states (a report, not a gate)`, then one line per framework with what is missing; exit 0. |
 | `node scripts/api-tables/cli.mjs --declared-all` | One line per component and framework of `components.json` with what the readers of step 30 declare. | `api-tables: declared members of 85 ids in 4 frameworks: <n> members; 0 reader errors; 0 ids without a target; <g> list gaps (...)`; exit 0, else exit 1. |
 | `npm run preview:local` | `node scripts/preview/build-preview.mjs`: preview build from local tarballs. Requires `pnpm build:packages && pnpm check:packages` at the repository root first. | `preview: built from local tarballs at commit <sha7> in ../.artifacts/guide-preview/guide/dist/browser`; exit 0. |
 
@@ -387,8 +387,8 @@ guide and its checks use `/hawiyah/`.
 `--configuration production|development` (default `production`),
 `--generate-only` (steps 00, 10, 20, 25, 30, 32 and 35, used by `npm start` and
 `npm run test:unit`), `--only <id,id>` (debugging only, never in CI),
-`--preview <commit>` (preview builds), and three options of the scale of
-milestone 5 (`scripts/build-scope.mjs`):
+`--preview <commit>` (preview builds), and three options for measuring the
+scale of a build (`scripts/build-scope.mjs`):
 
 - `--pages <id,...>` (production only): step 80 compares only the live groups of
   the named pages. A local gate.
@@ -427,7 +427,7 @@ lists the steps that ran; `scripts/test/build.test.mjs` asserts the plan.
 | `03-lint` | Runs the CSS, template and source lint. |
 | `05-registry` | Runs the registry check (strict, or preview mode in preview builds). |
 | `10-features` | Writes `src/generated/features.ts`, `features.json` and `pages.json` (the component pages, and the guides and templates of `index.json` whose two languages exist). |
-| `20-content` | Parses and checks the component Markdown and the guides and templates (`docs/guides/`, `docs/templates/` with their `index.json`; see [Guides, templates and the generated pages](#guides-templates-and-the-generated-pages)), with the text gates of `scripts/content/prose.mjs` (`HWC-CLAIM`, `HWC-EMPTY`, `HWC-TODO`, `HWC-TONE`, `HWC-LIVE7` and install text in running text; they prove structure and words, not that a sentence is true) (an English page without its Arabic sibling only while `scripts/content/pending-translation.json` lists it: it gets no route, and the step prints `content: <n> pages pending translation` in every build, deployable or not; the writer of the English page adds the id and the writer of the Arabic page removes it), writes `src/generated/content/`: the page models, `loaders.ts`, `manifest.json` (read by the scripts and tests at build time only), `navigation.json` (the navigation index: id, langs, category, names, summaries and live groups of each component page, and under `guides` and `templates` the key, id, langs, titles, summaries and live groups of each guide and template in the order of its `index.json`, read by the catalogue, the side navigation, the drawer, the editor and the guide and template pages from lazy chunks), `routes.json` (ids and languages of the component pages, read by their route matcher) and `document-routes.json` (the same for the guides and the templates). The manifest carries the keyboard table of each page and language (keys and actions, read by step 80); each page model carries the data of its evidence panel (`scripts/content/evidence.mjs`: `components.json`, the Known defects of the pinned version in `CHANGELOG.md` that name the component, its documented differences, each shown under the Known defects entry its source cites, and the kinds of evidence that some built adapters have and others do not) and adds the two headings of the panel to its headings. A heading of the section Platforms Code reference that restates the panel (Evidence, Open items and the like, in both languages) fails with `HWC-H2`; a Key cell separated by anything but the comma of the page's language, an arrow cell whose forward key is not first, and an Action cell that is not one sentence fail with `HWC-KEYS` (G20 of the 5a fix round). |
+| `20-content` | Parses and checks the component Markdown and the guides and templates (`docs/guides/`, `docs/templates/` with their `index.json`; see [Guides, templates and the generated pages](#guides-templates-and-the-generated-pages)), with the text gates of `scripts/content/prose.mjs` (`HWC-CLAIM`, `HWC-EMPTY`, `HWC-TODO`, `HWC-TONE`, `HWC-LIVE7` and install text in running text; they prove structure and words, not that a sentence is true) (an English page without its Arabic sibling only while `scripts/content/pending-translation.json` lists it: it gets no route, and the step prints `content: <n> pages pending translation` in every build, deployable or not; the writer of the English page adds the id and the writer of the Arabic page removes it), writes `src/generated/content/`: the page models, `loaders.ts`, `manifest.json` (read by the scripts and tests at build time only), `navigation.json` (the navigation index: id, langs, category, names, summaries and live groups of each component page, and under `guides` and `templates` the key, id, langs, titles, summaries and live groups of each guide and template in the order of its `index.json`, read by the catalogue, the side navigation, the drawer, the editor and the guide and template pages from lazy chunks), `routes.json` (ids and languages of the component pages, read by their route matcher) and `document-routes.json` (the same for the guides and the templates). The manifest carries the keyboard table of each page and language (keys and actions, read by step 80); each page model carries the data of its evidence panel (`scripts/content/evidence.mjs`: `components.json`, the Known defects of the pinned version in `CHANGELOG.md` that name the component, its documented differences, each shown under the Known defects entry its source cites, and the kinds of evidence that some built adapters have and others do not) and adds the two headings of the panel to its headings. A heading of the section Platforms Code reference that restates the panel (Evidence, Open items and the like, in both languages) fails with `HWC-H2`; a Key cell separated by anything but the comma of the page's language, an arrow cell whose forward key is not first, and an Action cell that is not one sentence fail with `HWC-KEYS`. |
 | `25-examples` | Wraps, type-checks and compiles the live example groups; writes `src/generated/examples/` and `.cache/examples/`. |
 | `30-api-tables` | Checks the API tables of every built page against the installed packages (`scripts/api-tables/`): the member names of each table (as a set), the kind (Vue and Angular tables), the required flag, the type and the default of every row. Types are compared in the written form of one printer, `types.mjs` (see the API tables section of `docs/components/README.md`), after normalising white space, quotes, union order and parameter names. Defaults are read from the published JavaScript: React destructuring defaults, the Vue runtime props object (a later property replaces an earlier one, also one of a spread, and a default that names a parameter of a component factory is the argument of the call or the parameter's default), Angular field initialisers in the FESM; a default that is absent, generated or computed in a body is an em dash, and so is the default of a vanilla option or stylesheet attribute unless `defaults.json` quotes a line of an installed file that sets it. A component without a vanilla controller is compared with the union of its row in the stable class and state API of the `@hawiyah/styles` README and the attribute selectors that `dist/styles.css` has on its classes (a row that names several classes of `components.json` gives an attribute or value only where `dist/styles.css` selects it on the component's class or inside it); the 26 components without a contract row need the generated note after their JavaScript table. Vue slot rows are compared with the slots the published `@hawiyah/vue` build reads (a computed slot name through `VUE_SLOT_PATTERNS` of `targets.mjs`). The lead's lists (`exclusions.json`, `defaults.json`, `TARGET_OVERRIDES`, `VUE_SLOT_PATTERNS` and `UNOWNED_EXPORTS` of `targets.mjs`, `arabic-exceptions.json`, `claim-exceptions.json`, `live-component-exceptions.json`, `marketing-terms.json`, `latin-allowlist.json`, `scripts/equivalence/keyboard-exceptions.json`; `UNOWNED_EXPORTS` and the marketing terms belong to no page) need `approvedBy` and a reason on every entry and hold at most 5 entries per page (`scripts/api-tables/lists.mjs`); `scripts/test/lead-lists.test.mjs` pins each list by the hash of its content, so the lead renews a pin with every entry. The step writes `src/generated/parity.json` with the members of all components of `components.json`, and fails when a reader cannot read a component. Its second pass is the vocabulary check (`scripts/api-tables/vocabulary.mjs`, `HWC-VOCAB`): every inline code value of a page outside the API tables (prose, lists, headings, link text, alerts, other tables and their captions) and every class, `data-hw` hook, `data-*` attribute with its value and `aria-*` attribute name of its `html` live blocks must exist in the installed packages, as the section Vocabulary of `docs/components/README.md` states (a `--hw-*` custom property that `dist/styles.css` defines or the `@hawiyah/styles` README documents by its whole name, an export of any installed package, the attribute selector of an Angular class of any component in the scope of Angular, and on a component's page a `data-hw-*` attribute that a table row, list item or paragraph of an installed README names together with that component, by its name, `create<Name>`, a class, `data-hw="<id>"` or an export, or that a row of the text-inputs table of the `@hawiyah/vanilla` README gives by its rule from a text input of the controller, `data-hw-<kebab-name>` for a string input and the name without `get` for a function input (`readmeBlocks`, `textInputBlocks` and `documentedAttributes` in `vocabulary.mjs`), among them), or be an entry `{ file, text, reason, approvedBy }` of `vocabulary-exceptions.json` (a lead's list; an entry that matches nothing fails); names that HTML, ARIA, the DOM, CSS and the Vue and Angular template syntax define are read from `vocabulary-allow.json` (its group of HTML elements holds the elements of the HTML Standard), each group with its specification (a list of the guide, not a lead list: an entry is a group of names of one kind with the https address of its specification, and the step and `scripts/api-tables/test/vocabulary-allow.test.mjs` fail on an entry without one). The success line states what was compared, with counts: `api-tables: <n> API tables of <m> page models, <r> rows: names, kinds, required flags, types and defaults match the installed packages (...; <d> defaults.json entries; <s> rows of components without a controller compared with the styles contract and the attribute selectors of dist/styles.css, required flags not compared there; <e> rows of exclusions.json compared by name only; Vue slots read from the published build, <p> slot patterns; <o> target overrides); parity.json: members of <c> components; vocabulary: <v> code values outside the API tables (<t> terms) and <k> classes, hooks and data attributes of html live blocks exist in the installed packages (<x> vocabulary-exceptions.json entries)`. |
 | `32-install` | Writes `src/generated/install.json`, then the data of the brand and foundations pages from the installed packages to `src/generated/package-pages/` (`scripts/package-pages/generate.mjs`; see [Guides, templates and the generated pages](#guides-templates-and-the-generated-pages)). |
@@ -687,13 +687,13 @@ A group names its interaction checks on its `html` block with
 after the other in the same frames), or declares itself `static`. Every group of
 a component with a controller (a component whose page targets a controller
 factory of the installed `@hawiyah/vanilla`, the scope of `HWE-KEYS` below; one
-definition for both rules since G19 of the 5a fix round) names at least one check
+definition for both rules) names at least one check
 or is `static`, otherwise
 `HWE-CHECK`.
 
 A check is `{ name, read, assert, start?, negative, steps }`; a step is `{ name,
-run, expect, keys?, outcome?, reference?, keepPointer? }` (5a.8, with the chained
-oracle of the 5a fix round). `read(mount)` reads what the frame shows (for Tabs:
+run, expect, keys?, outcome?, reference?, keepPointer? }`, each step checked against
+the state the previous one left (a chained oracle). `read(mount)` reads what the frame shows (for Tabs:
 the tabs, the selection, the shown panel, the focused tab or panel);
 `assert(observed, expected, { phase })` throws with a readable message unless the
 frame shows the expected state; `start(observed)` turns the read at rest into the
@@ -738,7 +738,7 @@ fails too (`shown, then changed`). After the last step of a check, the harness w
 reference. The step is never run again and the expected outcome is never changed.
 Then the four results are compared as before.
 
-Measured with the chained oracle (fix round of 5a): 12 runs of step 80 alone while
+Measured with the chained oracle: 12 runs of step 80 alone while
 production builds of a copy of the guide ran in a loop on the same four cores (load
 average 6.5 to 10), 12 passed, each with 62 asserted steps; the probes of the
 verification of 07763ce (an outcome shown and changed 300 or 1000 ms later, an
@@ -758,7 +758,7 @@ again before the next key); a key that a capture listener on the window does not
 earlier, or a key pressed inside a nested frame of the example); and whatever the
 check's `read` does not read.
 
-Why the bounded wait (lead decision L16 of milestone 5): `@hawiyah/angular` 0.3.0
+Why the bounded wait: `@hawiyah/angular` 0.3.0
 renders the state of an event in a later task than the event. Zoneless Angular 22
 runs change detection in the first animation frame or 0 ms timer after the event,
 while `@hawiyah/vanilla` writes `aria-selected` in the event's task and React and
@@ -814,14 +814,14 @@ the group has four tabs with the second disabled, so the two reading directions
 reach different tabs); the oracle of these steps and its references (the WAI-ARIA
 Authoring Practices, `CONTRACT.md` with `packages/core/API.md`, and the HTML
 disabled attribute; never the page) are in `scripts/equivalence/checks/lib/tabs.mjs`.
-The steps added in G24 of the 5a fix round were written from these references
+The steps of the Tabs checks were written from these references
 before they ran, and passed in all four adapters and both directions; the Tabs page
 now has 82 asserted steps.
 
 After the comparison at rest, the harness runs axe (the copy that
 `@axe-core/playwright` installs, with the WCAG 2.2 AA tags of the browser tests)
 in each of the four frame documents and fails with `HWE-AXE` on a violation. A
-framed group (`frame` on its `html` block, 5a.9) is compared in frames 1280 px
+framed group (`frame` on its `html` block) is compared in frames 1280 px
 wide; with `width=390` its results at rest are compared, and checked with axe, a
 second time in frames 390 px wide (state `rest@390` in the report). A run fails with `HWE-SCOPE` when it has no group, when an
 `--only` key names no group, or when `.cache/content/live-groups.json` and
@@ -866,14 +866,14 @@ node scripts/equivalence/run.mjs --shard 1/4 --draft --report .cache/equivalence
 npx playwright test --project=prod --shard=1/4
 ```
 
-Measured on this fixture on a machine with 4 cores (lead decision L10 of
-milestone 5, each one run alone):
+Measured on this fixture on a machine with 4 cores, each one run alone, against
+a limit of 30 minutes for one job of the workflow:
 
 | Run | Time | Notes |
 | --- | --- | --- |
 | Production build with `--defer-equivalence` | 1 min 42 s | 170 page models, 1014 live groups, 348 prerendered pages; step 25 37 s, step 40 53 s; peak memory of step 40 5237 MB; initial bundle 824.47 kB of the 1000 kB budget; `dist/` 154 MB, of which `dist/browser/` 150 MB |
 | Equivalence shard 1 of 4 | 4 min 42 s | 254 of 1014 group-languages, 2 workers |
-| Browser tests shard 1 of 4 | 58 min 12 s | 1422 tests, 2 workers; above the 30 minutes of L10 |
+| Browser tests shard 1 of 4 | 58 min 12 s | 1422 tests, 2 workers; above the limit of 30 minutes |
 
 The browser tests are the long part: the computed half of the styling rule
 (`package-styles.spec.ts`) reads every property of every package element of a
@@ -883,10 +883,10 @@ count, not by time, so the shards differ widely: of eight shards at 85 pages, th
 heaviest measured on this machine (shard 3 of 8: 235 tests of
 `package-styles.spec.ts`, 352 of `styling-structure.spec.ts` and 167 deep-link
 tests) took 26 minutes, and shard 1 of 8 took 12.6 minutes, each with 754 tests.
-The heaviest shard is the one to hold under the 30 minutes of L10. The second
+The heaviest shard is the one to hold under the limit of 30 minutes. The second
 lever is more workers on runners
 with more cores. `guide.yml` therefore runs the browser tests in eight shards
-(lead decision L11 of milestone 5) and step 80, whose shard of four stays far
+and step 80, whose shard of four stays far
 below 30 minutes, in four.
 
 What the fixture exercises: steps 20, 25, 30 (API tables of all 85 components
@@ -1205,6 +1205,45 @@ commit, carries a `noindex, nofollow` robots meta, and the output contains
 `preview.json` and `robots.txt`. In CI, the `guide-preview.yml` workflow
 publishes the preview only as a workflow artifact; it has no path to GitHub
 Pages.
+
+## After launch
+
+The guide replaced the earlier guide on GitHub Pages with the scope approved for
+its launch: the 85 component pages in both languages, the landing page, the
+catalogue, the editor, one guide (Getting started), the brand page, the
+foundations page and four templates (Home, Service, Form, Search). The owner
+approved the switch with the following work after it. Each item keeps the rules
+of this guide: pages from the published packages only, both languages, the
+contract of `docs/components/README.md`.
+
+- Pages of the earlier guide that are not rebuilt yet: the articles JavaScript,
+  React, Vue, Angular, Themes and typography, Composing layouts, State and
+  component lifecycle, Gregorian and Hijri dates, Accessibility, Extending the
+  system and DGA alignment (their old addresses lead to the guides page), and the
+  templates Contact, FAQ, Sitemap, Page not found, Rating, Content, Cookie
+  preferences, Digital participation, About and Life journeys (their old
+  addresses lead to the templates page).
+- Behaviour of the earlier templates that the four rebuilt templates show as
+  static states only: the multi-step form with its review step, and the search
+  filters, removable selections and sorting.
+- Features of the earlier guide: search over the guide, search and category
+  filters on the catalogue, a direction, mode and density control on the
+  examples, the density switch and theme export on the foundations page, the
+  layout studio, the input laboratory, previous and next links between pages,
+  and complete downloadable projects from the editor.
+- Brand: the identity guide of the earlier site and its downloads (the brand kit,
+  the editable wordmark, the pattern, the loader files) are files of the
+  repository (`brand/`) and are not published with the guide; their old
+  addresses end on the guide's 404 page.
+- Checks: starters and recipes, a page on parity between the adapters, a release
+  0.3.1 that corrects the differences between adapters recorded under Known
+  defects in 0.3.0 (and then the documented differences of `known-differences.json`
+  that it makes unneeded), a stronger check of claims, a harness for overlays and
+  narrow widths, and keyboard outcome checks for every component with a
+  controller.
+- npm: the dist-tag `latest` still names 0.2.1. Moving it to 0.3.0 is a separate
+  decision of the owner; when it moves, the sentence of Getting started that says
+  `latest` names an older release changes with it.
 
 ## Licence
 

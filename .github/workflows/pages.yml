@@ -1,35 +1,55 @@
 name: Deploy guide to GitHub Pages
 
+# Deploys the guide in guide/ that the workflow Guide (guide.yml) built and checked.
+# It runs when a run of Guide on main has passed every job, and deploys that run's
+# build artifact as it was checked: nothing is built again here. The artifact is
+# deployed only when its build-info.json says the build is deployable (a full
+# production build under /hawiyah/, without --pages, --docs or --only).
 on:
-  push:
+  workflow_run:
+    workflows: [Guide]
+    types: [completed]
     branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
   group: github-pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     steps:
+      # The guide's scripts at the commit of the run, for the deployability check.
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          sparse-checkout: |
+            /guide/
+          sparse-checkout-cone-mode: false
+      - name: Download the checked build of the run
+        uses: actions/download-artifact@v4
+        with:
+          name: guide-build
+          path: guide
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Build guide and component examples
-        run: pnpm build:docs
-        env:
-          HAWIYAH_BASE_PATH: /hawiyah/
+      # The check the job complete of guide.yml ran on the same artifact.
+      - name: The build is deployable
+        working-directory: guide
+        run: node scripts/build-scope.mjs --require-deployable --dir dist
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/playground/dist
+          path: guide/dist/browser
 
   deploy:
     needs: build
@@ -41,7 +61,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/configure-pages@v5
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
