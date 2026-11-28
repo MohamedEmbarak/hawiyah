@@ -37,8 +37,8 @@ promise of one. `src/host.ts` provides `html`, `mountReact`, `mountVue` and
 - A case never styles or patches a package component. Layout of the fixture's
   own wrapper elements is allowed (`src/host.css`, or the `styles` of the
   Angular fixture component).
-- The first comment of the module restates the case: tests must not depend on
-  the specifications under `handoff/`.
+- The first comment of the module restates the case, so a test depends on no
+  specification outside the repository.
 
 ## Tests and known defects
 
