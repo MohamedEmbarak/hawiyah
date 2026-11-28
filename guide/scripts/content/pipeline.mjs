@@ -355,8 +355,11 @@ export function runContent(options) {
   const known = readComponents(componentsFile);
   const names = existsSync(componentsDir) ? readdirSync(componentsDir) : [];
   const dirLabel = toPosix(relative(repoDir, componentsDir));
-  // The directories of guides and templates: options.dirs (--docs), else the repository's.
-  const dirs = { ...kindDirs({ repoDir }), ...(options.dirs ?? {}), component: componentsDir };
+  // The directories of guides and templates: options.dirs (--docs), else the repository's
+  // when the components are the repository's; a fixture of component pages has none (kindDirs).
+  const repoDirs = kindDirs({ repoDir });
+  const ownDocs = resolve(componentsDir) === resolve(repoDirs.component);
+  const dirs = { ...(ownDocs ? repoDirs : kindDirs({ repoDir, docsDir: componentsDir })), ...(options.dirs ?? {}), component: componentsDir };
   const pendingKeys = options.pending ?? readPending(options.pendingFile);
   const { ids, pending, findings } = listSources(names, known, dirLabel, idsOfKind(pendingKeys, 'component'));
   const documents = [];

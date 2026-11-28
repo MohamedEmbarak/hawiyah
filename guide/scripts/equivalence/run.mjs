@@ -281,7 +281,7 @@ export function validateDesignedDifferences({ empty, hooks, hosts = [] }, { chan
   const tags = new Map();
   checkedHosts.forEach((entry) => {
     const index = hosts.indexOf(entry);
-    if (typeof entry.element !== 'string' || typeof entry.tag !== 'string') return;
+    if (typeof entry.element !== 'string' || typeof entry.tag !== 'string' || !/^hw-[a-z0-9-]+$/.test(entry.element) || !/^[a-z][a-z0-9]*$/.test(entry.tag)) return;
     const first = tags.get(entry.element);
     if (first && first.tag !== entry.tag) errors.push(`HWE-KD scripts/equivalence/angular-hosts.json:1: entry ${index + 1}: ${entry.element} is compared with ${entry.tag} here and with ${first.tag} in entry ${first.index + 1}; one element takes one tag`);
     else if (!first) tags.set(entry.element, { tag: entry.tag, index });

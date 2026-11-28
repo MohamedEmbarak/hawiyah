@@ -62,8 +62,9 @@ export function pageHref(kind, lang, id) {
  * The directories of the three kinds. Without --docs: docs/components, docs/guides and
  * docs/templates of the repository. With --docs <dir>: when <dir> holds a components
  * directory, the three directories below <dir> (a missing one holds no page);
- * otherwise <dir> is the components directory and guides and templates are read from
- * the repository.
+ * otherwise <dir> is the components directory and the fixture has no guide or
+ * template (their directories below <dir> do not exist), so a fixture of component
+ * pages builds the same pages whatever docs/guides and docs/templates hold.
  * @param {{ repoDir: string, docsDir?: string | null }} options
  */
 export function kindDirs({ repoDir, docsDir = null }) {
@@ -73,7 +74,7 @@ export function kindDirs({ repoDir, docsDir = null }) {
   if (existsSync(join(root, KINDS.component.dir))) {
     return Object.fromEntries(Object.entries(KINDS).map(([kind, def]) => [kind, join(root, def.dir)]));
   }
-  return { ...repo, component: root };
+  return { ...Object.fromEntries(Object.entries(KINDS).map(([kind, def]) => [kind, join(root, def.dir)])), component: root };
 }
 
 /**

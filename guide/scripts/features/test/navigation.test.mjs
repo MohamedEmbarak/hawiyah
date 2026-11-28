@@ -90,7 +90,9 @@ describe('navigation index', () => {
     expect(JSON.parse(readFileSync(join(dir, 'routes.json'), 'utf8'))).toEqual(written.pages.map(({ id, langs }) => ({ id, langs })));
     // Independent of the real page set: the index holds exactly the pages of the manifest.
     expect(written.pages.length).toBeGreaterThan(0);
-    expect(written.pages.map((entry) => entry.id).sort()).toEqual(manifest.pages.map((entry) => entry.id).sort());
+    // pages holds the component pages; guides and templates are listed apart, in the order of their index.json.
+    expect(written.pages.map((entry) => entry.id).sort()).toEqual(manifest.pages.filter((entry) => !entry.kind).map((entry) => entry.id).sort());
+    expect([...written.guides, ...written.templates].map((entry) => entry.id).sort()).toEqual(manifest.pages.filter((entry) => entry.kind).map((entry) => entry.id).sort());
     rmSync(dir, { recursive: true, force: true });
   });
 });

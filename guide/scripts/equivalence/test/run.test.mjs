@@ -216,12 +216,12 @@ describe('known differences', () => {
 
   it('fail a group of a template that names the difference of a component its html block does not show', () => {
     const { entries } = validateKnownDifferences([{ ...entry, component: 'button' }]);
-    const shown = { ...group, id: 'template:home', differences: 'tabs-bar', blocks: { vanilla: { line: 19, code: '<button class="hw-button" type="button">Go</button>' } } };
+    const shown = { ...group, id: 'template:home', sourcePath: 'docs/templates/home.ar.md', differences: 'tabs-bar', blocks: { vanilla: { line: 19, code: '<button class="hw-button" type="button">Go</button>' } } };
     const classesOf = (id) => (id === 'button' ? ['hw-button'] : []);
     expect(differenceOf(shown, entries, classesOf).error).toBeUndefined();
     expect(differenceOf({ ...shown, blocks: { vanilla: { line: 19, code: '<div data-hw="button"></div>' } } }, entries, classesOf).error).toBeUndefined();
     expect(differenceOf({ ...shown, blocks: { vanilla: { line: 19, code: '<p class="hw-buttons">Go</p>' } } }, entries, classesOf).error).toBe(
-      'HWE-KD docs/components/tabs.ar.md:19: differences=tabs-bar documents component button, which the html block of the group does not show',
+      'HWE-KD docs/templates/home.ar.md:19: differences=tabs-bar documents component button, which the html block of the group does not show',
     );
   });
 
