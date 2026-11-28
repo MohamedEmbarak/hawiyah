@@ -7,7 +7,8 @@ import { expect, it } from 'vitest';
 // busy and labelled (aria-busy with aria-label on an element without a role) has no
 // reliable name and is documented nowhere.
 const file = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
-const busyAndLabelled = /<\w[^<>]*(aria-busy="true"[^<>]*aria-label|aria-label[^<>]*aria-busy="true")/u;
+// A container (not a button: a busy button keeps the name of its action, as IconButton renders it while loading).
+const busyAndLabelled = /<(?!button\b)\w[^<>]*(aria-busy="true"[^<>]*aria-label|aria-label[^<>]*aria-busy="true")/u;
 
 it('[SKELETON-03] the React, Vue and Angular READMEs document skeletons inside a status container with a visually hidden text', () => {
   for (const [path, heading] of [['packages/react/README.md', 'Loading: wrap skeletons'], ['packages/vue/README.md', 'Loading: wrap skeletons'], ['packages/angular/README.md', '### Loading skeletons']] as const) {
