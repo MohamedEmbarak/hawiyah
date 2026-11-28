@@ -28,7 +28,9 @@ import type { FrameRunStatus, PreviewFrame } from './preview-frame';
  */
 @Component({
   selector: 'guide-frame-result',
-  template: `<ng-container #outlet />`,
+  // The outlet exists only in the browser: the prerendered block is empty, so hydration has no
+  // container to match, and the frame is created in a view made after hydration.
+  template: `@if (browser()) {<ng-container #outlet />}`,
 })
 export class FrameResult {
   readonly id = input.required<string>();
@@ -38,8 +40,8 @@ export class FrameResult {
   readonly report = input.required<(status: ExampleFrameStatus) => void>();
 
   private readonly document = inject(DOCUMENT);
-  private readonly outlet = viewChild.required('outlet', { read: ViewContainerRef });
-  private readonly browser = signal(false);
+  private readonly outlet = viewChild('outlet', { read: ViewContainerRef });
+  protected readonly browser = signal(false);
   private frame: ComponentRef<PreviewFrame> | null = null;
   private sequence = 0;
 
@@ -79,7 +81,15 @@ export class FrameResult {
     }
     if (sequence !== this.sequence) return;
     if (!this.frame) {
-      const ref = this.outlet().createComponent(component);
+      // The browser-only block renders in the change detection after browser() turns true.
+      for (let tries = 0; tries < 20 && !this.outlet(); tries += 1) await new Promise((done) => view.setTimeout(done, 16));
+      if (sequence !== this.sequence) return;
+      const outlet = this.outlet();
+      if (!outlet) {
+        this.emit({ state: 'failed', message: pick(frameTexts, key.lang).payloadFailed });
+        return;
+      }
+      const ref = outlet.createComponent(component);
       ref.instance.status.subscribe((status) => this.forward(status));
       this.frame = ref;
     }
