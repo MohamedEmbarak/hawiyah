@@ -346,6 +346,9 @@ describe('a structure entry with ignore (self-test)', () => {
     // One state that differs keeps the entry.
     const needed = [...stale, ...compareCapture(capture([bar({}, 1)]), [entry]).filter((row) => row.result === 'skipped')];
     expect(staleDifferences(group, [entry, aria], needed).filter((line) => line.includes('structure'))).toEqual([]);
+    // A screenshot entry is never judged: a rendering depends on the machine.
+    const shot = { ...entry, id: 'tabs-shot', aspect: 'screenshot' };
+    expect(staleDifferences(group, [shot], [{ aspect: 'screenshot', pair: 'vanilla-react', result: 'skipped', equal: true }])).toEqual([]);
     // A structure entry with ignore is compared, not skipped, and is not judged.
     expect(staleDifferences(group, [{ ...entry, ignore: [{ class: 'hw-tab-bar', attribute: 'data-orientation' }] }], [])).toEqual([]);
   });

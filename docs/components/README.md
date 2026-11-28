@@ -389,12 +389,13 @@ Each block of a group is a fenced code block whose info string is:
   `approvedBy` (`lead`). Each id of a group is checked as one: an id that names
   no entry, or an entry of another component, fails with `HWE-KD`. An entry
   without `ignore` leaves its aspect out of the equivalence check of the groups
-  that name it. Step 80 still compares that aspect, and when its four results
-  are equal in every state of a group, the entries of that aspect that the group
-  names fail with `HWE-KD`: they hide nothing, so the group drops them (a
-  difference may show in one language only). The judgement is per aspect and
-  only for a group whose frames and checks all ran; when the aspect differs, no
-  entry of it is judged. An entry of aspect `structure`
+  that name it. Step 80 still compares the structure and the accessibility tree,
+  and when the four results of one of them are equal in every state of a group,
+  the entries of that aspect that the group names fail with `HWE-KD`: they hide
+  nothing, so the group drops them (a difference may show in one language only).
+  The judgement is per aspect and only for a group whose frames and checks all
+  ran; when the aspect differs, no entry of it is judged. A screenshot entry is
+  never judged so, because a rendering depends on the fonts of the machine. An entry of aspect `structure`
   may instead carry `ignore: [{ "class": "hw-...", "attribute": "..." }]`: only
   that attribute on elements with that class is left out of the comparison
   with the JavaScript result, and every other structural difference still

@@ -43,26 +43,26 @@ A popover starts open when the application asks for it. React and Vue take `defa
 <div class="hw-popover" data-hw="popover">
   <button class="hw-button" type="button" data-variant="outline" data-size="md" data-hw-trigger aria-expanded="true">Processing time</button>
   <div class="hw-popover-panel" role="region" aria-label="Processing time" data-hw-panel>
-    <p>A review usually takes five working days.</p>
+    <p>Usually five working days.</p>
   </div>
 </div>
 ```
 
 ```tsx live example=open
 <Popover label="Processing time" defaultOpen trigger={<Button variant="outline">Processing time</Button>}>
-  <p>A review usually takes five working days.</p>
+  <p>Usually five working days.</p>
 </Popover>
 ```
 
 ```vue live example=open
 <Popover label="Processing time" trigger-label="Processing time" trigger-variant="outline" default-open>
-  <p>A review usually takes five working days.</p>
+  <p>Usually five working days.</p>
 </Popover>
 ```
 
 ```ts live example=open framework=angular
 template: `<hw-popover label="Processing time" triggerLabel="Processing time" triggerVariant="outline" [open]="true">
-  <p>A review usually takes five working days.</p>
+  <p>Usually five working days.</p>
 </hw-popover>`
 ```
 

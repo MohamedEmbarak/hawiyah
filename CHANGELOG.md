@@ -1289,6 +1289,12 @@ built type declarations of each package.
   `button.hw-button` without the `data-size` attribute that the button component
   of each adapter writes as `md` by default; the stylesheet selects only `sm` and
   `lg`, so the appearance is the same.
+- Popover and Menu: the stylesheet limits an open panel to
+  `min(24rem, calc(100vw - 2rem))` and places it at the inline start of its
+  trigger, so when the trigger stands more than 1rem from the edge of a narrow
+  viewport, a panel whose content reaches that width extends past the viewport
+  and the page scrolls sideways (at 320 px with a trigger 33 px from the edge,
+  by 1 px).
 - Menu (React, Vue) gives the first enabled item of a closed menu
   `tabindex="0"`, while the vanilla controller and Angular give every item
   `tabindex="-1"` until the menu opens or an item takes focus; the closed menu is

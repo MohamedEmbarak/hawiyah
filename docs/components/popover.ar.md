@@ -2,7 +2,7 @@
 source:
   summary: fe6117601f60
   example: 759f203a32c2
-  variants-and-states: 41940cb3ea27
+  variants-and-states: c21d2b4c787f
   api: d5c5b209498d
   accessibility: c8c47246fe9c
   rtl-and-localisation: 8d3755c54575
@@ -53,26 +53,26 @@ template: `<hw-popover label="تفاصيل الطلب" triggerLabel="تفاصي�
 <div class="hw-popover" data-hw="popover">
   <button class="hw-button" type="button" data-variant="outline" data-size="md" data-hw-trigger aria-expanded="true">مدة المعالجة</button>
   <div class="hw-popover-panel" role="region" aria-label="مدة المعالجة" data-hw-panel>
-    <p>تستغرق دراسة الطلب عادةً خمسة أيام عمل.</p>
+    <p>عادةً خمسة أيام عمل.</p>
   </div>
 </div>
 ```
 
 ```tsx live example=open
 <Popover label="مدة المعالجة" defaultOpen trigger={<Button variant="outline">مدة المعالجة</Button>}>
-  <p>تستغرق دراسة الطلب عادةً خمسة أيام عمل.</p>
+  <p>عادةً خمسة أيام عمل.</p>
 </Popover>
 ```
 
 ```vue live example=open
 <Popover label="مدة المعالجة" trigger-label="مدة المعالجة" trigger-variant="outline" default-open>
-  <p>تستغرق دراسة الطلب عادةً خمسة أيام عمل.</p>
+  <p>عادةً خمسة أيام عمل.</p>
 </Popover>
 ```
 
 ```ts live example=open framework=angular
 template: `<hw-popover label="مدة المعالجة" triggerLabel="مدة المعالجة" triggerVariant="outline" [open]="true">
-  <p>تستغرق دراسة الطلب عادةً خمسة أيام عمل.</p>
+  <p>عادةً خمسة أيام عمل.</p>
 </hw-popover>`
 ```
 

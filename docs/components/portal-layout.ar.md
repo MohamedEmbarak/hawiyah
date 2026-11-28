@@ -16,7 +16,7 @@ source:
 
 يقود رابط التخطي إلى الحاوية الرئيسية، فيصل القارئ الذي يستخدم لوحة المفاتيح إلى محتوى الصفحة دون المرور بالتنقل. وتُمرَّر العلامة والتنقل وروابط التذييل بياناتٍ، ويوضع محتوى الصفحة داخل الهيكل.
 
-```html live example=basic differences=portal-layout-adapter-markup,portal-layout-footer-brand-tree frame
+```html live example=basic differences=portal-layout-adapter-markup,portal-layout-footer-brand-tree,portal-layout-footer-brand-weight frame
 <div class="hw-portal-layout">
   <header class="hw-portal-header" data-hw="portal-header">
     <a class="hw-skip-link" href="#main-content">الانتقال إلى المحتوى الرئيسي</a>

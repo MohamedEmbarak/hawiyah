@@ -64,7 +64,9 @@ for (const entry of navigation.pages) {
           await expect(tables).toHaveCount(1);
           await expect(tables.locator('caption')).toHaveText(keyboard.caption);
           const keys = await tables.locator('kbd').evaluateAll((nodes) => nodes.map((node) => [node.textContent, node.className]));
-          const expected = keyboard.rows.flatMap((row) => (row['c0'] ?? []).filter((node) => node.type === 'kbd').map((node) => [node.value, 'hw-kbd']));
+          // Every cell of a row, in column order: an Action cell may name a key too (Menu: Space on a link item).
+          const cells = (row) => keyboard.columns.flatMap((column) => row[column.key] ?? []);
+          const expected = keyboard.rows.flatMap((row) => cells(row).filter((node) => node.type === 'kbd').map((node) => [node.value, 'hw-kbd']));
           expect(keys, 'the keys of the keyboard table, each kbd.hw-kbd').toEqual(expected);
           expect(keys.length).toBeGreaterThan(0);
         }

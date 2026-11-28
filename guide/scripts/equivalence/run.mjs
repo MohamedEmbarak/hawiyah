@@ -1041,7 +1041,9 @@ async function runGroup({ page, origin, base, pin, group, checks, differences = 
  */
 export function staleDifferences(group, differences, skippedRows) {
   const out = [];
-  for (const aspect of ASPECTS) {
+  // The screenshot is not judged: a rendering depends on the fonts and the raster of the machine
+  // (a footer brand bold in Vue and Angular showed on the CI runner and not on another machine).
+  for (const aspect of ['structure', 'aria']) {
     const rows = skippedRows.filter((row) => row.aspect === aspect);
     if (rows.length === 0 || rows.some((row) => row.equal !== true)) continue;
     const ids = differences.filter((entry) => entry.aspect === aspect && !entry.ignore).map((entry) => entry.id);
