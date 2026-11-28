@@ -17,7 +17,7 @@ source:
 
 لحقل البحث تسمية ظاهرة وزر بحث، وكل بطاقة تمثّل خدمةً لها تصنيف ووصف ورابط إجراء واحد يذكر اسمُه الخدمة.
 
-```html live example=default differences=portal-layout-adapter-markup,portal-layout-footer-brand-tree,portal-layout-footer-brand-weight,search-field-adapter-markup,grid-vue-layout-attributes,stack-vue-layout-attributes frame
+```html live example=default differences=portal-layout-adapter-markup,portal-layout-footer-brand-tree,search-field-adapter-markup,grid-vue-layout-attributes,stack-vue-layout-attributes frame
 <div class="hw-portal-layout">
   <header class="hw-portal-header" data-hw="portal-header">
     <a class="hw-skip-link" href="#home-content">الانتقال إلى المحتوى الرئيسي</a>
@@ -237,7 +237,7 @@ template: `<hw-portal-layout
 
 عند تمرير قائمة `suggestions`، يقدّم [حقل البحث](../components/search-field.md) إكمالًا تلقائيًا محليًا في أثناء كتابة القارئ. والاقتراحات سلاسل نصية يوفّرها التطبيق، ولا يُرسَل أي طلب. وتعرض الصفحة الحقل في حالة السكون. ولا تتضمن هذه الحالة زر بحث، وتضم شبكتها بطاقتين.
 
-```html live example=suggestions differences=portal-layout-adapter-markup,portal-layout-footer-brand-tree,portal-layout-footer-brand-weight,search-field-adapter-markup,grid-vue-layout-attributes,stack-vue-layout-attributes frame
+```html live example=suggestions differences=portal-layout-adapter-markup,portal-layout-footer-brand-tree,search-field-adapter-markup,grid-vue-layout-attributes,stack-vue-layout-attributes frame
 <div class="hw-portal-layout">
   <header class="hw-portal-header" data-hw="portal-header">
     <a class="hw-skip-link" href="#suggest-content">الانتقال إلى المحتوى الرئيسي</a>

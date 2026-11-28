@@ -13,7 +13,7 @@ source:
 
 يسمّي عنوانُ الصفحة الخدمةَ، ويضمّ مسار التنقل. وتذكر تفاصيل الخدمة المدة والرسوم والقناة، وتليها المستندات المطلوبة في قائمة. وتأتي خطوات الخدمة بعد المستندات، ويأتي الإجراء الذي يبدأ الخدمة أخيرًا، في تذييل تفاصيل الخدمة.
 
-```html live example=page static differences=page-header-angular-actions-region frame width=390
+```html live example=page static frame width=390
 <header class="hw-page-header">
   <nav class="hw-breadcrumb" aria-label="مسار التنقل"><ol><li><a href="/">الرئيسية</a></li><li><a href="/services">الخدمات</a></li><li><span aria-current="page">نسخة من مستند</span></li></ol></nav>
   <div class="hw-page-header-main">

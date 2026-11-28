@@ -192,7 +192,7 @@ template: `<hw-stack>
 
 The application has validated the submission. The error summary is a danger Alert at the start of the form, before the notice of required fields, and lists each problem as a link to its field. Each field with a problem shows its message in a paragraph after the control, marks the control with `aria-invalid="true"` and describes it with the message. The summary has `role="status"` because the markup is rendered with the page and is not a late event; an application that adds the summary after a submission uses the default role of the danger tone, which interrupts the reader, and moves focus to the summary. The Alert is not focusable, so the application gives the summary the `tabindex` attribute with the value -1 before it moves focus. The markup is static: it holds no script and does not validate.
 
-```html live example=errors static differences=text-field-adapter-attributes,select-adapter-attributes,file-upload-adapter-labelledby,radio-adapter-markup,date-picker-adapter-markup,stack-vue-layout-attributes,inline-vue-layout-attributes,date-picker-value-order frame
+```html live example=errors static differences=text-field-adapter-attributes,select-adapter-attributes,file-upload-adapter-labelledby,radio-adapter-markup,date-picker-adapter-markup,stack-vue-layout-attributes,inline-vue-layout-attributes,date-picker-value-order,date-picker-adapter-height frame
 <div class="hw-stack">
   <header class="hw-page-header">
     <div class="hw-page-header-main">

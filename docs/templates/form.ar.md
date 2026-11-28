@@ -1,7 +1,7 @@
 ---
 source:
   summary: 3b3e8f4de862
-  example: 1e51f7a7914e
+  example: 0c6cb27f4b77
   composition: d70a89771ff8
   platforms-code-reference: e608ed3ff86e
 ---
@@ -199,7 +199,7 @@ template: `<hw-stack>
 
 تحقّق التطبيق من الطلب المُرسَل. وملخّص الأخطاء تنبيه بلون الخطر يقع في بداية النموذج، قبل جملة الحقول المطلوبة، ويسرد كل مشكلة رابطًا يقود إلى حقلها. ويعرض كل حقل فيه مشكلة رسالته في فقرة بعد عنصر التحكم، ويميّز عنصر التحكم بالخاصية `aria-invalid="true"`، ويصفه بالرسالة. ويحمل الملخّص الخاصية `role="status"` لأن الترميز يُعرض مع الصفحة وليس حدثًا لاحقًا؛ أما التطبيق الذي يضيف الملخّص بعد الإرسال فيستخدم الدور الافتراضي للون الخطر، الذي يقاطع القارئ، وينقل التركيز إلى الملخّص. ولا يقبل التنبيه التركيز، لذلك يضيف التطبيق إلى الملخّص الخاصية `tabindex` بالقيمة -1 قبل أن ينقل التركيز إليه. والترميز ثابت: لا يتضمّن برنامجًا نصيًا ولا يتحقق من القيم.
 
-```html live example=errors static differences=text-field-adapter-attributes,select-adapter-attributes,file-upload-adapter-labelledby,radio-adapter-markup,date-picker-adapter-markup,stack-vue-layout-attributes,inline-vue-layout-attributes,date-picker-value-order frame
+```html live example=errors static differences=text-field-adapter-attributes,select-adapter-attributes,file-upload-adapter-labelledby,radio-adapter-markup,date-picker-adapter-markup,stack-vue-layout-attributes,inline-vue-layout-attributes,date-picker-value-order,date-picker-adapter-height frame
 <div class="hw-stack">
   <header class="hw-page-header">
     <div class="hw-page-header-main">

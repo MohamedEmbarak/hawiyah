@@ -1406,7 +1406,10 @@ built type declarations of each package.
   vanilla controller appends it at the end of the root after the dialog, so in
   the vanilla accessibility tree the hint precedes the announced date. At rest
   the picker is 99 px high in vanilla, 96 px in React and Vue and 104 px in
-  Angular.
+  Angular. The vanilla markup has no `hw-field` on the root, so its hint and
+  error message take 14 px text where the adapters show the 12 px text of a
+  field; with a hint and an error message the picker is 127 px high in
+  vanilla, 117 px in React and Vue and 125 px in Angular.
 - FileDropzone (Vue) sets `data-state="error"` on its root only for a rejected
   batch, not for the application's `error`; React and Angular set it for both.
   The error styling still applies through `aria-invalid` on the input.

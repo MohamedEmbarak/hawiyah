@@ -489,7 +489,7 @@
     "id": "date-picker-adapter-height",
     "component": "date-picker",
     "aspect": "screenshot",
-    "description": "In 0.3.0 a DatePicker at rest is 99 px high in vanilla, 96 px in React and Vue and 104 px in Angular. The rendering is left out of the groups that name this entry, with date-picker-value-order for the accessibility tree. Removed when the guide pins a release in which the four results agree.",
+    "description": "In 0.3.0 a DatePicker at rest is 99 px high in vanilla, 96 px in React and Vue and 104 px in Angular; the vanilla markup has no hw-field on the root, so its hint and error message take 14 px text where the adapters show 12 px, and with both the picker is 127, 117 and 125 px high. The rendering is left out of the groups that name this entry, with date-picker-value-order for the accessibility tree. Removed when the guide pins a release in which the four results agree.",
     "source": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: At rest the picker is 99 px high in vanilla, 96 px in React and Vue and 104 px in Angular.",
     "approvedBy": "lead"
   },
