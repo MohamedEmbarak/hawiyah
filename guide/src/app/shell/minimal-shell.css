@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+
+.minimal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hw-space-6);
+  min-block-size: 100vh;
+  padding-block: var(--hw-space-4);
+  padding-inline: var(--hw-space-4);
+}
+
+.attribution {
+  display: flex;
+  align-items: center;
+  gap: var(--hw-space-2);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hw-space-1);
+}
+
+.lines p {
+  margin-block: 0;
+}
+
+.nic-logo {
+  display: block;
+  flex: none;
+}
+
+:host-context([data-hw-mode='dark']) .nic-logo {
+  filter: brightness(0) invert(1);
+}
+
+/* Forced colours: the artwork follows the system colour scheme, not the stored mode. */
+@media (forced-colors: active) and (prefers-color-scheme: light) {
+  :host-context([data-hw-mode]) .nic-logo {
+    filter: none;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :host-context([data-hw-mode]) .nic-logo {
+    filter: brightness(0) invert(1);
+  }
+}
+
+main {
+  flex: 1 0 auto;
+}

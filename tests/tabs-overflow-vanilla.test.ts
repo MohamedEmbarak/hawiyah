@@ -5,8 +5,9 @@ let width=272;
 const disconnect=vi.fn();
 beforeEach(()=>{vi.useFakeTimers();width=272;disconnect.mockClear();vi.stubGlobal('ResizeObserver',class {observe(){} unobserve(){} disconnect(){disconnect();}});vi.spyOn(HTMLElement.prototype,'clientWidth','get').mockImplementation(function(this:HTMLElement){return this.classList.contains('hw-tab-bar')?width:0;});vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(this:HTMLElement){return {width:this.getAttribute('role')==='tab'?100:0,height:40,x:0,y:0,top:0,left:0,right:100,bottom:40,toJSON(){}};});});
 afterEach(()=>{for(const cleanup of cleanups.splice(0))cleanup();document.body.replaceChildren();vi.restoreAllMocks();vi.unstubAllGlobals();vi.useRealTimers();});
-function mount(extra='',disabled=''){
- document.body.innerHTML=`<div class="hw-tabs" data-hw="tabs" ${extra}><div class="hw-tab-list" role="tablist" aria-label="Account sections"><button type="button" class="hw-tab" role="tab" data-hw-value="one" aria-controls="p-one" aria-selected="true">One</button><button type="button" class="hw-tab" role="tab" data-hw-value="two" aria-controls="p-two">Two</button><button type="button" class="hw-tab" role="tab" data-hw-value="three" aria-controls="p-three" ${disabled}>Three</button><button type="button" class="hw-tab" role="tab" data-hw-value="four" aria-controls="p-four">Four</button></div><section id="p-one">First panel</section><section id="p-two" hidden>Second panel</section><section id="p-three" hidden>Third panel</section><section id="p-four" hidden>Fourth panel</section></div><button id="outside">Outside</button>`;
+// The application's name for the overflow disclosure; a test that checks missing text passes label=''.
+function mount(extra='',disabled='',label='data-hw-overflow-label="المزيد من التبويبات"'){
+ document.body.innerHTML=`<div class="hw-tabs" data-hw="tabs" ${extra} ${label}><div class="hw-tab-list" role="tablist" aria-label="Account sections"><button type="button" class="hw-tab" role="tab" data-hw-value="one" aria-controls="p-one" aria-selected="true">One</button><button type="button" class="hw-tab" role="tab" data-hw-value="two" aria-controls="p-two">Two</button><button type="button" class="hw-tab" role="tab" data-hw-value="three" aria-controls="p-three" ${disabled}>Three</button><button type="button" class="hw-tab" role="tab" data-hw-value="four" aria-controls="p-four">Four</button></div><section id="p-one">First panel</section><section id="p-two" hidden>Second panel</section><section id="p-three" hidden>Third panel</section><section id="p-four" hidden>Fourth panel</section></div><button id="outside">Outside</button>`;
  return document.querySelector<HTMLElement>('.hw-tabs')!;
 }
 function enhance(root:HTMLElement,options:Parameters<typeof createTabs>[1]={}){const controller=createTabs(root,options);cleanups.push(controller.destroy);return controller;}
@@ -45,11 +46,16 @@ it('closes on Escape and outside press, and returns focus when a resize moves co
  await hide([]);expect(root.querySelector('[role="tablist"]')!.hasAttribute('aria-hidden')).toBe(false);
 });
 it('retains scrolling and vertical opt-outs, labels safely, and refreshes on orientation or label changes',async()=>{
- const root=mount('data-hw-overflow="scroll" lang="en"');enhance(root);await hide([2,3]);
+ const root=mount('data-hw-overflow="scroll"','','data-hw-overflow-label="More tabs"');enhance(root);await hide([2,3]);
  expect(details(root).hidden).toBe(true);expect(summary(root).getAttribute('aria-label')).toBe('More tabs');expect(root.querySelector('[role="tablist"]')!.getAttribute('data-hw-overflow')).toBe('scroll');
  root.dataset.hwOverflow='menu';await Promise.resolve();await hide([2,3]);expect(details(root).hidden).toBe(false);
  const list=root.querySelector('[role="tablist"]')!;list.setAttribute('aria-orientation','vertical');await Promise.resolve();await hide([2,3]);expect(details(root).hidden).toBe(true);
  list.setAttribute('aria-orientation','horizontal');await Promise.resolve();await hide([2,3]);tabs(root)[3]!.setAttribute('aria-label','<img src=x onerror=bad()>');await Promise.resolve();expect(items(root)[1]!.textContent).toBe('<img src=x onerror=bad()>');expect(items(root)[1]!.querySelector('img')).toBeNull();
+});
+it('leaves the overflow disclosure unnamed when the application supplies no label',async()=>{
+ const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+ const root=mount('lang="ar"','','');enhance(root);await hide([2,3]);
+ expect(details(root).hidden).toBe(false);expect(summary(root).hasAttribute('aria-label')).toBe(false);expect(summary(root).textContent).not.toMatch(/المزيد|More tabs/u);
 });
 it('honors fieldset disabled changes and the first-legend exception without emitting',async()=>{
  const root=mount(),fieldset=document.createElement('fieldset');root.before(fieldset);fieldset.append(root);const callback=vi.fn(),controller=enhance(root,{onValueChange:callback});await hide([2,3]);details(root).open=true;
@@ -68,7 +74,7 @@ it('ignores nested tab actions and leaves all-disabled groups without an active 
  root.querySelector('#p-one')!.insertAdjacentHTML('beforeend','<div role="tablist"><button type="button" role="tab" data-hw-value="nested">Nested</button></div>');root.querySelector<HTMLButtonElement>('[data-hw-value="nested"]')!.click();expect(controller.value).toBe('');
 });
 it('reads the root disclosure label, observes changes, and prioritizes explicit options',async()=>{
- const root=mount('data-hw-overflow-label="Additional sections"');const controller=enhance(root);await hide([2,3]);expect(summary(root).getAttribute('aria-label')).toBe('Additional sections');
+ const root=mount('','','data-hw-overflow-label="Additional sections"');const controller=enhance(root);await hide([2,3]);expect(summary(root).getAttribute('aria-label')).toBe('Additional sections');
  root.dataset.hwOverflowLabel='More account sections';await Promise.resolve();expect(summary(root).getAttribute('aria-label')).toBe('More account sections');
  controller.destroy();enhance(root,{overflowLabel:'Explicit sections'});await hide([2,3]);expect(summary(root).getAttribute('aria-label')).toBe('Explicit sections');
  root.dataset.hwOverflowLabel='Another data label';await Promise.resolve();expect(summary(root).getAttribute('aria-label')).toBe('Explicit sections');

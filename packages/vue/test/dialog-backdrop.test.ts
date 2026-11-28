@@ -18,7 +18,7 @@ for (const Component of [Dialog, Drawer]) {
     const container = document.createElement('div'); document.body.append(container);
     let preventClick = false; let preventDown = false;
     const app = createApp({ render: () => h(Component, {
-      title: 'Review', defaultOpen: true,
+      title: 'Review', defaultOpen: true, closeLabel: 'Close',
       onClick: (event: MouseEvent) => { if (preventClick) event.preventDefault(); },
       onPointerdown: (event: PointerEvent) => { if (preventDown) event.preventDefault(); },
     }, { default: () => h('button', {}, 'Content'), trigger: ({ open }: { open: () => void }) => h('button', { onClick: open }, 'Open') }) });

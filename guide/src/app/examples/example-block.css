@@ -1,0 +1,49 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+  margin-block: var(--hw-space-6);
+}
+
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hw-space-3);
+  min-inline-size: 0;
+}
+
+.status {
+  margin-block: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hw-space-3);
+  min-inline-size: 0;
+  padding-block-start: var(--hw-space-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hw-space-2);
+}
+
+/* The sentence of a framed group: its result needs script, so it is shown only without it. */
+.framed-note {
+  display: none;
+  margin-block: 0;
+}
+
+/* Without script a framed group shows no status: its frame never loads, so a
+   loading status would never resolve. The guide's slot
+   around the status line is hidden, not the package's status line itself. */
+@media (scripting: none) {
+  .framed-note {
+    display: block;
+  }
+
+  .framed-status {
+    display: none;
+  }
+}

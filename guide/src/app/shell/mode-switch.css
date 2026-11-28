@@ -1,0 +1,6 @@
+/* Without script the mode cannot change: the switch is not shown. */
+@media (scripting: none) {
+  :host {
+    display: none;
+  }
+}

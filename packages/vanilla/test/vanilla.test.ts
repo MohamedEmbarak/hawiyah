@@ -32,6 +32,15 @@ const comboMarkup = `<div data-hw="combobox"><label for="city">City</label>
   </ul></div>`;
 
 describe('tabs', () => {
+  it('[TABS-10] enhances a root that is not in the document yet, and rejects a panel outside the root', () => {
+    const holder = document.createElement('div'); holder.innerHTML = tabMarkup; const root = holder.firstElementChild as HTMLElement; root.remove();
+    expect(root.isConnected).toBe(false); const controller = createTabs(root);
+    const tabs = [...root.querySelectorAll<HTMLElement>('[role="tab"]')]; const panels = tabs.map(tab => root.querySelector<HTMLElement>(`[id="${tab.getAttribute('aria-controls')}"]`)!);
+    expect(panels.filter(panel => !panel.hidden)).toHaveLength(1); document.body.append(root); tabs.find(tab => tab.getAttribute('aria-disabled') !== 'true' && tab.getAttribute('aria-selected') !== 'true')!.click();
+    expect(panels.filter(panel => !panel.hidden)).toHaveLength(1); controller.destroy(); root.remove();
+    const outside = mount(tabMarkup); const stray = outside.querySelector<HTMLElement>(`[id="${outside.querySelector('[role="tab"]')!.getAttribute('aria-controls')}"]`)!; document.body.append(stray);
+    expect(() => createTabs(outside)).toThrow('aria-controls pointing to a panel inside its root'); stray.remove();
+  });
   it('moves visually in RTL, skips disabled tabs, and restores authored DOM', () => {
     const root = mount(tabMarkup);
     const before = root.outerHTML;
@@ -90,7 +99,7 @@ describe('combobox', () => {
     expect(controller.value).toBe('abha');
     expect(input.value).toBe('أبها');
     expect(root.querySelector<HTMLInputElement>('[name="city"]')!.value).toBe('abha');
-    expect(changed).toHaveBeenCalledTimes(1);
+    expect(changed.mock.calls.filter(([event]) => 'value' in (event as CustomEvent).detail)).toHaveLength(1);
     controller.show();
     expect([...root.querySelectorAll<HTMLElement>('[role="option"]')].every(node => !node.hidden)).toBe(true);
     input.value = 'الريا'; input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -146,7 +155,7 @@ describe('combobox', () => {
   it('requires a committed option, reacts to required changes, and restores custom validity', async () => {
     const root = mount(comboMarkup);
     const input = root.querySelector<HTMLInputElement>('input')!;
-    const controller = createCombobox(root, { invalidSelectionMessage: 'Choose an option.' });
+    const controller = createCombobox(root, { requiredMessage: 'Choose an option.' });
     input.value = 'Unmatched city';
     input.dispatchEvent(new Event('input', { bubbles: true }));
     expect(input.checkValidity()).toBe(true);
@@ -253,11 +262,11 @@ describe('tooltip and pagination', () => {
     const root = mount(`<nav data-hw-total="3"><button data-hw-page="previous">Previous</button><button data-hw-page="1">1</button><button data-hw-page="2">2</button><button data-hw-page="3">3</button><button data-hw-page="next">Next</button></nav>`);
     const before = root.outerHTML;
     const controller = createPagination(root);
-    expect(root.querySelector<HTMLButtonElement>('[data-hw-page="previous"]')!.disabled).toBe(true);
+    expect(root.querySelector('[data-hw-page="previous"]')!.getAttribute('aria-disabled')).toBe('true');
     root.querySelector<HTMLButtonElement>('[data-hw-page="3"]')!.click();
     expect(controller.page).toBe(3);
     expect(root.querySelector('[aria-current="page"]')!.textContent).toBe('3');
-    expect(root.querySelector<HTMLButtonElement>('[data-hw-page="next"]')!.disabled).toBe(true);
+    expect(root.querySelector('[data-hw-page="next"]')!.getAttribute('aria-disabled')).toBe('true');
     controller.select(4);
     expect(controller.page).toBe(3);
     controller.destroy();

@@ -10,7 +10,7 @@ afterEach(async () => { for (const root of roots.splice(0)) await act(() => root
 async function fixture(firstLegend = false) {
   const container = document.createElement('div'); document.body.append(container);
   const root = createRoot(container); roots.push(root); const changed = vi.fn();
-  const picker = <FileDropzone label="Upload" onFilesChange={changed} />;
+  const picker = <FileDropzone label="Upload" dropLabel="Drop files here or choose files" onFilesChange={changed} />;
   await act(() => root.render(<fieldset disabled>{firstLegend ? <legend>{picker}</legend> : picker}</fieldset>));
   const input = container.querySelector('input')!; const zone = container.querySelector('.hw-file-dropzone')!;
   // JSDOM has no DataTransfer; retain the actual native :disabled computation.

@@ -1,14 +1,20 @@
 # File transfer state and removal
 
-`FileUploadList` composes with FileUpload and FileDropzone in React and Vue.
-Angular exposes `HwFileUploadListComponent` with `hw-file-upload-list`. Vanilla
+`FileUploadList` composes with FileUpload and FileDropzone in React, Vue and
+Angular (`HwFileUploadListComponent`, `hw-file-upload-list`, projected into
+`hw-file-dropzone` or `hw-file-upload`). No dropzone renders a file list of its
+own. Vanilla
 exposes `createFileUploadList(host, options)` with `update(items)`, `setDisabled(value)` and `destroy()`.
 
 Each `FileUploadItem` has a stable `id`, a filename and a status of `selected`,
 `uploading`, `complete` or `error`. Optional `message` supplies server feedback.
 Uploading items expose a native progress element. A finite percentage is bounded
 to 0–100. Missing/nonfinite progress is indeterminate. Filenames render as text.
-Arabic labels are the default, and every label accepts a translated replacement.
+The application supplies every text through the required `labels`
+(`FileUploadLabels`): `selected`, `uploading`, `complete`, `error` and `remove`,
+plus `getProgressLabel(name)` and `getRemoveLabel(name)`, which return the
+whole accessible name of one file's progress bar and remove button. The former
+core `fileUploadLabels` defaults are removed.
 
 The host performs transfers and supplies their actual state. A removal callback
 requests removal by stable ID. React/vanilla show removal when a callback exists.

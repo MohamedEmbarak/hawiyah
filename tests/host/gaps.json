@@ -1,0 +1,4 @@
+{
+  "about": "Known package defects found by the fixture-host cases. Each entry is referenced by a test marked test.fail(); the test then fails when the defect is fixed, and both the marker and the entry are removed.",
+  "gaps": []
+}

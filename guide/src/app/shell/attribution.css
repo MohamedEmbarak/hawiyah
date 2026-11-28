@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.attribution {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hw-space-2);
+  margin-block: 0;
+}
+
+.nic-logo {
+  display: block;
+  flex: none;
+}
+
+:host-context([data-hw-mode='dark']) .nic-logo {
+  filter: brightness(0) invert(1);
+}
+
+/* Forced colours: the artwork follows the system colour scheme, not the stored mode. */
+@media (forced-colors: active) and (prefers-color-scheme: light) {
+  :host-context([data-hw-mode]) .nic-logo {
+    filter: none;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :host-context([data-hw-mode]) .nic-logo {
+    filter: brightness(0) invert(1);
+  }
+}

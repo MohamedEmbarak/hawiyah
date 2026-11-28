@@ -1,0 +1,61 @@
+:host {
+  display: block;
+  --hw-side-navigation-top: 4rem;
+}
+
+:root[data-hw-mode='dark'] .guide-brand {
+  filter: brightness(0) invert(1);
+}
+
+:host-context([data-hw-mode='dark']) .guide-mark {
+  opacity: 0.9;
+}
+
+.guide-panel {
+  margin-inline-start: var(--hw-space-2);
+  padding-block: var(--hw-space-4);
+  inline-size: 100%;
+  max-inline-size: 72rem;
+  inset-inline-start: 0;
+  inset: 0;
+  text-align: start;
+  border-color: transparent;
+  color: currentColor;
+  background-color: var(--hw-color-surface, transparent);
+}
+
+@media (min-width: 48rem) {
+  .guide-panel {
+    display: grid;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .guide-panel {
+    transition: opacity var(--hw-duration-fast) var(--hw-ease-standard);
+    animation-duration: calc(var(--hw-duration-fast) * 2);
+  }
+}
+
+@media (forced-colors: active) {
+  .guide-panel {
+    outline-color: CanvasText;
+  }
+}
+
+/* Allowed forms next to the rules added for review finding R1[6]. */
+.guide-sides {
+  margin: 0 var(--hw-space-2) var(--hw-space-1);
+  padding: var(--hw-space-1) var(--hw-space-2);
+  border-radius: var(--hw-radius-md);
+}
+
+[class~='guide-sides'] {
+  color: currentColor;
+}
+
+@media only screen and (prefers-reduced-motion: no-preference) and (min-width: 48rem), (prefers-reduced-motion: no-preference) {
+  .guide-sides {
+    transition: opacity var(--hw-duration-fast) var(--hw-ease-standard);
+  }
+}

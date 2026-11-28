@@ -1,0 +1,14 @@
+[
+  {
+    "file": "docs/components/tree-view.ar.md",
+    "text": "application-form",
+    "reason": "The default value of the tree is the id of the selected item, which the items of the same example declare; it is a token, not reader text, and stays as written in the English page.",
+    "approvedBy": "lead"
+  },
+  {
+    "file": "docs/components/toast-region.ar.md",
+    "text": "additions text",
+    "reason": "The value of aria-relevant is a list of WAI-ARIA tokens, not reader text; it stays as the English page writes it.",
+    "approvedBy": "lead"
+  }
+]

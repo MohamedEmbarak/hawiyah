@@ -1,4 +1,4 @@
-/* Choice presentation is independent of each adapter's feedback data contract. */
+/* Feedback choices: one row of pressed-state buttons in every adapter. */
 .hw-feedback > .hw-inline, .hw-feedback .hw-feedback-actions {
   display: flex;
   flex-direction: row;
@@ -7,26 +7,6 @@
   gap: var(--hw-space-2);
   flex-basis: auto;
 }
-.hw-feedback > fieldset { flex: 1 1 100%; min-inline-size: 0; border: 0; padding: 0; margin: 0; }
-.hw-feedback > fieldset > legend { padding: 0; font-weight: var(--hw-weight-medium); }
-.hw-feedback > fieldset > .hw-button { margin-block-start: var(--hw-space-3); }
-.hw-feedback > fieldset > .hw-feedback-actions { margin-block: var(--hw-space-3); }
-.hw-feedback-actions > .hw-field { min-inline-size: 0; }
-.hw-feedback-actions .hw-choice {
-  box-sizing: border-box;
-  position: relative;
-  min-block-size: var(--hw-control-height);
-  padding: var(--hw-space-2) var(--hw-space-4);
-  border-radius: var(--hw-profile-control-radius, var(--hw-radius-md));
-  background: var(--hw-color-action-secondary);
-  color: var(--hw-color-on-action-secondary);
-  cursor: pointer;
-}
-.hw-feedback-actions .hw-choice:hover:not(:has(:disabled)) { background: var(--hw-color-action-secondary-hover); }
-.hw-feedback-actions .hw-choice:has(:checked) { outline: 2px solid var(--hw-color-primary); outline-offset: 3px; }
-.hw-feedback-actions .hw-choice:has(:focus-visible) { outline: 2px solid var(--hw-color-focus-contrast); outline-offset: 3px; }
-.hw-feedback-actions .hw-choice:has(:disabled) { background: var(--hw-color-disabled); color: var(--hw-color-on-disabled); cursor: not-allowed; }
-.hw-feedback-actions .hw-radio,
 .hw-feedback[data-choice-variant='icon'] .hw-feedback-label {
   position: absolute;
   inline-size: 1px;
@@ -40,9 +20,4 @@
 }
 .hw-feedback .hw-feedback-icon { display: none; }
 .hw-feedback:is([data-choice-variant='icon'], [data-choice-variant='icon-text']) .hw-feedback-icon { display: inline-block; }
-.hw-feedback[data-choice-variant='icon'] .hw-feedback-actions :is(.hw-button, .hw-choice) { min-inline-size: var(--hw-control-height); padding-inline: var(--hw-space-2); }
-@media (forced-colors: active) {
-  .hw-feedback-actions .hw-choice { border: 1px solid ButtonText; }
-  .hw-feedback-actions .hw-choice:has(:checked, :focus-visible) { outline-color: Highlight; }
-  .hw-feedback-actions .hw-choice:has(:disabled) { border-color: GrayText; color: GrayText; }
-}
+.hw-feedback[data-choice-variant='icon'] .hw-feedback-actions .hw-button { min-inline-size: var(--hw-control-height); padding-inline: var(--hw-space-2); }

@@ -10,10 +10,26 @@ import '@hawiyah/styles/styles.css';
 import '@hawiyah/styles/reset.css';
 ```
 
-The stylesheet imports `@hawiyah/tokens/tokens.css`; a bundler must resolve the bare
-package import. For direct browser use, bundle once or rewrite that import to your
-self-hosted token stylesheet. CSS custom properties provide theming without a
-framework, utility-class compiler, or CSS-in-JS runtime.
+The published `styles.css` is one flat stylesheet: the build inlines the tokens
+from `@hawiyah/tokens/tokens.css` and every component file in source order, so it
+contains no `@import` and a page can link it directly, without a bundler. Fonts
+and icons are referenced relative to the file, so serve the package's `dist`
+directory as it is (for example, copy `dist/styles.css` together with
+`dist/assets/`):
+
+```html
+<link rel="stylesheet" href="/vendor/hawiyah/styles.css">
+<!-- Optional, only for a new application whose base styling you own: -->
+<link rel="stylesheet" href="/vendor/hawiyah/reset.css">
+```
+
+`reset.css` remains a separate, opt-in file. The individual source files
+(`components.css`, `extended.css`, `icons.css` and the others) still ship beside
+the entry as `@hawiyah/styles/<file>.css` for existing references; they do not
+include the tokens, so load `@hawiyah/tokens/tokens.css` first when using one on
+its own. Do not combine them with `styles.css`, which already contains them.
+CSS custom properties provide theming without a framework, utility-class
+compiler, or CSS-in-JS runtime.
 
 ```html
 <main lang="ar" dir="rtl" data-hw-theme="dga" data-hw-mode="light">
@@ -50,6 +66,15 @@ framework, utility-class compiler, or CSS-in-JS runtime.
 | Avatar options | `hw-avatar`; `data-size="40|64|80|120|sm|md|lg|xl"`, `data-variant="circle|square"`; [geometry and theme notes](../../docs/nic-avatars.md) |
 | Workflow | `hw-toolbar`, `hw-chip`, `hw-empty`, `hw-stepper`, `hw-step`, `hw-timeline`, `hw-upload`, `hw-tooltip` |
 | Layout | `hw-stack`, `hw-cluster`, `hw-container`, `hw-sr-only` |
+| Code | `hw-code-block` (`figure`; `data-wrap="true"` wraps lines), `hw-code-block-header`, `hw-code-block-title`, `hw-code-block-actions`, `hw-code-block-content` (`pre`), `hw-code`, `hw-kbd`; syntax roles `hw-code-token-comment`, `-punctuation`, `-keyword`, `-property`, `-string`, `-constant`, `-attribute`, `-tag`, `-type`, `-function`; [contract and accessibility notes](../../docs/code-and-prose.md) |
+| Prose | `hw-prose` on a container styles class-less content inside it and leaves classed elements and their contents alone; [mapping and limits](../../docs/code-and-prose.md#prose) |
+| Text tone | `hw-type` with `data-tone="muted|subtle"` |
+| Sliders | `hw-slider`, `hw-range-slider`; optional value text in `output.hw-slider-value` and `output.hw-range-slider-value` |
+| Tree view | `hw-tree-view`, `hw-tree-item`, `hw-tree-toggle` (a `button`, 1.75rem target). The tree is one flat list in every adapter: each `li[role=treeitem]` holds its toggle and its label only, carries `aria-level` and `--hw-tree-depth` (the level minus one) and is indented by `--hw-tree-indent` per level; a tree item never contains its child items, and there is no `[role=group]` rule |
+| File dropzone | `hw-file-dropzone`; `data-state="dragging|error"`; `data-hw-readonly="true"` on the root of a read-only zone, whose file input stays enabled with `aria-disabled="true"` |
+| Notifications | `hw-notification-list`; items carry `data-state="read|unread"` |
+| Alert dismiss | `hw-alert-dismiss` on the optional dismiss button, a direct child of `hw-alert` |
+| Portal header actions | `hw-portal-header-actions` in every adapter; shrinks and wraps its controls. The earlier `hw-portal-actions` is still styled for one release |
 
 Defaults are primary/medium buttons, comfortable density, light mode, and the
 DGA reference theme. Select `data-hw-theme="hawiyah"` for the original palette. Use `data-hw-density="compact"` to reduce control and
@@ -68,13 +93,25 @@ the semantic `--hw-*` variables documented by `@hawiyah/tokens`.
 
 Use genuine disabled controls where possible. An `aria-disabled` attribute changes
 presentation and communicates state but does not suppress click behavior by itself.
+A button with `aria-disabled="true"` stays in the tab order and keeps a focus
+indicator; the previous and next arrows of Carousel and Pagination use it at a
+bound, so that focus is not lost, and show their focus ring at full opacity.
+Regions that an adapter always renders (`hw-dialog-footer`, `hw-stat-trend`,
+`hw-empty-icon`, the footer of `hw-service-details`) take no space while empty.
+Angular wrapper elements (`hw-text-field`, `hw-table`, `hw-popover` and the
+others) get their box from zero-specificity rules in `layout.css`, which a
+class or a rule of the application overrides and which leave `hidden` alone.
 Keep inactive panels and closed tooltips/listboxes `hidden`; component display
 rules preserve that attribute. The stylesheet does not assign roles, manage focus,
 trap dialogs, announce errors, or implement keyboard navigation. Use native HTML
 and Hawiyah adapters for those responsibilities.
 
 Native `select`, `checkbox`, and `radio` preserve platform behavior. Labels and
-messages must be associated in markup. Native progress needs a label; loading
+messages must be associated in markup. Native progress needs a label; a
+`progress` without a value shows a segment moving along the inline axis (static
+stripes under reduced motion), and forced colours draw the value in `Highlight`.
+In dark mode, progress and meter tracks and skeletons use a step lighter than the
+surface, because the DGA dark palette gives surface and surface-muted one value. Loading
 spinners and skeletons need suitable surrounding loading announcements. A tooltip
 must supplement an accessible control name. Its wrapper uses `data-hw="tooltip"`
 and must have room for the positioned tooltip; adapters do not promise collision
@@ -90,6 +127,25 @@ New visual recipes should use existing semantic tokens, retain native semantics,
 respect hidden/disabled/invalid states, and be checked in Arabic/English,
 RTL/LTR, light/dark, both densities, keyboard and forced-colors modes. The reset
 stays a separate opt-in entry point.
+
+## Opt-in fonts
+
+`fonts.css` loads IBM Plex Sans Arabic (400, 500, 600, 700) and IBM Plex Mono
+(400), the families the tokens name. It is never part of `styles.css`:
+
+```ts
+import '@hawiyah/styles/fonts.css';
+```
+
+```html
+<link rel="stylesheet" href="/vendor/hawiyah/fonts.css">
+```
+
+The files are IBM's published files, unchanged, under the SIL Open Font License
+1.1; the licence text and a provenance record with file hashes ship in
+`dist/assets/fonts`. The file also gives Arabic text inside code a joined Arabic
+face without making Latin code proportional. Details, sizes and open items:
+[docs/fonts.md](../../docs/fonts.md).
 
 ## Self-contained branding assets
 
@@ -110,7 +166,7 @@ are embedded in the SVG; Aref Ruqaa is not a runtime dependency or a font reques
 
 ## Curated interface icons
 
-The shared stylesheet includes 17 self-hosted Hugeicons Stroke Rounded icons.
+The shared stylesheet includes 62 self-hosted Hugeicons Stroke Rounded icons.
 They work in vanilla, React, Vue and Angular without a renderer dependency; each
 framework owns the ordinary `span` it renders. In React use `className` in place
 of `class` in this example:
@@ -126,7 +182,26 @@ of `class` in this example:
 </a>
 ```
 
-Available `data-icon` names: `search-01`, `menu-01`, `cancel-01`, `arrow-left-01`, `arrow-right-01`, `arrow-down-01`, `filter-horizontal`, `sorting-05`, `home-01`, `checkmark-circle-02`, `view`, `view-off-slash`, `calendar-03`, `thumbs-up`, `thumbs-down`, `link-04`, `lock-password`. The CSS alpha mask uses `currentColor` and defaults to
+Available `data-icon` names, each an unchanged file from the pinned upstream
+commit recorded with its SHA-256 in `assets/icons/provenance.json`:
+
+| Group | Names |
+| --- | --- |
+| Navigation and arrows | `arrow-left-01`, `arrow-right-01`, `arrow-left-02`, `arrow-right-02`, `arrow-up-01`, `arrow-up-02`, `arrow-down-01`, `arrow-down-02`, `arrow-up-right-01`, `arrow-data-transfer-vertical`, `home-01`, `menu-01`, `grid-view`, `layers-01` |
+| Actions | `search-01`, `filter-horizontal`, `sorting-05`, `add-01`, `minus-sign`, `cancel-01`, `tick-02`, `copy-01`, `download-01`, `upload-01`, `reload`, `play`, `link-04`, `link-square-02` (external link) |
+| Status | `checkmark-circle-02`, `information-circle`, `alert-02`, `exclamation-mark`, `cancel-circle`, `minus-sign-circle`, `star`, `thumbs-up`, `thumbs-down` |
+| Forms and security | `calendar-03`, `clock-01`, `view`, `view-off-slash`, `lock-password`, `shield-01`, `certificate-01` |
+| Content and files | `file-01`, `folder-01`, `book-open-01`, `code`, `source-code`, `message-01`, `paint-board`, `sparkles` |
+| Places and organisations | `building-03`, `briefcase-01`, `location-01`, `globe-02` |
+| Display preferences | `sun-03`, `moon-02`, `translate`, `left-to-right-list-bullet`, `right-to-left-list-bullet` |
+| Brand | `github` |
+
+Only `arrow-left-01`, `arrow-right-01`, `arrow-left-02`, `arrow-right-02` and
+`arrow-up-right-01` mirror in right-to-left, and only with `data-directional="true"`
+(their `directionalOptIn` in the provenance file). The two text-direction icons,
+`play` and the brand mark keep their physical orientation.
+
+The CSS alpha mask uses `currentColor` and defaults to
 `1.5rem` (24px at the usual root size). Set the scoped `--hw-icon-size` variable
 to change rendered size; icon size does not establish an accessible touch target.
 Provide a visible label or an accessible name on the containing control; these

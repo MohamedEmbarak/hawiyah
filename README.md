@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/previews/readme-banner.png" alt="Hawiyah (هوية) wordmark beside a green card symbol, above the React, Angular, Vue and TypeScript logos" width="560"></p>
+
 # Hawiyah — هوية
 
 **A UI component library built to comply with the Digital Government Authority (DGA) Platforms Code.** Hawiyah provides design tokens, styles, and accessible components for JavaScript, React, Vue, and Angular, with full Arabic and English support and page templates for complete service journeys.
@@ -10,28 +12,26 @@ Developed by the Development Team in the National Platforms Sector — National 
 
 The default interface uses the DGA foundation mapped from supplied Platforms Code source snapshots. The optional **Signature** theme (`data-hw-theme="hawiyah"`) retains teal and warm ivory. Hawiyah's logo is the Arabic **هوية** wordmark in the Platforms Code primary color. Its **Aref Ruqaa Bold lettering is exported as SVG paths**, with no font dependency to display the logo. Interface typography remains IBM Plex Sans Arabic and IBM Plex Sans. The [brand guide](brand/index-en.html), [artwork guidance](brand/README.md), and [brand kit ZIP](brand/hawiyah-brand-kit.zip) include the wordmark and transparent loaders that animate its lettering.
 
-![Hawiyah playground preview](docs/previews/playground.png)
-
 Preview the [live editor in Arabic](docs/previews/component-editor-ar-dark.png), [layout studio](docs/previews/layouts.png) and [Gregorian/Umm al-Qura date picker](docs/previews/date-picker.png).
 
 Hawiyah implements the **DGA Platforms Code**, the **Unified Design System** for the **Kingdom of Saudi Arabia (KSA)** — **كود المنصات، نظام التصميم الموحد، هيئة الحكومة الرقمية** — across foundations, components, and service patterns. **Compliance is documented requirement by requirement, with test evidence and open items.** Hawiyah is maintained independently and is not an official DGA product. Read [DGA alignment](docs/alignment.md) before describing a product as compliant. The [DGA reference and migration guide](docs/dga-reference.md) records the supplied 2026-10-29 snapshots, semantic light/dark values, reference nodes, and remaining gaps. The export date is not an official release number. All 23 local files are now decoded; the earlier six-file transfer limit is resolved. No standalone web Components Library was supplied. See the [source inventory](docs/dga-source-inventory.md) and [audit follow-up](docs/dga-audit-followup.md) for evidence and remaining gaps. The application-specific Hajj template is outside Hawiyah scope.
 
-Explore the [template gallery](https://mohamedembarak.github.io/hawiyah/#templates), [full-width service page](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/service), and [application form](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/form). These bilingual examples use local demonstration state; connect your own services for production.
+The guide has a page for each of the 85 components, in Arabic and English, with live examples rendered from the published packages in vanilla JavaScript, React, Vue and Angular. Four [templates](https://mohamedembarak.github.io/hawiyah/en/templates/) compose them into a service portal [home page](https://mohamedembarak.github.io/hawiyah/en/templates/home/), a [service page](https://mohamedembarak.github.io/hawiyah/en/templates/service/), a [request form](https://mohamedembarak.github.io/hawiyah/en/templates/form/) and [search results](https://mohamedembarak.github.io/hawiyah/en/templates/search/).
 
-The gallery also includes a [portal home](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/home) and [search page](https://mohamedembarak.github.io/hawiyah/?preview=template#templates/search). Search retains the query and provides type filters, removable selections, sorting, pagination and result states. Reusable `PortalLayout` and `SecondaryNav` APIs are documented in each adapter's `PORTAL.md` guide.
+Reusable `PortalLayout` and `SecondaryNav` APIs are documented in each adapter's `PORTAL.md` guide.
 
 ## Development status
 
-Hawiyah is an **Apache 2.0 public source preview, version 0.2**. Seven packages support an **83-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.2.1 is published on npm under the `@hawiyah` scope as a pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
+Hawiyah is an **Apache 2.0 public source preview, version 0.3**. Seven packages support an **85-entry component catalog** across vanilla, React, Vue, and Angular: forms, interaction, content, Saudi service patterns, and 12 layout primitives. Version 0.3.0 is published on npm under the `@hawiyah` scope with the `next` dist-tag, and `latest` remains 0.2.1 until the guide documents 0.3; both are pre-1.0 release, so a minor version may still change APIs. Publication, a source directory, or a working demo does not establish production readiness.
 
 The [roadmap](docs/roadmap.md) separates planned scope, implemented work, and verified behavior. [components.json](components.json) provides the same distinctions in a form that tools and coding assistants can read. Exact framework coverage and verification must be checked there rather than inferred from the package names.
 
-The guide opens in Arabic, with a persistent English switch and keyboard search (Ctrl/Cmd + K). Every component includes Preview, Code, and Playground tabs. The playground offers project files with real imports and native previews for JavaScript/TypeScript, React JSX/TSX, Vue JavaScript/TypeScript, and Angular TypeScript. Each supported recipe runs its selected adapter in an isolated preview with console errors and reset controls; the editor explicitly identifies any recipe still awaiting a native example. Downloaded projects include their setup files. The embedded preview resolves bundled dependencies only; arbitrary external imports are unsupported. [Editor license notices](https://mohamedembarak.github.io/hawiyah/licenses/editor.txt) accompany the deployed guide.
+The guide is in Arabic and English, each with a light and a dark mode. Each component page shows live examples in vanilla JavaScript, React, Vue and Angular, rendered from the published 0.3.0 packages; the four results of every example are compared when the guide is built, and the editor runs an example in any of the four. The differences between adapters that 0.3.0 still has are recorded under Known defects in the [changelog](CHANGELOG.md).
 
 ## What the system is designed to provide
 
 - A source-mapped DGA default foundation, an opt-in Hawiyah theme, and explicit custom-theme overrides.
-- Arabic and English content, independent locale and text direction, and logical CSS for RTL/LTR layouts.
+- Components without built-in text: the application supplies every label, message and accessible name, in Arabic, English or any other language, and the locale used for formatting. Direction is independent of locale, and logical CSS supports RTL/LTR layouts.
 - Native component APIs in each framework, built on shared tokens, styles, and behavior helpers.
 - Vanilla HTML/CSS that remains useful without JavaScript, with explicit enhancement for interactive controls.
 - Reusable primitives, editable blocks, and full service discovery, application, review, and request-management examples.
@@ -45,13 +45,13 @@ The guide opens in Arabic, with a persistent English switch and keyboard search 
 |---|---|
 | `@hawiyah/tokens` | Design values and semantic theme variables |
 | `@hawiyah/styles` | Component CSS, layout helpers, and a separately imported reset |
-| `@hawiyah/core` | Framework-independent behavior and internationalization helpers |
+| `@hawiyah/core` | Framework-independent behavior, text-requirement checks, and formatting helpers that take the application's locale |
 | `@hawiyah/vanilla` | HTML enhancement controllers with cleanup |
 | `@hawiyah/react` | React components using the shared foundation |
 | `@hawiyah/vue` | Vue components using the shared foundation |
 | `@hawiyah/angular` | Angular components using the shared foundation |
 
-Install the styles and one adapter with `npm install @hawiyah/styles @hawiyah/react`, replacing `react` with `vanilla`, `vue`, or `angular`. Source manifests keep `private: true`; `pnpm release:packages` publishes only the tarballs that `pnpm check:packages` has verified. Framework dependencies belong to the relevant adapter; the core does not depend on a framework runtime.
+Install the styles and one adapter with `npm install @hawiyah/styles@next @hawiyah/react@next`, replacing `react` with `vanilla`, `vue`, or `angular`. Source manifests keep `private: true`; `pnpm release:packages` publishes only the tarballs that `pnpm check:packages` has verified. Framework dependencies belong to the relevant adapter; the core does not depend on a framework runtime.
 
 ## Run locally
 
@@ -101,13 +101,13 @@ Load the styles through the consuming application's package setup:
 import '@hawiyah/styles/styles.css';
 ```
 
-The reset is optional; import `@hawiyah/styles/reset.css` before the component stylesheet if the application needs it. The [behavior contract](packages/core/API.md) and [vanilla expansion guide](packages/vanilla/EXPANSION-API.md) document enhancement APIs and markup. A framework adapter owns its rendered DOM; do not run vanilla enhancement over React, Vue, or Angular component trees.
+`styles.css` is one flat file that includes the tokens, so a page can also link it directly without a bundler. The reset is optional; import `@hawiyah/styles/reset.css` before the component stylesheet if the application needs it. The [behavior contract](packages/core/API.md) and [vanilla expansion guide](packages/vanilla/EXPANSION-API.md) document enhancement APIs and markup. A framework adapter owns its rendered DOM; do not run vanilla enhancement over React, Vue, or Angular component trees.
 
-The React adapter uses ordinary controlled inputs:
+The React adapter uses ordinary controlled inputs. Components contain no text of their own, so the application passes the label and every other text, and the locale where a component formats dates or numbers or sorts text:
 
 ```tsx
 import { useState } from 'react';
-import { TextField } from '@hawiyah/react';
+import { Pagination, TextField } from '@hawiyah/react';
 import '@hawiyah/styles/styles.css';
 
 export function RequestName() {
@@ -115,19 +115,29 @@ export function RequestName() {
   return <TextField label="اسم الطلب" value={name}
     onChange={event => setName(event.currentTarget.value)} />;
 }
+
+export function ResultPages({ page, onPageChange }: { page: number; onPageChange: (page: number) => void }) {
+  return <Pagination page={page} totalPages={12} onPageChange={onPageChange}
+    label="ترقيم الصفحات" previousLabel="الصفحة السابقة" nextLabel="الصفحة التالية"
+    getPageLabel={value => `الصفحة ${value}`}
+    getGapLabel={(start, end) => `الصفحات ${start} إلى ${end}`}
+    jumpLabel="الانتقال إلى صفحة" goLabel="انتقال" />;
+}
 ```
 
-Set `lang` and `dir` on the application container, and load the fonts appropriate to the product. Styles declare font families; consumers control font loading.
+A missing required text is a type error in React and Angular; in every adapter the component renders nothing in its place and warns once in development. [CONTRACT.md](CONTRACT.md#text-and-localisation) defines the text and locale rules, and each adapter README lists its inputs. The [changelog](CHANGELOG.md) maps every former built-in text to the input that replaces it, and lists per component and adapter each name and markup that 0.3.0 renames or removes, with its migration. In 0.3.0 the four adapters share one behaviour for native form reset, accessible names, validation messages, read-only state and controlled state.
+
+Set `lang` and `dir` on the application container, and load the fonts appropriate to the product. No component reads `lang` or sets a default `dir`. Styles declare font families; consumers control font loading. `@hawiyah/styles/fonts.css` is an opt-in stylesheet with IBM Plex Sans Arabic (400 to 700) and IBM Plex Mono (400), which `styles.css` never imports; see [docs/fonts.md](docs/fonts.md).
 
 ## Modify and extend
 
 Use a theme override for visual changes, a documented variant for component appearance, and composition for application-specific behavior. Start from an [editable block](blocks/README.md), or run `pnpm new:component request-summary` to generate a new application-owned block. This command scaffolds HTML, CSS, and guidance under `blocks/`; it does not generate a new framework library primitive. [The extension guide](docs/extension.md) explains the boundaries and contribution workflow.
 
-For coding assistants, begin with [AGENTS.md](AGENTS.md), [CONTRACT.md](CONTRACT.md), [EXPANSION.md](EXPANSION.md), [llms.txt](llms.txt), and the catalog. Generate code against actual exports and examples, and retain labels, keyboard behavior, error messages, and direction support when customizing.
+For coding assistants, begin with [AGENTS.md](AGENTS.md), [CONTRACT.md](CONTRACT.md), [EXPANSION.md](EXPANSION.md), [llms.txt](llms.txt), and the catalog. Generate code against actual exports and examples, supply every required text and locale, and retain labels, keyboard behavior, error messages, and direction support when customizing.
 
 ## Current boundaries
 
-Combobox is local and single-select; MultiSelect is a separate searchable checkbox list. DataTable supports stable localized sorting; virtualization and editing need a specialist engine. FileUpload/FileDropzone select files; transport and storage belong to the application. Phone, IBAN, and national-identifier recipes collect data without claiming identity or account verification. [Coverage](docs/coverage.md) defines the component and input scope; [integrations](docs/integrations.md) explains maps, charts, editors, authentication, and payment boundaries.
+Combobox is local and single-select; MultiSelect is a separate searchable checkbox list. DataTable sorts stably with the locale the application supplies; virtualization and editing need a specialist engine. FileUpload/FileDropzone select files; transport and storage belong to the application. Phone, IBAN, and national-identifier recipes collect data without claiming identity or account verification. [Coverage](docs/coverage.md) defines the component and input scope; [integrations](docs/integrations.md) explains maps, charts, editors, authentication, and payment boundaries.
 
 Calendar/DatePicker store Gregorian ISO `YYYY-MM-DD` values and can display Gregorian or Umm al-Qura dates. Hijri conversion uses a pinned reference table with explicit limits. Read [calendar reliability](docs/date-calendars.md) before using derived dates in official records. The examples use fictional data and simulate service submission and request tracking.
 

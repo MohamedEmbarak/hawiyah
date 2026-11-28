@@ -57,6 +57,8 @@
 .hw-tab:focus:not(:disabled, [aria-disabled='true']), .hw-tab-overflow-trigger:focus { color: var(--hw-color-text); background: transparent; outline: 2px solid var(--hw-color-focus-contrast); outline-offset: -2px; }
 .hw-tab:is(:disabled, [aria-disabled='true']) { background: transparent; color: var(--hw-color-on-disabled); cursor: not-allowed; }
 .hw-tab-panel { margin-block-start: var(--hw-profile-tab-panel-gap, 0px); padding-block: var(--hw-profile-tab-panel-padding, var(--hw-space-5)); }
+/* The Angular hw-tab element wraps its own panel; it generates no box of its own. */
+.hw-tabs > hw-tab { display: contents; }
 .hw-tabs-overflow { flex: 0 0 72px; min-inline-size: 0; }
 .hw-tabs-overflow[hidden] { display: none; }
 .hw-tab-overflow-trigger { position: relative; z-index: 1; inline-size: 100%; block-size: 100%; list-style: none; font-size: 18px; font-weight: 700; }

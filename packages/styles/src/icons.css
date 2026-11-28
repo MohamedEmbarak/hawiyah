@@ -23,8 +23,9 @@
 .hw-icon[data-icon='thumbs-up'] { --hw-icon-image: url('./assets/icons/thumbs-up.svg'); }
 .hw-icon[data-icon='thumbs-down'] { --hw-icon-image: url('./assets/icons/thumbs-down.svg'); }
 
-/* Opt in only for semantic forward/back; physical directions retain their meaning. */
-.hw-icon:is([data-icon='arrow-left-01'], [data-icon='arrow-right-01'], [data-icon='arrow-left-02'], [data-icon='arrow-right-02'])[data-directional='true'] {
+/* Opt in only for semantic forward/back; physical directions retain their meaning.
+   The list matches directionalOptIn in assets/icons/provenance.json. */
+.hw-icon:is([data-icon='arrow-left-01'], [data-icon='arrow-right-01'], [data-icon='arrow-left-02'], [data-icon='arrow-right-02'], [data-icon='arrow-up-right-01'])[data-directional='true'] {
   --_hw-mirror: var(--_hw-rtl-only) scaleX(-1);
   transform: var(--_hw-mirror, none);
 }
@@ -65,3 +66,37 @@
 .hw-icon[data-icon="arrow-right-02"] { --hw-icon-image: url("./assets/icons/arrow-right-02.svg"); }
 .hw-icon[data-icon="arrow-data-transfer-vertical"] { --hw-icon-image: url("./assets/icons/arrow-data-transfer-vertical.svg"); }
 .hw-icon[data-icon="star"] { --hw-icon-image: url("./assets/icons/star.svg"); }
+
+/* Every shipped icon file has a rule. Direction, media and brand artwork keep
+   their physical orientation; none of these opts into mirroring. */
+.hw-icon[data-icon="calendar-03"] { --hw-icon-image: url("./assets/icons/calendar-03.svg"); }
+.hw-icon[data-icon="view"] { --hw-icon-image: url("./assets/icons/view.svg"); }
+.hw-icon[data-icon="view-off-slash"] { --hw-icon-image: url("./assets/icons/view-off-slash.svg"); }
+.hw-icon[data-icon="book-open-01"] { --hw-icon-image: url("./assets/icons/book-open-01.svg"); }
+.hw-icon[data-icon="briefcase-01"] { --hw-icon-image: url("./assets/icons/briefcase-01.svg"); }
+.hw-icon[data-icon="building-03"] { --hw-icon-image: url("./assets/icons/building-03.svg"); }
+.hw-icon[data-icon="certificate-01"] { --hw-icon-image: url("./assets/icons/certificate-01.svg"); }
+.hw-icon[data-icon="clock-01"] { --hw-icon-image: url("./assets/icons/clock-01.svg"); }
+.hw-icon[data-icon="code"] { --hw-icon-image: url("./assets/icons/code.svg"); }
+.hw-icon[data-icon="copy-01"] { --hw-icon-image: url("./assets/icons/copy-01.svg"); }
+.hw-icon[data-icon="download-01"] { --hw-icon-image: url("./assets/icons/download-01.svg"); }
+.hw-icon[data-icon="file-01"] { --hw-icon-image: url("./assets/icons/file-01.svg"); }
+.hw-icon[data-icon="folder-01"] { --hw-icon-image: url("./assets/icons/folder-01.svg"); }
+.hw-icon[data-icon="github"] { --hw-icon-image: url("./assets/icons/github.svg"); }
+.hw-icon[data-icon="globe-02"] { --hw-icon-image: url("./assets/icons/globe-02.svg"); }
+.hw-icon[data-icon="grid-view"] { --hw-icon-image: url("./assets/icons/grid-view.svg"); }
+.hw-icon[data-icon="layers-01"] { --hw-icon-image: url("./assets/icons/layers-01.svg"); }
+.hw-icon[data-icon="left-to-right-list-bullet"] { --hw-icon-image: url("./assets/icons/left-to-right-list-bullet.svg"); }
+.hw-icon[data-icon="location-01"] { --hw-icon-image: url("./assets/icons/location-01.svg"); }
+.hw-icon[data-icon="message-01"] { --hw-icon-image: url("./assets/icons/message-01.svg"); }
+.hw-icon[data-icon="moon-02"] { --hw-icon-image: url("./assets/icons/moon-02.svg"); }
+.hw-icon[data-icon="paint-board"] { --hw-icon-image: url("./assets/icons/paint-board.svg"); }
+.hw-icon[data-icon="play"] { --hw-icon-image: url("./assets/icons/play.svg"); }
+.hw-icon[data-icon="reload"] { --hw-icon-image: url("./assets/icons/reload.svg"); }
+.hw-icon[data-icon="right-to-left-list-bullet"] { --hw-icon-image: url("./assets/icons/right-to-left-list-bullet.svg"); }
+.hw-icon[data-icon="shield-01"] { --hw-icon-image: url("./assets/icons/shield-01.svg"); }
+.hw-icon[data-icon="source-code"] { --hw-icon-image: url("./assets/icons/source-code.svg"); }
+.hw-icon[data-icon="sparkles"] { --hw-icon-image: url("./assets/icons/sparkles.svg"); }
+.hw-icon[data-icon="sun-03"] { --hw-icon-image: url("./assets/icons/sun-03.svg"); }
+.hw-icon[data-icon="translate"] { --hw-icon-image: url("./assets/icons/translate.svg"); }
+.hw-icon[data-icon="upload-01"] { --hw-icon-image: url("./assets/icons/upload-01.svg"); }

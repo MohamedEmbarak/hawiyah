@@ -1,0 +1,15 @@
+❯ Building...
+✔ Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-PMIZ6O2C.js    | main          | 608.54 kB |               143.42 kB
+styles-RYXEOYLC.css | styles        | 345.46 kB |                36.80 kB
+
+                    | Initial total | 954.01 kB |               180.22 kB
+
+Prerendered 13 static routes.
+Application bundle generation complete. [4.824 seconds] - 2026-11-18T09:36:32.885Z
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mbundle initial exceeded maximum budget. Budget 700.00 kB was not met by 254.01 kB with a total of 954.01 kB.[0m
+
+
+Output location: dist

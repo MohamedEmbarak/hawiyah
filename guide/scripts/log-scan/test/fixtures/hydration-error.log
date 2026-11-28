@@ -1,0 +1,13 @@
+❯ Building...
+✔ Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-PMIZ6O2C.js    | main          | 608.54 kB |               143.42 kB
+styles-RYXEOYLC.css | styles        | 345.46 kB |                36.80 kB
+
+                    | Initial total | 954.01 kB |               180.22 kB
+
+Prerendered 13 static routes.
+NG0500: During hydration Angular expected <hw-card> but found <div>.
+Application bundle generation complete. [4.741 seconds] - 2026-11-18T09:49:07.999Z
+
+Output location: dist

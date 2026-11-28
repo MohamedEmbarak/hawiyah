@@ -40,7 +40,7 @@ async function mount(adapter: string, relations = false) {
     const fixture = TestBed.createComponent(HwIconButtonComponent); host.append(fixture.nativeElement);
     fixture.componentRef.setInput('label', 'Search');
     for (const [key, value] of Object.entries(shared)) fixture.componentRef.setInput(key, value);
-    if (relations) for (const [key, value] of Object.entries({controls:'results', expanded:false, describedBy:'search-help', hasPopup:'dialog'})) fixture.componentRef.setInput(key, value);
+    if (relations) for (const [key, value] of Object.entries({controls:'results', expanded:false, 'aria-describedby':'search-help', hasPopup:'dialog'})) fixture.componentRef.setInput(key, value);
     fixture.componentInstance.activated.subscribe(() => clicks++);
     sync = async () => {fixture.componentRef.setInput('loading', state.loading); fixture.componentRef.setInput('disabled', state.disabled); if(relations) {fixture.componentRef.setInput('expanded', state.expanded); fixture.componentRef.setInput('form', state.form);} fixture.detectChanges();};
     focus = () => fixture.componentInstance.focus(); cleanup.push(() => fixture.destroy());

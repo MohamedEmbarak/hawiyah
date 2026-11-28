@@ -32,7 +32,10 @@ function notices() {
   ];
 }
 
-async function mount(adapter: Adapter) {
+// The application's copy: the strings the adapters used to supply.
+const label = 'الإشعارات';
+const getDismissLabel = (message: {title?: unknown}) => `إغلاق الإشعار: ${message.title}`;
+async function mount(adapter: Adapter, texts: {label?: string; getDismissLabel?: typeof getDismissLabel} = {label, getDismissLabel}) {
   const host = document.createElement('div');
   const external = document.createElement('button');
   document.body.append(host, external);
@@ -48,16 +51,16 @@ async function mount(adapter: Adapter) {
   if (adapter === 'react') {
     const root = createRoot(host);
     paint = () => root.render(react(ReactToast, {
-      variant: 'banner', position: 'inline', onDismiss: listening ? dismiss : undefined,
+      ...texts, variant: 'banner', position: 'inline', onDismiss: listening ? dismiss : undefined,
       messages: messages.map(message => ({...message, description: message.message})),
-    }));
+    } as Parameters<typeof ReactToast>[0]));
     run = async action => { await act(async () => action()); };
     disposal.push(() => run(() => root.unmount()));
   } else if (adapter === 'vue') {
     const revision = ref(0);
     const app = createApp({render() {
       void revision.value;
-      return h(VueToast, {variant: 'banner', position: 'inline', messages, ...(listening ? {onDismiss: dismiss} : {})});
+      return h(VueToast, {...texts, variant: 'banner', position: 'inline', messages, ...(listening ? {onDismiss: dismiss} : {})});
     }});
     app.mount(host);
     paint = () => { revision.value++; };
@@ -68,6 +71,7 @@ async function mount(adapter: Adapter) {
     host.append(fixture.nativeElement);
     let subscription: {unsubscribe(): void} | undefined;
     paint = () => {
+      for (const [key, value] of Object.entries(texts)) fixture.componentRef.setInput(key, value);
       fixture.componentRef.setInput('messages', messages);
       fixture.componentRef.setInput('variant', 'banner');
       fixture.componentRef.setInput('position', 'inline');
@@ -108,6 +112,15 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
     expect(ui.region.querySelector('[role="alert"]')).toBe(urgent);
     expect(ui.region.querySelector('[data-hw-toast="pinned"]')).not.toBeNull();
   });
+  it(`${adapter} renders no invented region or dismiss names when the texts are missing`, async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const ui = await mount(adapter, {});
+      expect(ui.region.hasAttribute('aria-label')).toBe(false);
+      expect(ui.button('one')?.hasAttribute('aria-label') ?? false).toBe(false);
+      expect(ui.region.textContent).not.toMatch(/الإشعار/u);
+    } finally { warn.mockRestore(); }
+  });
   it(`${adapter} discards rejected requests and respects owner-directed and external focus`, async () => {
     const ui = await mount(adapter);
     ui.mode('reject'); await ui.press('one'); expect(document.activeElement).toBe(ui.button('one'));
@@ -125,7 +138,7 @@ for (const adapter of ['react', 'vue', 'angular'] as const) {
 
 it('React and Vue retain authored inline placement in server-rendered markup', async () => {
   const attrs = {'data-variant': 'inline', 'data-position': 'bottom-start'};
-  const html = [renderToStaticMarkup(react(ReactToast, {...attrs, messages: []})), await renderToString(createSSRApp({render: () => h(VueToast, {...attrs, messages: []})}))];
+  const html = [renderToStaticMarkup(react(ReactToast, {...attrs, label, messages: []})), await renderToString(createSSRApp({render: () => h(VueToast, {...attrs, label, messages: []})}))];
   for (const markup of html) {
     const host = document.createElement('div'); host.innerHTML = markup;
     const region = host.querySelector('.hw-toast-region')!;
@@ -138,11 +151,12 @@ it('React and Vue retain authored inline placement in server-rendered markup', a
 
 it('vanilla retains mixed live buckets, protects pinned messages, skips disabled actions and restores authored markup', () => {
   const root = document.createElement('section'); root.className = 'hw-toast-region'; root.lang = 'ar';
+  root.dataset.hwLabel = 'الإشعارات'; root.dataset.hwDismissLabel = 'إغلاق الإشعار: {title}';
   root.innerHTML = '<div data-hw-live="polite"><div data-hw-toast id="one"><strong>الأول</strong><button data-hw-dismiss>×</button></div><div data-hw-toast id="pinned" data-hw-dismissible="false"><button data-hw-dismiss>×</button></div><div data-hw-toast id="blocked"><button data-hw-dismiss disabled>×</button></div></div><div data-hw-live="assertive"><div data-hw-toast="last"><strong>الأخير</strong><button data-hw-dismiss>×</button></div></div>';
   document.body.append(root);
   const original = root.outerHTML, callback = vi.fn();
   const controller = createToastRegion(root, {variant: 'banner', position: 'inline', onDismiss: callback});
-  expect(root.getAttribute('role')).toBe('region'); expect(root.hasAttribute('aria-live')).toBe(false);
+  expect(root.getAttribute('role')).toBe('region'); expect(root.getAttribute('aria-label')).toBe('الإشعارات'); expect(root.hasAttribute('aria-live')).toBe(false);
   expect(root.querySelector('[role="alert"]')?.getAttribute('aria-live')).toBe('assertive');
   const first = root.querySelector<HTMLButtonElement>('#one button')!, last = root.querySelector<HTMLButtonElement>('[data-hw-toast="last"] button')!;
   expect(first.getAttribute('aria-label')).toBe('إغلاق الإشعار: الأول');
@@ -181,7 +195,7 @@ it('retains owner focus when a notice keeps its identity through DOM replacement
 
 it('vanilla handles authored messages appended or unpinned after mounting', async () => {
   const root = document.createElement('div'); root.lang = 'en'; document.body.append(root);
-  const controller = createToastRegion(root);
+  const controller = createToastRegion(root, {label: 'Notifications', getDismissLabel: toast => `Dismiss notification: ${toast.querySelector('strong')?.textContent}`});
   const notice = document.createElement('div'); notice.dataset.hwToast = 'later'; notice.dataset.hwDismissible = 'false';
   notice.innerHTML = '<div class="hw-toast-content"><strong>Later</strong><p>Details</p></div><button data-hw-dismiss>×</button>';
   root.append(notice); await Promise.resolve();
@@ -198,11 +212,25 @@ it('vanilla handles authored messages appended or unpinned after mounting', asyn
 it('Vue consumes a one-shot dismiss listener without leaving inert actions', async () => {
   const host = document.createElement('div'); document.body.append(host);
   const dismiss = vi.fn();
-  const app = createApp({render: () => h(VueToast, {messages: notices(), onDismissOnce: dismiss})});
+  const app = createApp({render: () => h(VueToast, {label, getDismissLabel, messages: notices(), onDismissOnce: dismiss})});
   app.mount(host); disposal.push(() => app.unmount());
   host.querySelector<HTMLButtonElement>('[data-hw-dismiss]')!.click();
   await nextTick();
   expect(dismiss.mock.calls).toEqual([['one']]);
   expect(host.querySelector('[data-hw-dismiss]')).toBeNull();
   expect(host.querySelectorAll('[data-hw-toast]')).toHaveLength(4);
+});
+
+it('vanilla leaves the region and generated dismiss names empty when the application supplies no texts', () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  try {
+    const root = document.createElement('section'); root.className = 'hw-toast-region'; root.lang = 'ar';
+    root.innerHTML = '<div data-hw-live="polite"><div data-hw-toast id="one"><strong>الأول</strong><button data-hw-dismiss>×</button></div></div>';
+    document.body.append(root);
+    const controller = createToastRegion(root, {onDismiss: () => {}});
+    expect(root.hasAttribute('aria-label')).toBe(false);
+    expect(root.querySelector('#one button')!.hasAttribute('aria-label')).toBe(false);
+    expect(root.textContent).not.toMatch(/إغلاق|Dismiss|الإشعارات/u);
+    controller.destroy();
+  } finally { warn.mockRestore(); }
 });

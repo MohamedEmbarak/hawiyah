@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+/* The guide's own wrapper sets the line length and the page padding; the article of
+   the package prose fills it. */
+.document {
+  margin-inline: auto;
+  max-inline-size: 60rem;
+  padding-block: var(--hw-space-8) var(--hw-space-10);
+  padding-inline: var(--hw-space-4);
+}

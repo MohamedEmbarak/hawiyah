@@ -5,7 +5,7 @@ import { HwAvatarGroupComponent, HwTimelineComponent } from '../packages/angular
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createApp, h, nextTick, ref } from 'vue';
-import { afterEach, beforeAll, expect, it } from 'vitest';
+import { afterEach, beforeAll, expect, it, vi } from 'vitest';
 import { AvatarGroup as ReactAvatarGroup } from '../packages/react/src/expanded-content';
 import { AvatarGroup as VueAvatarGroup } from '../packages/vue/src/content';
 
@@ -21,18 +21,19 @@ afterEach(async () => {
 const members = Array.from({length: 7}, (_, index) => ({name: `Member ${index + 1}`}));
 const overflowLabel = (count: number) => `Additional members (${count})`;
 
-async function mountGroup(adapter: string, host: HTMLElement) {
+async function mountGroup(adapter: string, host: HTMLElement, texts: {getOverflowLabel?: typeof overflowLabel} = {getOverflowLabel: overflowLabel}) {
+  const {getOverflowLabel} = texts;
   const label = 'Review team';
   if (adapter === 'react') {
     const root = createRoot(host);
     cleanups.push(async () => { await act(() => root.unmount()); });
     return async (max: number) => {
-      await act(() => root.render(createElement(ReactAvatarGroup, {items: members, max, label, getOverflowLabel: overflowLabel})));
+      await act(() => root.render(createElement(ReactAvatarGroup, {items: members, max, label, getOverflowLabel} as Parameters<typeof ReactAvatarGroup>[0])));
     };
   }
   if (adapter === 'vue') {
     const limit = ref(5);
-    const app = createApp({render: () => h(VueAvatarGroup, {items: members, max: limit.value, label, remainingLabel: overflowLabel})});
+    const app = createApp({render: () => h(VueAvatarGroup, {items: members, max: limit.value, label, getOverflowLabel})});
     app.mount(host);
     cleanups.push(() => app.unmount());
     return async (max: number) => { limit.value = max; await nextTick(); };
@@ -40,8 +41,8 @@ async function mountGroup(adapter: string, host: HTMLElement) {
   const fixture = TestBed.createComponent(HwAvatarGroupComponent);
   host.append(fixture.nativeElement);
   fixture.componentRef.setInput('label', label);
-  fixture.componentRef.setInput('avatars', members);
-  fixture.componentRef.setInput('overflowLabel', overflowLabel);
+  fixture.componentRef.setInput('items', members);
+  fixture.componentRef.setInput('getOverflowLabel', getOverflowLabel);
   cleanups.push(() => fixture.destroy());
   return async (max: number) => { fixture.componentRef.setInput('max', max); fixture.detectChanges(); };
 }
@@ -67,6 +68,19 @@ for (const adapter of ['react', 'vue', 'angular']) {
       }
     }
   });
+  it(`${adapter}: avatar overflow without getOverflowLabel renders no invented name`, async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const host = document.createElement('div');
+      document.body.append(host);
+      const setMax = await mountGroup(adapter, host, {});
+      await setMax(5);
+      const overflow = host.querySelector('[role="group"] > .hw-avatar:last-child')!;
+      expect(overflow.textContent).toBe('+2');
+      expect(overflow.hasAttribute('aria-label')).toBe(false);
+      expect(host.textContent).not.toMatch(/more people/u);
+    } finally { warn.mockRestore(); }
+  });
 }
 
 it('Angular announces the current timeline step and moves that marker when the state changes', () => {
@@ -75,7 +89,7 @@ it('Angular announces the current timeline step and moves that marker when the s
   fixture.componentRef.setInput('label', 'Application stages');
   const update = (current: number) => {
     fixture.componentRef.setInput('items', ['Received', 'Review', 'Decision'].map((title, index) => ({
-      title, state: index === current ? 'current' : index < current ? 'complete' : 'pending',
+      id: `stage-${index}`, title, status: index === current ? 'current' : index < current ? 'complete' : 'upcoming',
     })));
     fixture.detectChanges();
   };

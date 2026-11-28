@@ -65,6 +65,7 @@ ordinary attribute selectors can override them without `!important`.
 | Group | Purpose |
 | --- | --- |
 | `color` | Surfaces, text, boundaries, brand, semantic feedback, focus, disabled and inverse roles |
+| `color.code-*` | Code surface, text, border and ten syntax roles; each is an alias of an existing colour, not a new value |
 | `font`, `text`, `weight`, `leading` | Arabic-aware font stack, type scale, font weights and line heights |
 | `space`, `radius`, `shadow` | Spacing scale, corners and elevation |
 | `control`, `density` | Control heights, inline padding, layout gap and table cell density |
@@ -81,6 +82,18 @@ conformance**. Regenerate `src/generated.ts` and `src/tokens.css` with:
 ```sh
 pnpm --filter @hawiyah/tokens generate
 ```
+
+A colour whose `$value` is `{color.<name>}` is an alias of another colour in the
+same group. It is generated as `var(--hw-color-<name>)` in `tokens.css` and in
+the typed export, has no palette slot, and follows its target through themes,
+modes and application overrides. An alias must name the same plain colour in
+every theme and mode; the generator stops otherwise. The `code-*` colours are
+aliases: a Hawiyah mapping with no Platforms Code source of its own
+([docs/code-and-prose.md](../../docs/code-and-prose.md)).
+
+`font.mono` lists `"Hawiyah Code Arabic"` after `"IBM Plex Mono"`. That family
+exists only when the application loads the opt-in `@hawiyah/styles/fonts.css`
+([docs/fonts.md](../../docs/fonts.md)); otherwise browsers skip the name.
 
 Do not edit generated output by hand. The root build regenerates and copies CSS
 into the built package. Public tokens are an API: changes should include migration

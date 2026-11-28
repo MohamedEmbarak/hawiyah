@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+.stage {
+  box-sizing: border-box;
+  min-inline-size: 0;
+  padding-block: var(--hw-space-6);
+  padding-inline: var(--hw-space-4);
+  border: 1px solid var(--hw-color-border);
+  border-radius: var(--hw-radius-md);
+  background-color: var(--hw-color-canvas);
+  color: var(--hw-color-text);
+  font-family: var(--hw-font-sans);
+}
+
+/* The host (an outlined card) draws the frame and the padding. */
+.borderless {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background-color: transparent;
+}

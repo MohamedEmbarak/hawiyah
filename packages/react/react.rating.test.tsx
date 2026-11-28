@@ -8,7 +8,7 @@ const mounted: ReturnType<typeof createRoot>[] = [];
 afterEach(async () => { for (const root of mounted.splice(0)) await act(async () => root.unmount()); document.body.replaceChildren(); });
 it('keeps one submitted rating and restores the default on native reset', async () => {
   const host = document.createElement('div'); document.body.append(host); const root = createRoot(host); mounted.push(root);
-  await act(async () => root.render(<form><Rating label="التقييم" name="rating" defaultValue={3} required /></form>));
+  await act(async () => root.render(<form><Rating label="التقييم" getRatingLabel={(value, max) => `${value} من ${max}`} name="rating" defaultValue={3} required /></form>));
   const inputs = [...host.querySelectorAll<HTMLInputElement>('input')];
   expect(inputs.filter(input => input.checked).map(input => input.value)).toEqual(['3']);
   await act(async () => inputs[4]!.click());
@@ -18,7 +18,7 @@ it('keeps one submitted rating and restores the default on native reset', async 
 });
 it('keeps readonly radios focusable and rejects clicks and value keys without blocking Tab', async () => {
   const changed = vi.fn(); const host = document.createElement('div'); document.body.append(host); const root = createRoot(host); mounted.push(root);
-  await act(async () => root.render(<form><Rating label="التقييم" name="rating" value={3} readOnly onValueChange={changed} /></form>));
+  await act(async () => root.render(<form><Rating label="التقييم" getRatingLabel={(value, max) => `${value} من ${max}`} name="rating" value={3} readOnly onValueChange={changed} /></form>));
   const inputs = [...host.querySelectorAll<HTMLInputElement>('input')];
   await act(async () => inputs[2]!.focus()); expect(document.activeElement).toBe(inputs[2]);
   await act(async () => inputs[4]!.click());

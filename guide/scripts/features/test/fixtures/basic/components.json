@@ -1,0 +1,7 @@
+{
+  "components": [
+    { "id": "tabs", "name": "Tabs", "labelAr": "تبويبات" },
+    { "id": "button", "name": "Button", "labelAr": "زر" },
+    { "id": "accordion", "name": "Accordion", "labelAr": "أكورديون" }
+  ]
+}

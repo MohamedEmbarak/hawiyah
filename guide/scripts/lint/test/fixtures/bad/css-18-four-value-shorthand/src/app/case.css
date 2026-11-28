@@ -1,0 +1,5 @@
+.guide-case {
+  margin: 0 0 0 var(--hw-space-2);
+  padding: var(--hw-space-1) var(--hw-space-2) var(--hw-space-1) var(--hw-space-4);
+  border-radius: var(--hw-radius-md) 0;
+}

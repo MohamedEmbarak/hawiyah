@@ -14,18 +14,18 @@ function HydratedApplication() {
       <Field label="Reference" hint="Keep your reference number">
         <TextField name="reference" defaultValue="HW-1024" />
       </Field>
-      <Combobox label="City" name="city" required value={city} onValueChange={setCity} options={[
+      <Combobox label="City" emptyMessage="No options found" getResultsMessage={count => `${count} results available`} requiredMessage="Choose an option from the list." name="city" required value={city} onValueChange={setCity} options={[
         { value: 'riyadh', label: 'الرياض' },
         { value: 'jeddah', label: 'جدة', disabled: true },
         { value: 'abha', label: 'أبها' },
       ]} />
     </form>
-    <Tabs dir="rtl" label="Application sections" items={[
+    <Tabs dir="rtl" label="Application sections" overflowLabel="More tabs" items={[
       { value: 'details', label: 'Details', content: 'Application details' },
       { value: 'unavailable', label: 'Unavailable', content: 'Unavailable section', disabled: true },
       { value: 'review', label: 'Review', content: 'Application review' },
     ]} />
-    <Dialog title="Confirm application" description="Review the information before submitting.">Ready to submit</Dialog>
+    <Dialog title="Confirm application" closeLabel="Close" description="Review the information before submitting.">Ready to submit</Dialog>
   </main>;
 }
 

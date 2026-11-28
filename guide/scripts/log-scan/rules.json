@@ -1,0 +1,20 @@
+{
+  "description": "Patterns that fail a build when they appear in the tee'd ng build output (lint.logScan). Lines are matched after ANSI colour codes are removed. Rules are tried in this order and the first match names the finding of a line.",
+  "rules": [
+    { "id": "LS-9", "pattern": "Prerendering failed|Failed to prerender|Error rendering", "flags": "i", "configurations": ["production", "development"], "description": "Prerender failure." },
+    { "id": "LS-5", "pattern": "\\bNG0?5\\d{2}\\b", "flags": "", "configurations": ["production", "development"], "description": "Hydration error code." },
+    { "id": "LS-4", "pattern": "\\bNG0\\d{3,4}\\b", "flags": "", "configurations": ["production", "development"], "description": "Angular runtime error code." },
+    { "id": "LS-6", "pattern": "TypeError|ReferenceError|SyntaxError|RangeError", "flags": "", "configurations": ["production", "development"], "description": "JavaScript error during the build or the server render." },
+    { "id": "LS-7", "pattern": "Unhandled|unhandled rejection", "flags": "i", "configurations": ["production", "development"], "description": "Unhandled error or promise rejection." },
+    { "id": "LS-1", "pattern": "\\[ERROR\\]", "flags": "", "configurations": ["production", "development"], "description": "Builder error." },
+    { "id": "LS-3", "pattern": "^Error:", "flags": "", "configurations": ["production", "development"], "description": "Error printed at the start of a line." },
+    { "id": "LS-2", "pattern": "\\bERROR\\b", "flags": "", "configurations": ["production", "development"], "description": "Error printed by Angular's ErrorHandler during the server render." },
+    { "id": "LS-8", "pattern": "\\[WARNING\\]|▲", "flags": "", "configurations": ["production", "development"], "description": "Builder warning (budgets, CommonJS, unused files)." },
+    { "id": "LS-10", "pattern": "Hawiyah:", "flags": "", "configurations": ["development"], "description": "Missing-text warning of the guide (development builds only)." }
+  ],
+  "prerendered": {
+    "id": "LS-ROUTES",
+    "pattern": "\\bPrerendered (\\d+) static routes?\\b",
+    "description": "A clean log contains 'Prerendered <n> static routes' with n equal to the expected count from features.json and the content manifest."
+  }
+}

@@ -1,8 +1,9 @@
-import { Children, isValidElement, useEffect, useId, useRef } from 'react';
+import { Children, isValidElement, useCallback, useEffect, useId, useRef } from 'react';
 import type { ComponentPropsWithRef, ReactNode } from 'react';
 import { assignRef, cx, ControlField, Field, useFieldControl, useFieldValueRef } from './shared.js';
 import type { FieldDecoration } from './shared.js';
 import { observeReadonlyChoice, isDisabled, type Option } from '@hawiyah/core';
+import { useFormReset } from './expanded-shared.js';
 
 export interface ButtonProps extends ComponentPropsWithRef<'button'> {
   variant?: 'primary' | 'default' | 'secondary' | 'outline' | 'outline-white' | 'light' | 'danger' | 'ghost' | 'soft' | 'link';
@@ -35,7 +36,11 @@ export function Textarea({ label, hint, error, ...props }: TextareaProps) {
 export interface SelectProps extends ComponentPropsWithRef<'select'>, FieldDecoration { options?: readonly Option[]; placeholder?: string }
 function SelectControl({ options, children, placeholder, ...props }: SelectProps) {
   const field = useFieldControl(props);
-  const ref = useFieldValueRef(props.ref);
+  const select = useRef<HTMLSelectElement | null>(null);
+  const { ref: forwarded } = props;
+  // A native reset shows the browser default; the extra render writes a controlled `value` back.
+  useFormReset(select);
+  const ref = useFieldValueRef(useCallback((node: HTMLSelectElement | null) => { select.current = node; if (typeof forwarded === 'function') return forwarded(node); assignRef(forwarded, node); }, [forwarded]));
   const hasEmptyOption = options?.some(option => option.value === '') || Children.toArray(children).some(child => isValidElement<{value?: string}>(child) && child.type === 'option' && child.props.value === '');
   return <select {...props} {...field} ref={ref} className={cx('hw-select', props.className)}>{placeholder && !props.multiple && !hasEmptyOption && <option value="">{placeholder}</option>}{options?.map(option => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}</option>)}{children}</select>;
 }
@@ -50,6 +55,8 @@ function Choice({ kind, label, hint, error, className, indeterminate, ref, onCli
   const input = useRef<HTMLInputElement | null>(null);
   const hintId = hint ? `${field.id}-hint` : undefined;
   const errorId = error ? `${field.id}-error` : undefined;
+  // A native reset shows the browser default; the extra render writes a controlled `checked` back.
+  useFormReset(input);
   useEffect(() => { if (input.current) input.current.indeterminate = Boolean(indeterminate); }, [indeterminate]);
   useEffect(() => {
     if (!input.current) return;
@@ -64,8 +71,8 @@ function Choice({ kind, label, hint, error, className, indeterminate, ref, onCli
         onChange={event => { if (!props.readOnly && !isDisabled(event.currentTarget)) onChange?.(event); }} />
       {label}
     </label>
-    {hint && <span id={hintId} className="hw-hint">{hint}</span>}
-    {error && <span id={errorId} className="hw-error">{error}</span>}
+    {hint && <p id={hintId} className="hw-hint">{hint}</p>}
+    {error && <p id={errorId} className="hw-error">{error}</p>}
   </div>;
 }
 export function Checkbox(props: CheckboxProps) { return <Choice {...props} kind="checkbox" />; }
@@ -78,9 +85,11 @@ export interface FileUploadProps extends Omit<TextFieldProps, 'type' | 'value' |
   children?: ReactNode;
 }
 export function FileUpload({ label, hint, error, onFilesChange, onChange, children, className, ...props }: FileUploadProps) {
-  const id = useId();
+  const id = useId(); const input = useRef<HTMLInputElement | null>(null); const held = useRef(0); const { ref } = props;
+  // The browser empties the input on a native reset; report [] once when files were held.
+  useFormReset(input, () => { if (held.current) { held.current = 0; onFilesChange?.([]); } });
   return <Field label={label} hint={hint} error={error} required={props.required} controlId={props.id ?? id} className="hw-upload">
-    <InputControl {...props} className={className} type="file" onChange={event => { onChange?.(event); onFilesChange?.(Array.from(event.currentTarget.files ?? [])); }} />
+    <InputControl {...props} ref={node => { input.current = node; assignRef(ref, node); }} className={className} type="file" onChange={event => { onChange?.(event); const files = Array.from(event.currentTarget.files ?? []); held.current = files.length; onFilesChange?.(files); }} />
     {children}
   </Field>;
 }

@@ -1,8 +1,9 @@
 import '@angular/compiler';
 import {createTooltip} from '../packages/vanilla/src/tooltip';
+import {Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {BrowserTestingModule, platformBrowserTesting} from '@angular/platform-browser/testing';
-import {HwTooltipComponent} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
+import {HwTooltipComponent, HwTooltipTriggerDirective} from '../packages/angular/dist/fesm2022/hawiyah-angular.mjs';
 import {act, createElement} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createApp, h, nextTick} from 'vue';
@@ -15,6 +16,9 @@ beforeAll(() => TestBed.initTestEnvironment(BrowserTestingModule, platformBrowse
 afterEach(() => { TestBed.resetTestingModule(); document.body.replaceChildren(); vi.useRealTimers(); });
 
 type Adapter = 'react' | 'vue' | 'angular';
+// The Angular trigger is the application's own element, marked with hwTooltipTrigger and named like the React and Vue ones.
+class AngularHost {}
+Component({standalone: true, imports: [HwTooltipComponent, HwTooltipTriggerDirective], template: `<hw-tooltip text="معلومات إضافية" placement="bottom" align="center"><button hwTooltipTrigger aria-label="التفاصيل" aria-describedby="other-hint"></button></hw-tooltip>`})(AngularHost);
 async function setup(adapter: Adapter) {
   const host = document.createElement('div');
   const external = document.createElement('button');
@@ -34,10 +38,7 @@ async function setup(adapter: Adapter) {
     run = async fn => {fn(); await nextTick();};
     destroy = async () => {app.unmount();};
   } else {
-    const fixture = TestBed.createComponent(HwTooltipComponent);
-    fixture.componentRef.setInput('text','معلومات إضافية');
-    fixture.componentRef.setInput('placement','bottom');
-    fixture.componentRef.setInput('align','center');
+    const fixture = TestBed.createComponent(AngularHost);
     host.append(fixture.nativeElement);
     fixture.detectChanges();
     run = async fn => {fn(); fixture.detectChanges();};
@@ -63,10 +64,8 @@ for (const adapter of ['react','vue','angular'] as const) {
       await run(() => hover(true));
       expect(tip.hidden).toBe(false);
       expect(trigger.getAttribute('aria-describedby')?.split(/\s+/)).toContain(tip.id);
-      if (adapter !== 'angular') {
-        expect(trigger.getAttribute('aria-describedby')?.split(/\s+/)).toContain('other-hint');
-        expect(trigger.getAttribute('aria-label')).toBe('التفاصيل');
-      }
+      expect(trigger.getAttribute('aria-describedby')?.split(/\s+/)).toEqual(['other-hint', tip.id]);
+      expect(trigger.getAttribute('aria-label')).toBe('التفاصيل');
       const handled = escape();
       await run(() => external.dispatchEvent(handled));
       expect(handled.defaultPrevented).toBe(true);

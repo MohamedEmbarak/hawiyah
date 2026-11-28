@@ -1,0 +1,7 @@
+[
+  {
+    "rule": "L-SRC-2",
+    "file": "src/main.server.ts",
+    "line": 2
+  }
+]

@@ -1,6 +1,6 @@
 # Component and input coverage
 
-Hawiyah's expanded catalog has **83 named entries: the initial 27 plus 51 expansion entries and 5 portal/mobile compositions**. The count represents distinct public components and layout primitives. Native input-type aliases, visual variants, editable blocks, and external integration recipes are documented separately.
+Hawiyah's expanded catalog has **85 named entries: the initial 27 plus 53 expansion entries and 5 portal/mobile compositions**. The count represents distinct public components and layout primitives. Native input-type aliases, visual variants, editable blocks, and external integration recipes are documented separately.
 
 This is a defined, extensible scope for modern interfaces and Saudi service platforms. It is not an exhaustive list of every possible UI, an official DGA component count, or a certification claim. [components.json](../components.json) records planned, built, and verified coverage independently for each adapter. [EXPANSION.md](../EXPANSION.md) defines the expansion contract; the [validation record](validation.md) identifies the tested snapshot.
 
@@ -8,7 +8,7 @@ This is a defined, extensible scope for modern interfaces and Saudi service plat
 
 The default `dga` foundation is mapped from verified values in the supplied **2026-10-29** snapshot; `hawiyah` is an opt-in visual theme. The local follow-up decoded **all 23 files**, including the six previously blocked by the remote transfer limit. Rendered inspection of Mobile, Home and Search supplements decoded properties; it does not establish exhaustive visual parity. Hajj is excluded from Hawiyah's requirements and implementation scope. No standalone web component library was supplied. See the [source inventory](dga-source-inventory.md) and [audit follow-up](dga-audit-followup.md).
 
-The 83-entry catalog remains Hawiyah's implementation scope. Embedded template components, resolved foundation variables, and a rendered gallery do not establish complete official component coverage. Source-version reconciliation, per-variant visual comparison, template behavior, and application-level requirements have separate evidence gates in [the reference record](dga-reference.md) and [roadmap](roadmap.md). Raw source exports remain local research inputs.
+The 85-entry catalog remains Hawiyah's implementation scope. Embedded template components, resolved foundation variables, and a rendered gallery do not establish complete official component coverage. Source-version reconciliation, per-variant visual comparison, template behavior, and application-level requirements have separate evidence gates in [the reference record](dga-reference.md) and [roadmap](roadmap.md). Raw source exports remain local research inputs.
 
 ## Catalog groups
 
@@ -18,9 +18,9 @@ The 83-entry catalog remains Hawiyah's implementation scope. Embedded template c
 | Initial interaction/navigation | Tabs, Dialog, Accordion, Pagination, Breadcrumb, Tooltip, Stepper |
 | Initial presentation | Card, Badge, Alert, Table, Progress, Skeleton, Spinner, Avatar, Divider, EmptyState |
 | Additional controls | InputGroup, PasswordField, SearchField, NumberField, Slider, RangeSlider, Rating, PinInput, TagInput, MultiSelect, Calendar, DatePicker, FileDropzone |
-| Additional interaction | ToggleGroup, Popover, Menu, Drawer, ToastRegion, Collapsible, TreeView, Carousel, ContentNavigation |
+| Additional interaction | ToggleGroup, Popover, Menu, Drawer, ToastRegion, Collapsible, TreeView, Carousel, ContentNavigation, CopyButton |
 | Additional content | Link, IconButton, ButtonGroup, Chip, DescriptionList, Stat, Timeline, Meter, AvatarGroup, DataTable |
-| Platform patterns | ServiceCard, ServiceDetails, PortalHeader, PortalFooter, SiteVerification, SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer, Feedback, CookieConsent, NotificationList |
+| Platform patterns | ServiceCard, ServiceDetails, PortalHeader, PortalFooter, SiteVerification, SecondaryNav, PortalLayout, MobileTopBar, NavigationDrawer, SideNavigation, Feedback, CookieConsent, NotificationList |
 | Layout | Container, Stack, Inline, Grid, Columns, Sidebar, Center, Spacer, AspectRatio, Section, AppShell, PageHeader |
 
 Framework adapters render native framework components. Vanilla uses semantic HTML/CSS recipes where native behavior is sufficient, and explicit controllers for richer interaction. A static recipe is a valid implementation; it should not be represented as a JavaScript controller that does not exist.
@@ -34,7 +34,10 @@ guides and framework examples at `?preview=portal` document exact APIs.
 The 48rem disclosure breakpoint is a Hawiyah adaptation. Verification records
 describe their tested snapshots; the catalog evidence identifies the specific
 behavior and layout assertions for each adapter. MobileTopBar and
-NavigationDrawer have separate contracts and browser checks.
+NavigationDrawer have separate contracts and browser checks. `SideNavigation`
+renders the NavigationDrawer list outside a drawer from the same items.
+`CopyButton` copies a value the page already shows and reports the outcome in a
+polite status; the clipboard is written on activation only and never read.
 
 `ContentNavigation` follows document sections within the window or a caller-owned
 scroll container. Its nested indicators and local scrolling are distinct from
@@ -50,7 +53,7 @@ Tabs (panel selection) and SecondaryNav (page links). See
 | Interactive | Hawiyah implements additional state, keyboard behavior, or lifecycle | Combobox, Calendar, Menu, TreeView, DataTable |
 | Integration | The application owns a specialist engine or service; Hawiyah supplies surrounding UI recipes | Maps, charts, editors, identity verification, payments |
 
-The first three types appear in the 83-component catalog. Integrations have a separate boundary and are not counted as implemented components. Native elements still require labels, appropriate attributes, and application validation.
+The first three types appear in the 85-component catalog. Integrations have a separate boundary and are not counted as implemented components. Native elements still require labels, appropriate attributes, and application validation.
 
 ## All 22 native input types
 

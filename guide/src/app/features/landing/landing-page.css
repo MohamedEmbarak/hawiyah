@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+
+/* The sections in one column with generous bands between them; tokens only. */
+.flow {
+  display: grid;
+  gap: var(--hw-space-16);
+  min-inline-size: 0;
+  padding-block: var(--hw-space-10) var(--hw-space-16);
+}
+
+.first {
+  display: grid;
+  gap: var(--hw-space-12);
+  min-inline-size: 0;
+}

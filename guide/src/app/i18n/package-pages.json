@@ -1,0 +1,114 @@
+{
+  "brand": {
+    "title": {
+      "en": "Brand",
+      "ar": "العلامة"
+    },
+    "intro": {
+      "en": "This page shows the wordmark artwork and the loader that the installed `@hawiyah/styles` package provides, with the usage notes of its README. The artwork is the Arabic word هوية in outlined lettering, so it needs no font.",
+      "ar": "تعرض هذه الصفحة ملفات الشعار ومؤشر التحميل التي توفرها حزمة `@hawiyah/styles` المثبّتة، مع ملاحظات الاستخدام الواردة في ملف README الخاص بها. والشعار هو الكلمة العربية هوية بحروف محوّلة إلى مسارات، فلا يحتاج إلى أي خط."
+    },
+    "sections": {
+      "wordmark": {
+        "en": "Wordmark",
+        "ar": "الشعار"
+      },
+      "loader": {
+        "en": "Loader",
+        "ar": "مؤشر التحميل"
+      },
+      "usage": {
+        "en": "Usage notes",
+        "ar": "ملاحظات الاستخدام"
+      }
+    },
+    "labels": {
+      "light": {
+        "en": "Artwork for light surfaces",
+        "ar": "ملفات للأسطح الفاتحة"
+      },
+      "dark": {
+        "en": "Artwork for dark surfaces",
+        "ar": "ملفات للأسطح الداكنة"
+      },
+      "artwork": {
+        "en": "The wordmark هوية",
+        "ar": "شعار هوية"
+      },
+      "loaderCaption": {
+        "en": "The loader follows the colour mode and, when the reader asks for reduced motion, shows the static wordmark.",
+        "ar": "يتبع مؤشر التحميل وضع الألوان، ويعرض الشعار الثابت عندما يطلب القارئ تقليل الحركة."
+      },
+      "source": {
+        "en": "Read from the README of the installed package",
+        "ar": "مقروءة من ملف README في الحزمة المثبّتة"
+      }
+    }
+  },
+  "foundations": {
+    "title": {
+      "en": "Foundations",
+      "ar": "الأسس"
+    },
+    "intro": {
+      "en": "This page lists the design tokens of the installed `@hawiyah/tokens` package for colour, spacing, type, radius and motion, with their values in the default theme, and the icons of the installed `@hawiyah/styles` package.",
+      "ar": "تسرد هذه الصفحة رموز التصميم في حزمة `@hawiyah/tokens` المثبّتة للألوان والمسافات والخطوط والزوايا والحركة، مع قيمها في السمة الافتراضية، والأيقونات في حزمة `@hawiyah/styles` المثبّتة."
+    },
+    "sections": {
+      "colour": {
+        "en": "Colour",
+        "ar": "الألوان"
+      },
+      "spacing": {
+        "en": "Spacing",
+        "ar": "المسافات"
+      },
+      "type": {
+        "en": "Type",
+        "ar": "الخطوط"
+      },
+      "radius": {
+        "en": "Radius",
+        "ar": "الزوايا"
+      },
+      "motion": {
+        "en": "Motion",
+        "ar": "الحركة"
+      },
+      "icons": {
+        "en": "Icons",
+        "ar": "الأيقونات"
+      }
+    },
+    "labels": {
+      "token": {
+        "en": "Token",
+        "ar": "الرمز"
+      },
+      "value": {
+        "en": "Value",
+        "ar": "القيمة"
+      },
+      "light": {
+        "en": "Light mode",
+        "ar": "الوضع الفاتح"
+      },
+      "dark": {
+        "en": "Dark mode",
+        "ar": "الوضع الداكن"
+      },
+      "caption": {
+        "en": "Tokens of the group",
+        "ar": "رموز المجموعة"
+      },
+      "modeless": {
+        "en": "These values are the same in the light and the dark mode.",
+        "ar": "هذه القيم واحدة في الوضع الفاتح والوضع الداكن."
+      },
+      "icons": {
+        "en": "Icons of the installed package",
+        "ar": "أيقونات الحزمة المثبّتة"
+      }
+    }
+  }
+}

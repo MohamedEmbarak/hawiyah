@@ -1,0 +1,113 @@
+.choosers {
+  display: grid;
+  gap: var(--hw-space-4);
+  min-inline-size: 0;
+}
+
+
+.steps {
+  margin: 0;
+  padding-inline-start: var(--hw-space-6);
+}
+
+.steps > li {
+  display: list-item;
+  min-inline-size: 0;
+}
+
+.steps > li > h3 {
+  margin-block: 0 var(--hw-space-3);
+}
+
+/* The four framework listings of a step share one grid cell. */
+.stack {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.cell {
+  display: grid;
+  gap: var(--hw-space-3);
+  align-content: start;
+  grid-area: 1 / 1;
+  min-inline-size: 0;
+}
+
+.cell > p {
+  margin-block: 0;
+}
+
+/* A hidden element is not a pointer target, so visibility alone keeps the cell out of reach. */
+.cell:not(.active) {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.pair {
+  display: grid;
+  gap: var(--hw-space-4);
+  min-inline-size: 0;
+}
+
+.result-note {
+  margin-block: var(--hw-space-3) 0;
+}
+
+.next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hw-space-2) var(--hw-space-6);
+  margin: 0;
+  padding: 0;
+}
+
+/* No list markers: the items are not list items (an inherited list-style-type would reach the package links). */
+.next > li {
+  display: block;
+}
+
+/* A framework change cross-fades the listings; only after the reader chose. */
+@media (prefers-reduced-motion: no-preference) {
+  .stack.live > .cell {
+    transition:
+      opacity var(--hw-duration-normal) var(--hw-ease-standard),
+      visibility var(--hw-duration-normal) var(--hw-ease-standard);
+  }
+}
+
+/*
+ * Step 3: the listing and the result side by side only when each column is at
+ * least 54rem wide, the width of the longest listing line (the JavaScript
+ * index.html); otherwise the listing stacks above the result.
+ */
+.pair {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 54rem), 1fr));
+  align-items: start;
+}
+
+/*
+ * The install section keeps its heading and choosers above the steps at every
+ * width (the shared band puts them in a column beside the content from 48em), so
+ * the step listings have the full width of the page: at 1280 px a column beside
+ * the heading is narrower than the JavaScript listing of step 3.
+ */
+@media (min-width: 48em) {
+  .band {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--hw-space-6);
+  }
+
+  .choosers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--hw-space-4) var(--hw-space-10);
+  }
+}
+
+/* Without script the choosers cannot change the steps: they are not shown (last,
+   so that it wins over the layout of the choosers above). */
+@media (scripting: none) {
+  .choosers {
+    display: none;
+  }
+}

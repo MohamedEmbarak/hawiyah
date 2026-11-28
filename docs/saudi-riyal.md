@@ -14,6 +14,10 @@ symbol addon decorative. Use `bdi` around amounts embedded in mixed-direction
 content. Keep numeric values numeric and retain `SAR` in formatting, API and
 storage currency codes. Do not substitute the separate older U+FDFC rial sign.
 
+Stat accepts this pattern for its value and trend in every framework: React
+nodes, the Vue `#value` and `#trend` slots, and Angular `[hwStatValue]` and
+`[hwStatTrend]` content.
+
 The guide's amount addon, service fees and copyable examples use this pattern.
 Its currency formatter retains the existing `Intl.NumberFormat` numeric parts
 and replaces only the displayed currency label. Existing number validation,

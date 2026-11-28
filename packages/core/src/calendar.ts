@@ -1,4 +1,5 @@
 import { GregorianCalendar, parseDate, startOfMonth, today, toCalendar, type CalendarDate } from '@internationalized/date';
+import { requireLocale } from './locale.js';
 import { convertCalendarDate, getCalendarDateParts, isCalendarDateSupported, SaudiUmalquraCalendar, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE } from './saudi-calendar.js';
 
 export type CalendarSystem = 'gregory' | 'islamic-umalqura';
@@ -15,7 +16,8 @@ export interface CalendarMonthOptions {
   value?: string;
   min?: string;
   max?: string;
-  locale?: string;
+  /** BCP 47 tag handed to Intl for month and weekday names. There is no default. */
+  locale: string;
   calendar?: CalendarSystem;
   weekStartsOn?: number;
   /** Render six complete weeks, including adjacent-month days, without spacer rows. */
@@ -27,16 +29,22 @@ export interface CalendarMonth {
   days: CalendarDay[];
   previous: string;
   next: string;
+  /** False when the calendar has no previous month or the whole previous month lies before min. */
+  hasPrevious: boolean;
+  /** False when the calendar has no next month or the whole next month lies after max. */
+  hasNext: boolean;
 }
 
 export interface CalendarDateFormatOptions extends Pick<Intl.DateTimeFormatOptions, 'weekday' | 'era' | 'year' | 'month' | 'day' | 'dateStyle' | 'numberingSystem'> {
-  locale?: string;
+  /** BCP 47 tag handed to Intl. There is no default. */
+  locale: string;
   calendar?: CalendarSystem;
 }
 
 /** Canonical date-only formatting using the same numeric fields as the picker. */
-export function formatCalendarDate(value: string, options: CalendarDateFormatOptions = {}): string {
-  const { locale = 'ar-SA', calendar = 'gregory', ...requested } = options;
+export function formatCalendarDate(value: string, options: CalendarDateFormatOptions): string {
+  const { locale, calendar = 'gregory', ...requested } = options ?? {};
+  requireLocale('formatCalendarDate', locale);
   const fields = getCalendarDateParts(value, calendar);
   const format = Object.keys(requested).some(key => ['dateStyle', 'year', 'month', 'day', 'weekday', 'era'].includes(key)) ? requested : { ...requested, year: 'numeric' as const, month: 'long' as const, day: 'numeric' as const };
   const formatter = new Intl.DateTimeFormat(locale, { ...format, calendar, timeZone: 'UTC', numberingSystem: 'latn' });
@@ -74,6 +82,28 @@ export function isDateInRange(value: string, min?: string, max?: string): boolea
   } catch { return false; }
 }
 
+/** The constraint a typed date violates; '' when there is none. */
+export type DateViolation = '' | 'invalid' | 'unsupported' | 'unavailable';
+export interface DateViolationOptions {
+  min?: string;
+  max?: string;
+  calendar: CalendarSystem;
+  /** The application's predicate for dates that cannot be chosen. */
+  isDateDisabled?: (value: string) => boolean;
+}
+
+/** Names the first constraint an ISO date draft violates, in one order for every adapter: not a date
+ * ('invalid'), outside the range the calendar system can show ('unsupported'), outside `min` and `max`
+ * ('invalid'), refused by `isDateDisabled` ('unavailable'). An empty draft violates nothing; whether a
+ * value is required is the form's question. No text is chosen here. */
+export function getDateViolation(draft: string, options: DateViolationOptions): DateViolation {
+  if (draft === '') return '';
+  if (!isDateInRange(draft)) return 'invalid';
+  if (!isCalendarDateSupported(draft, options.calendar)) return 'unsupported';
+  if (!isDateInRange(draft, options.min, options.max)) return 'invalid';
+  return options.isDateDisabled?.(draft) === true ? 'unavailable' : '';
+}
+
 export function moveCalendarDate(value: string, amount: number, unit: 'day' | 'month' | 'year', calendar: CalendarSystem = 'gregory'): string {
   if (!Number.isInteger(amount)) throw new RangeError('Hawiyah: calendar movement must be an integer.');
   const current = toCalendar(date(value), calendar === 'gregory' ? new GregorianCalendar() : new SaudiUmalquraCalendar());
@@ -89,12 +119,15 @@ export function moveCalendarDate(value: string, amount: number, unit: 'day' | 'm
   return iso(current.add(duration));
 }
 
-export function getCalendarMonth(options: CalendarMonthOptions = {}): CalendarMonth {
-  const { locale = 'ar-SA', calendar = 'gregory', weekStartsOn = 0 } = options;
+export function getCalendarMonth(options: CalendarMonthOptions): CalendarMonth {
+  const { locale, calendar = 'gregory', weekStartsOn = 0 } = options ?? {};
+  requireLocale('getCalendarMonth', locale);
   if (!Number.isInteger(weekStartsOn) || weekStartsOn < 0 || weekStartsOn > 6) throw new RangeError('Hawiyah: weekStartsOn must be 0 through 6.');
   const system = calendar === 'gregory' ? new GregorianCalendar() : new SaudiUmalquraCalendar();
   const currentDay = today('Asia/Riyadh');
-  let anchor = iso(date(options.month || options.value || iso(currentDay)));
+  // Without a month the selected value decides it, but only a value inside min and max; otherwise today, held inside min and max.
+  const todayInWindow = options.min && iso(currentDay) < options.min ? options.min : options.max && iso(currentDay) > options.max ? options.max : iso(currentDay);
+  let anchor = iso(date(options.month || (options.value && isDateInRange(options.value, options.min, options.max) ? options.value : '') || todayInWindow));
   if (calendar === 'islamic-umalqura') anchor = anchor < UMALQURA_MIN_DATE ? UMALQURA_MIN_DATE : anchor > UMALQURA_MAX_DATE ? UMALQURA_MAX_DATE : anchor;
   const first = startOfMonth(toCalendar(date(anchor), system));
   const offset = (first.toDate('UTC').getUTCDay() - weekStartsOn + 7) % 7;
@@ -107,8 +140,11 @@ export function getCalendarMonth(options: CalendarMonthOptions = {}): CalendarMo
   // from the Saudi table, since ICU disagrees with historical/future table dates.
   const nameAnchor = calendar === 'gregory' ? first.toDate('UTC') : parseDate(convertCalendarDate({ year: 1447, month: first.month, day: 15 }, calendar)).toDate('UTC');
   const monthName = new Intl.DateTimeFormat(locale, { month: 'long', calendar, timeZone: 'UTC' }).format(nameAnchor);
-  const label = `${monthName} ${number.format(first.year)}${calendar === 'islamic-umalqura' ? locale.startsWith('ar') ? ' هـ' : ' AH' : ''}`;
+  // The era word comes from Intl for the requested locale; nothing is chosen by language here.
+  const era = calendar === 'islamic-umalqura' ? new Intl.DateTimeFormat(locale, { era: 'short', year: 'numeric', calendar, timeZone: 'UTC' }).formatToParts(nameAnchor).find(part => part.type === 'era')?.value : undefined;
+  const label = `${monthName} ${number.format(first.year)}${era ? ` ${era}` : ''}`;
   const adjacent = (amount: number) => { try { return moveCalendarDate(iso(first), amount, 'month', calendar); } catch { return iso(first); } };
+  const previous = adjacent(-1); const next = adjacent(1);
   return {
     label,
     weekdays: Array.from({ length: 7 }, (_, index) => weekday.format(baseSunday.add({ days: (weekStartsOn + index) % 7 }).toDate('UTC'))),
@@ -123,7 +159,10 @@ export function getCalendarMonth(options: CalendarMonthOptions = {}): CalendarMo
         selected: value === options.value, today: value === iso(currentDay),
       };
     }),
-    previous: adjacent(-1),
-    next: adjacent(1),
+    previous,
+    next,
+    // A month button is disabled only when the whole neighbouring month is outside min and max (one rule for the four adapters).
+    hasPrevious: previous !== iso(first) && !(options.min && date(iso(first)).subtract({ days: 1 }).toString() < options.min),
+    hasNext: next !== iso(first) && !(options.max && next > options.max),
   };
 }

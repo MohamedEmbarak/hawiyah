@@ -5,23 +5,23 @@
 `title`, optional `subtitle`, `variant="main|internal"` (default internal) and
 `headingLevel={1|2|3}` (default 1). Choose the level for the surrounding page.
 
-`backHref` provides an explicit destination, with Arabic `backLabel="رجوع"`
-by default. The curated back icon mirrors in RTL. No history or routing behavior
+`backHref` provides an explicit destination; `backLabel` (for example
+`backLabel="رجوع"`) is then required and names the back link. The curated back icon mirrors in RTL. No history or routing behavior
 is assumed. React `leading`/`actions`, Vue named slots, and Angular
 `[hwTopBarLeading]`/`[hwTopBarActions]` allow application-owned controls. Leading
 content replaces the built-in back link. Give icon-only actions accessible names.
 Vanilla uses the same semantic header, links and CSS without enhancement.
 
 ```tsx
-<MobileTopBar title="طلباتي" subtitle="تابع طلباتك" backHref="/services"
+<MobileTopBar title="طلباتي" subtitle="تابع طلباتك" backHref="/services" backLabel="رجوع"
   actions={<Button onClick={openNavigation} aria-label="القائمة">
     <span className="hw-icon" data-icon="menu-01" aria-hidden="true" />
   </Button>} />
 ```
 
-Vue uses `<MobileTopBar title="طلباتي" back-href="/services">` with an
-`#actions` slot. Angular uses `<hw-mobile-top-bar title="طلباتي"
-backHref="/services"><button hwTopBarActions>…</button></hw-mobile-top-bar>`.
+Vue uses `<MobileTopBar title="طلباتي" back-href="/services" back-label="رجوع">`
+with an `#actions` slot. Angular uses `<hw-mobile-top-bar title="طلباتي"
+backHref="/services" backLabel="رجوع"><button hwTopBarActions>…</button></hw-mobile-top-bar>`.
 Use one appropriate page heading; embedded demonstrations can set heading level 2.
 
 ## Source mapping and adaptations

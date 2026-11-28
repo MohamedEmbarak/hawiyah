@@ -136,6 +136,7 @@ import { Container, Grid, ServiceCard } from '@hawiyah/react';
 
 <Container maxWidth="72rem">
   <Grid columns={{ base: 1, sm: 2, lg: 3 }} gap={{ base: 4, lg: 6 }}>
+    {/* Each service supplies title, href and actionLabel, the text of its link. */}
     {services.map(service => <ServiceCard key={service.id} {...service} />)}
   </Grid>
 </Container>
@@ -146,6 +147,7 @@ Vue:
 ```vue
 <Container max-width="72rem">
   <Grid :columns="{ base: 1, sm: 2, lg: 3 }" :gap="{ base: 4, lg: 6 }">
+    <!-- Each service supplies title, href and actionLabel, the text of its link. -->
     <ServiceCard v-for="service in services" :key="service.id" v-bind="service" />
   </Grid>
 </Container>
@@ -208,7 +210,8 @@ drawer when collapsed navigation is required.
 
 AppShell accepts direct `header`, `aside` / `nav`, `main`, and `footer` landmarks,
 or the equivalent `.hw-app-shell-header`, `-sidebar`, `-main`, and `-footer`
-classes. A `.hw-app-shell-body` wrapper is supported. Without a sidebar, the main
+classes. A `.hw-app-shell-body` wrapper is supported in authored markup; no
+adapter renders one (React placed sidebar and main in it before 0.3.0). Without a sidebar, the main
 area spans the available width. The default sidebar becomes a second column at
 `64rem`; use Sidebar for a separately configurable collapse breakpoint.
 

@@ -6,9 +6,9 @@ header. Use `.hw-portal-masthead` around the banner and `PortalHeader`; the shar
 gutter is 32px on larger screens and 16px below 600px, overridable with
 `--hw-portal-gutter`. `data-variant="sticky"` sticks the complete masthead.
 
-The default label is **معلومات الموقع**. It does not assert government ownership,
+The component has no text of its own and does not assert government ownership,
 registration or compliance. An authorized deployment supplies its own approved
-label, domain, certificate URL/number and artwork. The guide deliberately uses
+label (for example **معلومات الموقع**), domain, certificate URL/number and artwork. The guide deliberately uses
 `example.test` and a demonstration label/link. No official stamp, flag, agency
 logo or registration identifier is distributed in this component.
 
@@ -33,11 +33,13 @@ requirements should be checked with the [official Platforms Code portal](https:/
 
 ## API and ownership
 
-Arabic is the default; `locale="en"` selects English defaults. Override `label`,
-`detailsLabel`, `domainLabel`, `domainDescription`, `httpsLabel`,
-`httpsDescription`, `registrationLabel` and `externalLabel` independently.
-`domain`, `registrationHref` and `registrationNumber` are host-owned values.
-The helper `getSiteVerificationLabels(locale)` and its types are exported by core.
+The application supplies `label`, `detailsLabel`, `domainLabel`,
+`domainDescription`, `httpsLabel` and `httpsDescription` in every use, and
+`registrationLabel` and `externalLabel` when `registrationHref` is set. There is
+no `locale` input and no default wording; the former core helper
+`getSiteVerificationLabels` is removed, and core exports only the
+`SiteVerificationLabels` and `SiteVerificationOptions` types. `domain`,
+`registrationHref` and `registrationNumber` are host-owned values.
 
 - React: `open` / `onOpenChange`, or `defaultOpen`; `mark` and ordinary children.
 - Vue: `v-model:open`, or `defaultOpen`; `mark` and default slots.

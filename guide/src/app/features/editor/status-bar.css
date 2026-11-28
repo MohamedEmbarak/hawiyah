@@ -1,0 +1,36 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hw-space-1);
+  min-inline-size: 0;
+  padding-block: var(--hw-space-2);
+  border-block-start: 1px solid var(--hw-color-border);
+}
+
+p {
+  margin-block: 0;
+}
+
+.package {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hw-space-1);
+}
+
+.value-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hw-space-1);
+  min-inline-size: 0;
+}
+
+.value {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}

@@ -1,23 +1,32 @@
 # Navigation drawer
 
 `NavigationDrawer` composes the existing modal `Drawer` with ordinary page
-navigation. It defaults to the logical start side and Arabic navigation/close
-labels. Applications supply the drawer title and their own navigation content;
-language and direction remain independent.
+navigation. It defaults to the logical start side. Applications supply the
+drawer `title`, the required `navigationLabel` and `closeLabel`, and their own
+navigation content; the component has no text of its own, and language and
+direction remain independent. Angular also accepts `titleId` for the drawer
+title.
 
-Each item has `{ id, label, href?, icon?, current?, disabled?, children? }`.
+Each item has `{ id, label, href?, icon?, current?, disabled?, expanded?, children? }`.
 Use a unique stable `id` and a text `label`. Icons are decorative names from
 Hawiyah's curated icon stylesheet. A leaf with `href` is a native link, with
 `aria-current="page"` when current. Children form a native `<details>/<summary>`
 group containing a nested list. When a group also has an `href`, its page link
 appears first inside the disclosed group. A leaf without `href` is static text.
 Disabled entries are nonfocusable text, and disabled groups omit descendant
-actions. Groups are initially collapsed and retain native keyboard behavior.
+actions. A group is open when it holds the current page or is marked `expanded`;
+every other group starts collapsed. The adapter writes `open` again only when
+that answer changes, so the reader's own toggles stand in between, and groups
+retain native keyboard behavior. `SideNavigation` renders the same list outside
+a drawer.
 
 Normal, unprevented route activation closes the drawer. Final destination focus
 belongs to the browser or application router; Escape and explicit dismissal
 return focus to the opener. Consumers can prevent the click, for example while
-validating a route change; dismissal is checked after event dispatch. Modified
+validating a route change; dismissal is decided in a timer after the click was
+dispatched, so a listener on any ancestor has run. A click that core
+`bindLinkNavigation` handed to the application's router closes the drawer
+although its default was prevented. Modified
 clicks, downloads and links targeting another browsing context leave the drawer
 open. Escape, backdrop interaction, modal focus containment and controlled state
 are supplied by each framework's existing native Drawer. There are no menu,
@@ -44,7 +53,8 @@ tree or tablist roles, roving tabindex, or custom arrow-key navigation.
   `data-hw="navigation-drawer"` through `enhance()`. It enhances caller-owned
   semantic HTML instead of rendering an items array. Options extend
   `DialogOptions` with `navigationLabel`; the controller has `open`, `show`,
-  `close` and `destroy`. Give the dialog an accessible title and a
+  `close`, `refresh` and `destroy`. The groups follow `aria-current="page"` each
+  time the drawer is shown; `refresh()` recomputes them while it is open. Give the dialog an accessible title and a
   `.hw-navigation-drawer-nav` nav, with lists, native links and optional details
   groups. Use `.hw-navigation-drawer-row` for rows and
   `.hw-navigation-drawer-group` for disclosures. Existing
@@ -66,7 +76,10 @@ has a muted background and selector `538:296411` is 6×32px; title
 Hawiyah uses a 327px preferred maximum constrained by viewport width, 16px insets,
 44px minimum row heights, 40px nested leading padding and a 6×32px logical
 leading indicator. Labels wrap and rows grow. Semantic colors preserve dark,
-original Hawiyah and custom themes. Top/bottom/side safe areas are accommodated;
+original Hawiyah and custom themes. The selected row keeps the text colour on the
+muted background, because `primary-text` on `surface-muted` measures 4.32:1 in the
+default light theme, below WCAG 1.4.3; the selector carries the primary colour as a
+non-text indicator. Top/bottom/side safe areas are accommodated;
 the source's fixed 840px height and 80px bottom example padding are not copied.
 The optional user content area does not embed source sample identities or assets.
 

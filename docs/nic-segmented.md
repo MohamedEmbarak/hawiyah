@@ -9,8 +9,8 @@ and adapter behavior, not certification. Calendar switches are separate.
 | CSS 1294–1305 | Inline flex, wrap, gap 0, padding 0 8px, fit-content | Segmented ToggleGroup uses this layout; outline remains a supported alternative | High |
 | CSS 1307–1327 and inherited base button | Minimum 32px; inherited 6px vertical padding and 24px line-height produce an actual 36px plain segment; minimum width 76px; font 16px/24px, weight 500 | Match actual cascade, not only the declared minimum | High |
 | CSS 1329–1357 | Outer radius 8px; 1px Neutral 300 separators; selected and pressed dark Neutral 950 with white text | Logical outer corners and separators; selected radio and aria-pressed buttons share states. Hide adjacent separators consistently | High |
-| CSS 1330–1386 | Hover Neutral 50; selected/pressed/focused Neutral 950; source focus inset white 1px | Named semantic hover/selected roles; 2px visible inset focus for keyboard users, including readonly choices | High source evidence; focus width is an accessibility adaptation |
-| CSS 1367–1386 | Mobile at 576px or below: group width 100%, flexible segments, minimum height 48px, horizontal padding 20px | Match breakpoint and target sizing; labels wrap without losing their accessible text | High |
+| CSS 1330–1386 | Hover Neutral 50; selected/pressed/focused Neutral 950; source focus inset white 1px | Named semantic hover/selected roles; 2px visible inset focus for keyboard users, including readonly choices. Focus alone never paints the selected colours: a focused unpressed button in multiple mode, which the source does not have, keeps its own background with a ring, so its state stays visible | High source evidence; focus width is an accessibility adaptation |
+| CSS 1367–1386 | Mobile at 576px or below: group width 100%, flexible segments, minimum height 48px, horizontal padding 20px | Match breakpoint and target sizing. Segments start from the width of their label and share the room that is left, so a label that fits stays on one line and the 48px height holds; the 76px desktop minimum is dropped, and four or more segments use 14px text and 4px inline padding so four common labels stay on one row at 320px. Segments that still do not fit continue on a second row. A label wraps inside its segment only as a last resort, when it is wider than the row, without losing its accessible text | High |
 | Source disabled/focus cascade | Selected rules can override disabled rules; inherited focus declarations can erase the ring | Disabled styling wins while selected-disabled retains a border cue. Readonly stays focusable. Outline readonly multiple buttons retain their focus ring | High; explicit correction |
 | Source dark palette | Fixed near-white hover can conflict with dark-mode white text | Contrast-tested dark hover and selected tokens; original/custom themes remain supported | High declaration evidence; dark treatment is an adaptation |
 | Source motion | No segment-specific transition declared | No inferred animation timing in DGA segmented controls; reduced-motion disables legacy transitions | High |
@@ -24,8 +24,24 @@ vanilla uses `data-hw-readonly="true"`. Readonly does not disable the fieldset:
 users can focus the selected control, inspect it, and submit its enabled value,
 but cannot change it with clicks or selection keys. Removing readonly restores
 editing. Disabled groups submit nothing. Multiple values exclude missing or
-disabled options. React/Vue external-form reset restores defaults; Angular
-retains its existing value/CVA model.
+disabled options. A native form reset, including one from an external form,
+returns the group to its reset target in all four adapters and notifies once,
+only when the selection changed; with Angular Forms attached the model keeps
+ownership. The empty value is `''` in single mode and `[]` in multiple mode.
+
+Recorded decisions for 0.3.0:
+
+- Option markup is `label > input[type=radio]` followed by the text, without a
+  class, span or `data-selected`; multiple-mode buttons are
+  `button.hw-button[data-variant="secondary"][data-size="md"]` in every adapter.
+- `label`, `hint`, `error`, `required`, `name`, `form`, read-only, `options`,
+  `variant` and `labelHidden` are inputs in React, Vue and Angular. `required`
+  applies to single selection; a multiple group explains a minimum in its hint
+  or through `error`.
+- Without `label` no legend is rendered and one development warning is
+  given, unless `aria-label` or `aria-labelledby` names the group.
+- The Angular `hw-toggle-group` host generates no box (`display: contents`),
+  so its fieldset is the flex or grid item, as in React and Vue.
 
 ButtonGroup accepts `variant="default|attached"` and
 `orientation="horizontal|vertical"` in React, Vue and Angular. Vanilla uses

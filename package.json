@@ -1,6 +1,6 @@
 {
   "name": "hawiyah-workspace",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.25.0",
@@ -12,6 +12,7 @@
     "test": "node --test packages/tokens/test/contrast.test.mjs && vitest run",
     "test:browser": "playwright test",
     "test:portals": "playwright test --config playwright.portals.config.ts",
+    "test:host": "playwright test --config playwright.host.config.ts",
     "check": "pnpm build && pnpm test && pnpm test:browser",
     "check:packages": "node scripts/check-packages.mjs",
     "release:packages": "node scripts/publish-packages.mjs",
@@ -26,6 +27,7 @@
     "@angular/core": "22.2.3",
     "@angular/forms": "22.2.3",
     "@angular/platform-browser": "22.2.3",
+    "@angular/platform-server": "22.2.3",
     "@axe-core/playwright": "^4.10.2",
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/lang-html": "^6.4.12",

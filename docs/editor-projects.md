@@ -27,7 +27,7 @@ Framework previews do not run the vanilla enhancer on framework-owned DOM.
 
 The Calendar project links Gregorian and Umm al-Qura views to one ISO value. The DatePicker project accepts typed ISO dates, switches the displayed calendar and shows the value submitted by its form. Both projects follow the chosen guide language.
 
-FileUpload and FileDropzone show the filenames returned by their native input and let you inspect the local form entries. Disabling the field excludes those entries from submission. Reset clears the selection. The upload chooser suggests PDF and PNG files. The dropzone rejects unsupported files. For a mixed batch Angular retains the accepted files, while vanilla, React and Vue clear the selection.
+FileUpload and FileDropzone show the filenames returned by their native input and let you inspect the local form entries. Disabling the field excludes those entries from submission. Reset clears the selection. The upload chooser suggests PDF and PNG files. The dropzone rejects unsupported files. A batch with any rejected file leaves the selection empty in every adapter and reports each rejected file through the rejection message.
 
 Dialog adds localized notification examples for five tones. The host chooses the actions and records acknowledgement, retry or cancellation in its own state.
 
@@ -35,7 +35,7 @@ Combobox, PinInput, TagInput and MultiSelect each have a form with a disabled to
 
 SecondaryNav, PortalLayout, MobileTopBar and NavigationDrawer use local application state to show the current page. The shell includes a skip link and responsive primary navigation. The mobile top bar changes from its overview to internal-page variant, and its menu opens a drawer with a nested service directory and an unavailable destination.
 
-All 83 components in the guide catalog have native project recipes in Arabic and English. Each opens as vanilla JavaScript or TypeScript, React JSX or TSX, a Vue JavaScript or TypeScript single-file component, or an Angular TypeScript component. The project files include the imports and bootstrap code for the selected adapter.
+All 85 components in the guide catalog have native project recipes in Arabic and English. Each opens as vanilla JavaScript or TypeScript, React JSX or TSX, a Vue JavaScript or TypeScript single-file component, or an Angular TypeScript component. The project files include the imports and bootstrap code for the selected adapter.
 
 ServiceCard and ServiceDetails demonstrate a permit renewal with locally handled actions. CookieConsent keeps the visitor’s choice in memory and lets them review it. NotificationList uses application-owned read state and demonstrates the empty list after dismissal or clearing.
 
@@ -134,7 +134,8 @@ Rating adds the 33rd native recipe. Its controlled integer selection appears
 alongside unselected, read-only, disabled and required/error examples. The
 separate RatingDisplay shows zero, fractional (3.5) and full scores without
 creating form controls. Examples use actual native imports in React JSX/TSX,
-Vue JS/TS and Angular TypeScript; Arabic/English labels use Latin digits.
+Vue JS/TS and Angular TypeScript; the Arabic and English labels are supplied by
+each example through `getRatingLabel` and `getValueLabel` and use Latin digits.
 All five native editor combinations pass focused rating browser tests. All 33
 React recipes pass TypeScript checking, all 33 Angular recipes pass strict
 template checking, and all seven exported framework/language projects build.
@@ -235,7 +236,7 @@ templates. Vite also bundled each of the 47 exported Vue applications in both
 JavaScript and TypeScript, including the application bootstrap and component
 template. This checks package resolution and compilation. This earlier build check is complemented by the current Vue language-service check below.
 
-The six content display recipes bring coverage from 47 to 53. Chip demonstrates all five tones, a protected filter, a removable filter and focus recovery on restore. DescriptionList pairs labels with values, Stat shows two figures with trends, Timeline shows three dated stages, Meter shows usage at three thresholds, and AvatarGroup limits the visible members and names the overflow count. The examples use native adapter props and events, including the different Timeline state and date contracts.
+The six content display recipes bring coverage from 47 to 53. Chip demonstrates all five tones, a protected filter, a removable filter and focus recovery on restore. DescriptionList pairs labels with values, Stat shows two figures with trends, Timeline shows three dated stages, Meter shows usage at three thresholds, and AvatarGroup limits the visible members and names the overflow count. The examples use native adapter props and events; Timeline items share one shape in every adapter (`status`, `dateTime` and `dateLabel`).
 
 The application files exported by the guide rendered in 84 Chromium cases covering six components, two languages and all seven supported framework/language combinations. Checks exercised chip removal and restoration, description pairs, stat values, dated stages, meter bounds and avatar overflow. Each timeline identified its current step. Chromium's accessibility tree exposed the overflow as a named image in vanilla, React, Vue and Angular. Those focused checks are separate from the 47-recipe clean consumer verification above.
 

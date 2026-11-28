@@ -86,14 +86,14 @@ for (const framework of ['react','vue','angular']) test(`${framework} feedback v
   for (const variant of ['text','icon-text','icon']) {
     const root = frame.locator(`.hw-feedback[data-choice-variant="${variant}"]`);
     const actions = root.locator('.hw-feedback-actions');
-    const choices = actions.locator(framework === 'react' ? '.hw-choice' : 'button');
+    // Every adapter renders the two choices as toggle buttons; the projects show value.helpful.
+    const choices = actions.locator('button');
     await sameRow(choices);
-    const role = framework === 'react' ? 'radio' : 'button';
-    const yes = actions.getByRole(role,{name:'نعم',exact:true}), no = actions.getByRole(role,{name:'لا',exact:true});
-    await choices.first().click(); await expect(output).toHaveText('yes');
-    if (role === 'radio') { await expect(yes).toBeChecked(); await yes.press('ArrowDown'); await expect(no).toBeChecked(); }
-    else { await expect(yes).toHaveAttribute('aria-pressed','true'); await no.press('Space'); await expect(no).toHaveAttribute('aria-pressed','true'); }
-    await expect(output).toHaveText('no');
+    const yes = actions.getByRole('button',{name:'نعم',exact:true}), no = actions.getByRole('button',{name:'لا',exact:true});
+    await choices.first().click(); await expect(output).toHaveText('true');
+    await expect(yes).toHaveAttribute('aria-pressed','true'); await no.press('Space'); await expect(no).toHaveAttribute('aria-pressed','true');
+    await expect(yes).toHaveAttribute('aria-pressed','false');
+    await expect(output).toHaveText('false');
     for (const [index,name] of ['thumbs-up','thumbs-down'].entries()) {
       const icon = choices.nth(index).locator('.hw-feedback-icon');
       if (variant === 'text') await expect(icon).toBeHidden();

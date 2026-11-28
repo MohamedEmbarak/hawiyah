@@ -1,0 +1,58 @@
+[
+  {
+    "component": "skeleton",
+    "element": "hw-skeleton",
+    "tag": "span",
+    "reason": "@hawiyah/angular renders the skeleton on its host element hw-skeleton, which carries the class hw-skeleton; the vanilla markup, React and Vue render span.hw-skeleton.",
+    "reference": "@hawiyah/angular README.md: \"The host is the skeleton (`hw-skeleton.hw-skeleton[aria-hidden=true]`, no inner element): size it with `style` or `class` on the element, `<hw-skeleton style=\"inline-size: 60%; block-size: 2rem\" />`; the default is a full-width block of 1rem.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "spinner",
+    "element": "hw-spinner",
+    "tag": "span",
+    "reason": "@hawiyah/angular renders the spinner on its host element hw-spinner, which carries the class hw-spinner and the role status; the vanilla markup, React and Vue render span.hw-spinner.",
+    "reference": "@hawiyah/angular README.md: \"The host is the spinner (`hw-spinner.hw-spinner[role=status]`) and contains its name as `span.hw-sr-only`.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "badge",
+    "element": "hw-badge",
+    "tag": "span",
+    "reason": "@hawiyah/angular renders the badge on its host element hw-badge, which carries the class hw-badge; the vanilla markup, React and Vue render span.hw-badge.",
+    "reference": "@hawiyah/angular README.md: \"The host is the badge (`hw-badge.hw-badge`): class, id and attributes written on it are on the styled element.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "avatar",
+    "element": "hw-avatar",
+    "tag": "span",
+    "reason": "@hawiyah/angular renders the avatar on its host element hw-avatar, which carries the class hw-avatar; the vanilla markup, React and Vue render span.hw-avatar.",
+    "reference": "@hawiyah/angular README.md: \"The host is the avatar (`hw-avatar.hw-avatar`) and holds the `img` or the initials in `span[aria-hidden]`.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "avatar-group",
+    "element": "hw-avatar",
+    "tag": "span",
+    "reason": "Each member of an AvatarGroup of @hawiyah/angular is an hw-avatar host element with the class hw-avatar; the vanilla markup, React and Vue render each member as span.hw-avatar.",
+    "reference": "@hawiyah/angular README.md: \"the host is the group (`hw-avatar-group.hw-avatar-group[role=group]`) and each member an `hw-avatar`.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "chip",
+    "element": "hw-chip",
+    "tag": "span",
+    "reason": "@hawiyah/angular renders the chip on its host element hw-chip, which carries the class hw-chip; the vanilla markup, React and Vue render span.hw-chip.",
+    "reference": "@hawiyah/angular README.md: \"`hw-chip`; the host is the chip (`hw-chip.hw-chip`)\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "notification-list",
+    "element": "hw-badge",
+    "tag": "span",
+    "reason": "The NotificationList of @hawiyah/angular renders the badge of an unread item as an hw-badge host element with the class hw-badge; the vanilla markup, React and Vue render span.hw-badge.",
+    "reference": "@hawiyah/angular README.md: \"The host is the badge (`hw-badge.hw-badge`): class, id and attributes written on it are on the styled element.\"",
+    "approvedBy": "lead"
+  }
+]

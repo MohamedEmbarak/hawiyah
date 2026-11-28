@@ -21,8 +21,10 @@ Bootstrap, remote dictionary and navigation integrations were not executed.
 
 `SearchField` remains a free-text field. Optional `suggestions` enable autocomplete;
 they do not restrict the submitted value to an option. `maxSuggestions` defaults
-to 8 and is bounded to 0–100. Supply localized `resultsMessage`, `clearLabel` and
-`searchLabel` when needed; new search defaults are Arabic. Numbers remain Latin.
+to 8 and is bounded to 0–100. The application supplies `clearLabel` (always),
+`searchLabel` (when the search button is shown) and `getResultsMessage(count)`
+(when suggestions are given); the field has no text of its own. Numbers remain
+Latin.
 
 React uses `value`/`onValueChange`, Vue uses `v-model`, and Angular retains its
 value-control and forms integration. Vanilla accepts options or a local JSON
@@ -35,9 +37,9 @@ An active suggestion consumes Enter and updates the field. Enter without an
 active suggestion leaves native form submission available and can emit the
 adapter's search notification. Use either the form submit handler or that
 notification for the same search operation, to avoid handling it twice.
-The optional icon search action uses `showSearchButton`; React/Vue default to
-false and Angular retains its earlier true default. Cross-adapter compositions
-set false explicitly and provide one external submit button.
+The optional icon search action uses `showSearchButton`, which defaults to false
+in React, Vue and Angular; pass it with `searchLabel` where the button is wanted.
+Cross-adapter compositions leave it off and provide one external submit button.
 
 The popup closes on blur, outside interaction, clear, reset or unavailable state.
 Escape dismisses an open suggestion list before an enclosing dialog; a later

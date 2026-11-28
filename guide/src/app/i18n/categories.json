@@ -1,0 +1,26 @@
+{
+  "en": {
+    "actions": "Actions",
+    "forms": "Forms",
+    "navigation": "Navigation",
+    "overlays": "Overlays",
+    "disclosure": "Disclosure",
+    "layout": "Layout",
+    "feedback": "Feedback",
+    "data-display": "Data display",
+    "content": "Content",
+    "platforms": "Platform components"
+  },
+  "ar": {
+    "actions": "الإجراءات",
+    "forms": "النماذج",
+    "navigation": "التنقل",
+    "overlays": "الطبقات المتراكبة",
+    "disclosure": "الإظهار والإخفاء",
+    "layout": "التخطيط",
+    "feedback": "التغذية الراجعة",
+    "data-display": "عرض البيانات",
+    "content": "المحتوى",
+    "platforms": "مكوّنات المنصات"
+  }
+}

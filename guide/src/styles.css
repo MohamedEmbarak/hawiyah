@@ -1,0 +1,8 @@
+/* The package bundle (bundle name "styles"): only the published stylesheets of
+   @hawiyah/styles, never a guide rule. The guide's own document rules are in
+   src/guide.css, a separate bundle, so that the outcome test
+   (tests/e2e/pages/package-styles.spec.ts) can disable every guide stylesheet and
+   keep this one. */
+@import '@hawiyah/styles/reset.css';
+@import '@hawiyah/styles/styles.css';
+@import '@hawiyah/styles/fonts.css';

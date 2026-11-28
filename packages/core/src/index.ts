@@ -1,6 +1,12 @@
-export { getCalendarMonth, moveCalendarDate, isDateInRange, formatCalendarDate } from './calendar.js';
-export type { CalendarSystem, CalendarDay, CalendarMonth, CalendarMonthOptions, CalendarDateFormatOptions } from './calendar.js';
-export { normalizeDigits, clampRange, sortRows } from './controls.js';
+import { requireLocale } from './locale.js';
+import { normalizeSearch } from './search.js';
+
+export { normalizeSearch } from './search.js';
+export { createTypeahead, isTypeaheadKey } from './typeahead.js';
+export type { Typeahead, TypeaheadOptions } from './typeahead.js';
+export { getCalendarMonth, moveCalendarDate, isDateInRange, formatCalendarDate, getDateViolation } from './calendar.js';
+export type { CalendarSystem, CalendarDay, CalendarMonth, CalendarMonthOptions, CalendarDateFormatOptions, DateViolation, DateViolationOptions } from './calendar.js';
+export { normalizeDigits, normalizePinInput, clampRange, sortRows } from './controls.js';
 export { SaudiUmalquraCalendar, getCalendarDateParts, convertCalendarDate, isCalendarDateSupported, UMALQURA_MIN_DATE, UMALQURA_MAX_DATE } from './saudi-calendar.js';
 export type { CalendarDateParts } from './saudi-calendar.js';
 
@@ -10,21 +16,18 @@ export type { AccordionMotion } from './accordion-motion.js';
 export type Direction = 'ltr' | 'rtl';
 export type Orientation = 'horizontal' | 'vertical';
 
+/** The value of Feedback. `helpful` is null until the reader has chosen. */
+export interface FeedbackValue {
+  helpful: boolean | null;
+  comment: string;
+}
+/** The choice CookieConsent reports through its consent action. */
+export type ConsentChoice = 'accepted' | 'rejected';
+
 export interface Option {
   value: string;
   label: string;
   disabled?: boolean;
-}
-
-/** Fold search text only; never apply to user-visible labels or stored values. */
-export function normalizeSearch(value: string): string {
-  return value.normalize('NFKD')
-    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/gu, '')
-    .replace(/[\u0622\u0623\u0625\u0671]/gu, '\u0627')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/gu, ' ');
 }
 
 export function filterOptions<T extends Option>(options: readonly T[], query: string): T[] {
@@ -63,20 +66,27 @@ export function getNextEnabledIndex(
 }
 
 export interface NumberFormatOptions extends Intl.NumberFormatOptions {
-  locale?: string | string[];
+  /** BCP 47 tag, or a priority list of tags, handed to Intl. There is no default. */
+  locale: string | string[];
 }
 
 export interface DateFormatOptions extends Intl.DateTimeFormatOptions {
-  locale?: string | string[];
+  /** BCP 47 tag, or a priority list of tags, handed to Intl. There is no default. */
+  locale: string | string[];
 }
 
-export function formatNumber(value: number | bigint, options: NumberFormatOptions = {}): string {
-  const { locale = 'ar-SA', ...format } = options;
+/** Formats with the caller's locale and Latin digits. Throws a TypeError without a locale. */
+export function formatNumber(value: number | bigint, options: NumberFormatOptions): string {
+  const { locale, ...format } = options ?? {};
+  requireLocale('formatNumber', locale);
   return new Intl.NumberFormat(locale, { ...format, numberingSystem: 'latn' }).format(value);
 }
 
-export function formatDate(value: Date | number | string, options: DateFormatOptions = {}): string {
-  const { locale = 'ar-SA', calendar = 'gregory', timeZone = 'Asia/Riyadh', ...format } = options;
+/** Formats an instant with the caller's locale and Latin digits. Throws a TypeError without a locale.
+ * The Gregorian calendar and the Asia/Riyadh time zone are defaults of the helper, not locale choices. */
+export function formatDate(value: Date | number | string, options: DateFormatOptions): string {
+  const { locale, calendar = 'gregory', timeZone = 'Asia/Riyadh', ...format } = options ?? {};
+  requireLocale('formatDate', locale);
   const date = typeof value === 'string' ? new Date(value) : value;
   return new Intl.DateTimeFormat(locale, { calendar, timeZone, ...format, numberingSystem: 'latn' }).format(date);
 }
@@ -192,6 +202,8 @@ export function restoreFocus(element: HTMLElement | null | undefined): boolean {
 }
 export { observeFieldValue } from './field-value.js';
 export { observeReadonlyChoice } from './readonly-choice.js';
+export { observeFormReset, sameValue } from './form-reset.js';
+export type { FormResetObserver } from './form-reset.js';
 export type { FieldValueElement, FieldValueObserver } from './field-value.js';
 
 export * from './site-verification.js';
@@ -205,7 +217,21 @@ export type { ContentNavigationItem, ContentNavigationOptions, ContentNavigation
 export { getSearchSuggestions, requestSearchDialogClose } from './search-suggestions.js';
 export type { SearchSuggestionMatch, SearchSuggestionSegment } from './search-suggestions.js';
 export { prepareToastDismissFocus } from './toast-focus.js';
-export { getCalendarLabels } from './calendar-labels.js';
+export { prepareRemovalFocus } from './removal-focus.js';
+export type { RemovalFocusOptions } from './removal-focus.js';
+export { getPortalBranchSummary } from './portal-branch.js';
+export { hasText, requireText, resetTextWarnings, formatTextTemplate, warnInDevelopment } from './text.js';
+export { getFragmentHref, getFragmentId, bindFragmentLink } from './fragment-link.js';
+export type { FragmentLink, FragmentLinkOptions } from './fragment-link.js';
 
-export { fileUploadProgress, fileUploadLabels } from './file-upload-state.js';
+export { fileUploadProgress } from './file-upload-state.js';
 export type { FileUploadItem, FileUploadLabels } from './file-upload-state.js';
+export { evaluateFileSelection, matchesFileAccept, isFileDrag } from './file-selection.js';
+export type { FileSelectionRules, FileRejectionReason, FileSelectionResult } from './file-selection.js';
+
+export { copyText, createCopyFeedback, copyFeedbackIcons, COPY_FEEDBACK_DURATION } from './copy.js';
+export type { CopyStatus, CopyFeedbackState, CopyResult, CopyFeedbackOptions, CopyFeedback } from './copy.js';
+export { bindLinkNavigation, isLinkNavigationHandled } from './link-navigation.js';
+export type { LinkNavigation, LinkNavigationOptions, LinkNavigationTarget } from './link-navigation.js';
+export { getNavigationItemKind, getNavigationGroupEntries, isNavigationGroupOpen, getNavigationCurrentId, revealNavigationCurrent } from './navigation-list.js';
+export type { NavigationItem, NavigationItemKind } from './navigation-list.js';

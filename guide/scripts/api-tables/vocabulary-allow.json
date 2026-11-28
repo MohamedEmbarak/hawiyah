@@ -1,0 +1,76 @@
+{
+  "$comment": "Names that the vocabulary pass of step 30 (vocabulary.mjs, HWC-VOCAB) accepts without a Hawiyah declaration, because a specification defines them: HTML elements and attributes, WAI-ARIA roles and attributes, DOM members and events, CSS properties and functions, and the template syntax of Vue and Angular. Each group names its specification; values lists the enumerated values of a name where a page writes one. A name enters this file only with its specification; a Hawiyah name that the packages do not declare is never added here (it is a finding, or an entry of vocabulary-exceptions.json, which is the lead's list).",
+  "groups": [
+    {
+      "kind": "html-element",
+      "specification": "https://html.spec.whatwg.org/multipage/indices.html#elements-3",
+      "names": ["a", "abbr", "address", "area", "article", "aside", "audio", "b", "base", "bdi", "bdo", "blockquote", "body", "br", "button", "canvas", "caption", "cite", "code", "col", "colgroup", "data", "datalist", "dd", "del", "details", "dfn", "dialog", "div", "dl", "dt", "em", "embed", "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "iframe", "img", "input", "ins", "kbd", "label", "legend", "li", "link", "main", "map", "mark", "math", "menu", "meta", "meter", "nav", "noscript", "object", "ol", "optgroup", "option", "output", "p", "picture", "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "script", "search", "section", "select", "slot", "small", "source", "span", "strong", "style", "sub", "summary", "sup", "svg", "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "time", "title", "tr", "track", "u", "ul", "var", "video", "wbr"]
+    },
+    {
+      "kind": "css-function",
+      "specification": "https://www.w3.org/TR/css-variables-1/#using-variables",
+      "names": ["var"]
+    },
+    {
+      "kind": "html-attribute",
+      "specification": "https://html.spec.whatwg.org/multipage/indices.html#attributes-3",
+      "names": ["accept", "autocomplete", "checked", "class", "dir", "disabled", "for", "form", "hidden", "href", "id", "inert", "lang", "max", "maxlength", "min", "minlength", "multiple", "name", "open", "pattern", "placeholder", "readonly", "required", "role", "step", "tabindex", "title", "type", "value"],
+      "values": {
+        "type": ["button", "submit", "reset", "text", "email", "number", "password", "search", "tel", "url", "checkbox", "radio", "file", "date"],
+        "dir": ["ltr", "rtl", "auto"]
+      }
+    },
+    {
+      "kind": "aria-attribute",
+      "specification": "https://www.w3.org/TR/wai-aria-1.2/#state_prop_def",
+      "names": ["aria-busy", "aria-checked", "aria-controls", "aria-current", "aria-describedby", "aria-disabled", "aria-expanded", "aria-haspopup", "aria-hidden", "aria-invalid", "aria-label", "aria-labelledby", "aria-live", "aria-modal", "aria-orientation", "aria-pressed", "aria-selected", "aria-valuemax", "aria-valuemin", "aria-valuenow", "aria-valuetext"],
+      "values": {
+        "aria-busy": ["true", "false"],
+        "aria-checked": ["true", "false", "mixed"],
+        "aria-current": ["page", "step", "location", "date", "time", "true", "false"],
+        "aria-disabled": ["true", "false"],
+        "aria-expanded": ["true", "false"],
+        "aria-hidden": ["true", "false"],
+        "aria-invalid": ["true", "false", "grammar", "spelling"],
+        "aria-modal": ["true", "false"],
+        "aria-orientation": ["horizontal", "vertical"],
+        "aria-pressed": ["true", "false", "mixed"],
+        "aria-selected": ["true", "false"]
+      }
+    },
+    {
+      "kind": "aria-role",
+      "specification": "https://www.w3.org/TR/wai-aria-1.2/#role_definitions",
+      "names": ["role"],
+      "values": {
+        "role": ["alert", "button", "dialog", "group", "img", "link", "list", "listbox", "listitem", "menu", "menuitem", "navigation", "option", "progressbar", "radio", "radiogroup", "region", "status", "switch", "tab", "tablist", "tabpanel", "tree", "treeitem"]
+      }
+    },
+    {
+      "kind": "dom-member",
+      "specification": "https://dom.spec.whatwg.org/#interface-customevent",
+      "names": ["detail"]
+    },
+    {
+      "kind": "dom-member",
+      "specification": "https://html.spec.whatwg.org/multipage/interaction.html#dom-focus",
+      "names": ["focus"]
+    },
+    {
+      "kind": "dom-event",
+      "specification": "https://w3c.github.io/uievents/#events-mouseevents",
+      "names": ["click"]
+    },
+    {
+      "kind": "css-property",
+      "specification": "https://www.w3.org/TR/css-display-3/#the-display-properties",
+      "names": ["display"],
+      "values": { "display": ["contents", "none", "block", "inline", "flex", "grid"] }
+    },
+    {
+      "kind": "vue-template",
+      "specification": "https://vuejs.org/api/built-in-directives.html",
+      "names": ["v-model", "v-if", "v-for", "v-bind", "v-on", "v-slot"]
+    }
+  ]
+}

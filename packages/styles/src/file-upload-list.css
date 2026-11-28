@@ -47,6 +47,12 @@
   color: var(--hw-color-text);
 }
 .hw-upload-item > button:disabled { color: var(--hw-color-on-disabled); }
+/* The remove action owns its states: a generic .hw-button hover, focus or
+   active fill would put the dark glyph on the primary green. */
+.hw-upload-item > button:not(:disabled, [aria-disabled='true']):is(:hover, :focus-visible, :active) {
+  border-radius: var(--hw-radius-sm); background: var(--hw-color-surface-muted); box-shadow: none;
+  color: var(--hw-color-text);
+}
 .hw-upload-item > button::before {
   content: ''; inline-size: 20px; block-size: 20px;
   background: currentColor; mask: url('./assets/icons/cancel-01.svg') center / contain no-repeat;

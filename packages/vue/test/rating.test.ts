@@ -1,11 +1,12 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { createApp, defineComponent, h, nextTick, type App } from 'vue';
 import { Rating } from '../src/controls.js';
+import { ratingText } from './texts.js';
 let app: App | undefined;
 afterEach(() => { app?.unmount(); document.body.replaceChildren(); });
 function mount(props: Record<string, unknown>) {
   const host = document.createElement('div'); document.body.append(host);
-  app = createApp(defineComponent(() => () => h('form', [h(Rating, { label: 'التقييم', name: 'rating', ...props })]))); app.mount(host);
+  app = createApp(defineComponent(() => () => h('form', [h(Rating, { ...ratingText, label: 'التقييم', name: 'rating', ...props })]))); app.mount(host);
   return host;
 }
 it('submits one rating and restores the default after native form reset', async () => {

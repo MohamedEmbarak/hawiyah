@@ -19,6 +19,9 @@ CONTRACT.md, EXPANSION.md, llms.txt, and the actual exports in packages/.
 - Current logo is the Arabic word هوية in outlined Aref Ruqaa, colored with
   Platforms Code variables. No runtime logo-font download. Regenerate artwork
   with brand/build-assets.py and the loader with brand/build-loader.mjs.
+- The README banner (docs/previews/readme-banner.png) and the social preview
+  (brand/previews/social-preview.png) are repository artwork only. They do not
+  replace the logo: the guide and the brand kit keep the outlined wordmark.
 - The NIC header logo keeps its original colors in light mode; in dark mode use
   `filter: brightness(0) invert(1)` to make all artwork white, preserving transparency.
 - Describe Hawiyah as built to comply with the DGA Platforms Code, in a formal
@@ -29,8 +32,11 @@ CONTRACT.md, EXPANSION.md, llms.txt, and the actual exports in packages/.
 
 Use the pinned Node/pnpm setup in README.md. Run focused behavior tests for
 behavior changes, typecheck changed adapters, and build real consumers when
-exports or packaging change. `pnpm build:docs` builds the public guide;
-`HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs` checks the GitHub Pages deployment path.
+exports or packaging change. The public guide is `guide/`, built from the
+published packages: in `guide/`, `npm ci` then `HAWIYAH_BASE_PATH=/hawiyah/ npm run build`
+checks the GitHub Pages deployment path (guide/README.md lists its checks).
+`pnpm build:docs` builds the earlier guide in `apps/playground`, kept for local
+development only.
 `pnpm check:packages` creates and verifies local tarballs without publishing.
 
 Never commit credentials, .env values, local absolute paths, real applicant data,
@@ -38,4 +44,5 @@ or test artifacts. Preserve bundled third-party licenses and provenance.
 Source package manifests stay `private: true`. Publish only through
 `pnpm release:packages`, which strips it from the verified staged tarballs, and
 only when explicitly authorized. The seven packages share one version.
-GitHub Pages deploys the guide from main; npm publication is a separate action.
+GitHub Pages deploys the guide from main after the Guide workflow passes there;
+npm publication is a separate action.

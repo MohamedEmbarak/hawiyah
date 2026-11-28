@@ -1,7 +1,8 @@
 import { expect, test, type Locator } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('hawiyah-locale', 'ar'));
+  // The live editor's sandboxed frame has no storage; reading it there throws.
+  await page.addInitScript(() => { if (window === window.top) localStorage.setItem('hawiyah-locale', 'ar'); });
 });
 
 /** Rounded widths of a group's buttons, and whether the group hugs them instead of stretching. */

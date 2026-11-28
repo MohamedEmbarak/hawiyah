@@ -16,21 +16,23 @@ const cleanups:Array<()=>void|Promise<void>>=[];
 beforeAll(()=>TestBed.initTestEnvironment(BrowserTestingModule,platformBrowserTesting()));
 afterEach(async()=>{for(const cleanup of cleanups.splice(0))await cleanup();TestBed.resetTestingModule();vi.restoreAllMocks();document.body.replaceChildren();});
 const suggestions=['خدمة الأحوال','خدمة المركبات','خدمة العمل','معلومات'];
+// The application's copy: the strings the adapters used to supply.
+const texts={clearLabel:'مسح البحث',searchLabel:'بحث',getResultsMessage:(count:number)=>`${count} اقتراحات متاحة`};
 type State={value:string;suggestions?:readonly string[];maxSuggestions:number;disabled:boolean;readOnly:boolean;showSearchButton:boolean};
-async function mount(adapter:string,initial:Partial<State>={},controlled=false){
+async function mount(adapter:string,initial:Partial<State>={},controlled=false,copy:Partial<typeof texts>=texts){
   const form=document.createElement('form'),fieldset=document.createElement('fieldset'),host=document.createElement('div');document.body.append(form);form.append(fieldset);fieldset.append(host);
   const state:State={value:'خدمة',suggestions,maxSuggestions:2,disabled:false,readOnly:false,showSearchButton:true,...initial};
   const changes=vi.fn(),searches=vi.fn(),forwarded=createRef<HTMLInputElement>();let sync:()=>Promise<void>,flush:()=>Promise<void>,dispose:()=>Promise<void>,resetModel:()=>void=()=>{},instance:any;
   if(adapter==='react'){
     const root=createRoot(host);dispose=async()=>{await act(()=>root.unmount());};
-    sync=async()=>{await act(()=>root.render(r(ReactSearch,{...state,value:controlled?state.value:undefined,defaultValue:state.value,onValueChange:changes,onSearch:searches,ref:forwarded,id:'search-query',label:'البحث',hint:'تلميح',error:'راجع البحث',name:'query',required:true})));};
+    sync=async()=>{await act(()=>root.render(r(ReactSearch,{...copy,...state,value:controlled?state.value:undefined,defaultValue:state.value,onValueChange:changes,onSearch:searches,ref:forwarded,id:'search-query',label:'البحث',hint:'تلميح',error:'راجع البحث',name:'query',required:true})));};
     flush=async()=>{await act(async()=>{await Promise.resolve();});};
   }else if(adapter==='vue'){
-    const model=reactive({...state}),app=createApp({render:()=>h(VueSearch,{...model,readonly:model.readOnly,modelValue:controlled?model.value:undefined,defaultValue:model.value,'onUpdate:modelValue':changes,onSearch:searches,ref:'search',id:'search-query',label:'البحث',hint:'تلميح',error:'راجع البحث',name:'query',required:true})});app.mount(host);instance=app._instance?.refs.search;
+    const model=reactive({...state}),app=createApp({render:()=>h(VueSearch,{...copy,...model,readonly:model.readOnly,modelValue:controlled?model.value:undefined,defaultValue:model.value,'onUpdate:modelValue':changes,onSearch:searches,ref:'search',id:'search-query',label:'البحث',hint:'تلميح',error:'راجع البحث',name:'query',required:true})});app.mount(host);instance=app._instance?.refs.search;
     dispose=async()=>app.unmount();sync=async()=>{Object.assign(model,state);await nextTick();};flush=async()=>{await nextTick();await nextTick();};
   }else{
     const fixture=TestBed.createComponent(HwSearchFieldComponent);host.append(fixture.nativeElement);instance=fixture.componentInstance;instance.valueChange.subscribe(changes);instance.searched.subscribe(searches);dispose=async()=>fixture.destroy();
-    sync=async()=>{for(const [key,value]of Object.entries({...state,controlId:'search-query',label:'البحث',hint:'تلميح',error:'راجع البحث',name:'query',required:true}))fixture.componentRef.setInput(key,value);fixture.detectChanges();};
+    sync=async()=>{for(const [key,value]of Object.entries({...copy,...state,controlId:'search-query',label:'البحث',hint:'تلميح',error:'راجع البحث',name:'query',required:true}))fixture.componentRef.setInput(key,value);fixture.detectChanges();};
     flush=async()=>{await Promise.resolve();fixture.detectChanges();};resetModel=()=>instance.writeValue(state.value);
   }
   let alive=true;const destroy=async()=>{if(alive){alive=false;await dispose();}};cleanups.push(destroy);
@@ -45,9 +47,17 @@ for(const adapter of ['react','vue','angular']){
   it(`${adapter}: optional combobox keeps native field associations, matched text and bounded options`,async()=>{
     const m=await mount(adapter);expect(m.input().getAttribute('role')).toBe('combobox');expect(m.input().getAttribute('aria-expanded')).toBe('false');expect(m.input().getAttribute('aria-controls')).toBe(m.list().id);expect(m.input().getAttribute('aria-invalid')).toBe('true');
     for(const id of m.input().getAttribute('aria-describedby')!.split(' '))expect(document.getElementById(id)).not.toBeNull();expect(m.host.querySelector('label')!.htmlFor).toBe(m.input().id);
-    await m.run(()=>m.input().focus());expect(m.list().hidden).toBe(false);expect(m.list().querySelectorAll('[role="option"]')).toHaveLength(2);for(const option of m.list().querySelectorAll('[role="option"]'))expect(option.getAttribute('dir')).toBe('auto');expect(m.list().querySelector('strong')!.textContent).toBe('خدمة');expect(m.host.querySelector('[role="status"]')!.textContent).toContain('2');
+    await m.run(()=>m.input().focus());expect(m.list().hidden).toBe(false);expect(m.list().querySelectorAll('[role="option"]')).toHaveLength(2);for(const option of m.list().querySelectorAll('[role="option"]'))expect(option.getAttribute('dir')).toBe('auto');expect(m.list().querySelector('strong')!.textContent).toBe('خدمة');expect(m.host.querySelector('[role="status"]')!.textContent).toBe('2 اقتراحات متاحة');
     expect(m.host.querySelector('.hw-search-submit')!.getAttribute('aria-label')).toBe('بحث');expect(m.host.querySelector('.hw-search-clear')!.getAttribute('aria-label')).toBe('مسح البحث');expect(new FormData(m.form).get('query')).toBe('خدمة');
     if(adapter==='react')expect(m.forwarded.current).toBe(m.input());if(adapter==='vue'){expect(m.instance.element).toBe(m.input());expect(typeof m.instance.focus).toBe('function');}if(adapter==='angular')expect(typeof m.instance.focus).toBe('function');
+  });
+  it(`${adapter}: missing texts leave the buttons unnamed and the live region empty`,async()=>{
+    const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+    const m=await mount(adapter,{},false,{});await m.run(()=>m.input().focus());
+    expect(m.list().querySelectorAll('[role="option"]')).toHaveLength(2);
+    expect(m.host.querySelector('[role="status"]')?.textContent??'').toBe('');
+    expect(m.host.querySelector('.hw-search-submit')?.hasAttribute('aria-label')).toBe(false);expect(m.host.querySelector('.hw-search-clear')?.hasAttribute('aria-label')).toBe(false);
+    expect(m.host.textContent).not.toMatch(/اقتراحات|مسح البحث/u);expect(warn).toHaveBeenCalled();
   });
   it(`${adapter}: wrapping arrow navigation selects a suggestion without search or form submission`,async()=>{
     const m=await mount(adapter);await m.run(()=>m.input().focus());await m.key('ArrowUp');expect(m.input().getAttribute('aria-activedescendant')).toBe(`${m.list().id}-1`);await m.key('ArrowDown');expect(m.input().getAttribute('aria-activedescendant')).toBe(`${m.list().id}-0`);
@@ -102,7 +112,7 @@ for(const adapter of ['react','vue'])it(`${adapter}: controlled owners retain th
   m.state.value='معلومات';await m.sync();expect(m.input().value).toBe('معلومات');expect(m.input().hasAttribute('aria-activedescendant')).toBe(false);
 });
 it('React and Vue SSR render closed suggestions without claiming an active option',async()=>{
-  const renders=[renderToStaticMarkup(r(ReactSearch,{label:'البحث',defaultValue:'خدمة',suggestions})),await renderToString(createSSRApp({render:()=>h(VueSearch,{label:'البحث',defaultValue:'خدمة',suggestions})}))];
+  const renders=[renderToStaticMarkup(r(ReactSearch,{...texts,label:'البحث',defaultValue:'خدمة',suggestions})),await renderToString(createSSRApp({render:()=>h(VueSearch,{...texts,label:'البحث',defaultValue:'خدمة',suggestions})}))];
   for(const html of renders){const host=document.createElement('div');host.innerHTML=html;expect(host.querySelector('input')!.getAttribute('role')).toBe('combobox');expect(host.querySelector('input')!.getAttribute('aria-expanded')).toBe('false');expect(host.querySelector<HTMLElement>('[role="listbox"]')!.hidden).toBe(true);expect(host.querySelector('input')!.hasAttribute('aria-activedescendant')).toBe(false);expect(host.querySelector('.hw-search-submit')).toBeNull();}
 });
 it('React SearchField preserves callback-ref cleanup across value and suggestion state updates',async()=>{

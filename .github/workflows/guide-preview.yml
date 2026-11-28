@@ -1,0 +1,58 @@
+name: Guide preview
+
+# Builds the new guide from the local package tarballs of this commit so that
+# unreleased package work can be reviewed. The result is available only as a
+# workflow artifact: this workflow has no Pages permission and no deploy step,
+# and a preview build never passes the strict registry check.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'packages/**'
+      - 'guide/**'
+      - 'docs/components/**'
+      - '.github/workflows/guide-preview.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guide-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      # Uses the pnpm version pinned in package.json "packageManager".
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build packages
+        run: pnpm build:packages
+      # Writes .artifacts/package-check/hawiyah-<name>-<version>.tgz for the seven packages.
+      - name: Verify package tarballs in a clean consumer
+        run: pnpm check:packages
+      - name: Install the preview script's tooling
+        working-directory: guide
+        run: npm ci
+      - name: Install Chromium
+        working-directory: guide
+        run: npx playwright install --with-deps chromium
+      - name: Build the preview from the local tarballs
+        working-directory: guide
+        env:
+          HAWIYAH_BASE_PATH: /hawiyah/
+        run: npm run preview:local -- --commit ${{ github.sha }}
+      - name: Upload the preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: guide-preview-${{ github.sha }}
+          path: .artifacts/guide-preview/guide/dist/browser
+          retention-days: 14
+          if-no-files-found: error

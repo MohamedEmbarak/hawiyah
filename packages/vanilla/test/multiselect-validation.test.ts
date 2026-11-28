@@ -8,7 +8,7 @@ function mount(attributes = '', selected = '') {
   return { form, root, search, choice };
 }
 it('requires one enabled selection, preserves filtered values, resets and restores enhancement state', async () => {
-  const { form, root, search, choice } = mount('data-hw-required="true" lang="ar"'); const before = root.outerHTML;
+  const { form, root, search, choice } = mount('data-hw-required="true" data-hw-required-message="اختر خيارًا واحدًا على الأقل." data-hw-results-message="{count} خيارات"'); const before = root.outerHTML;
   const controller = createMultiSelect(root); cleanup.push(controller.destroy);
   expect(search.required).toBe(false); expect(search.getAttribute('aria-required')).toBe('true'); expect(form.checkValidity()).toBe(false); expect(search.validationMessage).toBe('اختر خيارًا واحدًا على الأقل.'); expect(controller.value).toEqual([]);
   search.focus(); expect(document.activeElement).toBe(search);

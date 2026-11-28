@@ -1,0 +1,22 @@
+.documents {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hw-space-8);
+  margin-inline: auto;
+  max-inline-size: 80rem;
+  padding-block: var(--hw-space-8);
+  padding-inline: var(--hw-space-4);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: var(--hw-space-4);
+  margin-block: 0;
+  padding-inline-start: 0;
+}
+
+/* No list markers: the items are not list items (an inherited list-style-type would reach the package cards). */
+.cards > li {
+  display: block;
+}

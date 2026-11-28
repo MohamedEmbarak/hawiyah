@@ -43,7 +43,7 @@ label:has(> :is(.hw-checkbox, .hw-radio)) { position: relative; isolation: isola
 .hw-checkbox::before { inline-size: 14px; block-size: 14px; background: currentColor; mask: url('./assets/icons/tick-02.svg') center / contain no-repeat; }
 .hw-checkbox:indeterminate::before { mask-image: url('./assets/icons/minus-sign.svg'); }
 .hw-radio::before { inline-size: 12px; block-size: 12px; border-radius: 50%; background: var(--hw-choice-mark); }
-:is(.hw-checkbox, .hw-radio):is(:checked, :indeterminate)::before { visibility: visible; }
+.hw-checkbox:is(:checked, :indeterminate)::before, .hw-radio:checked::before { visibility: visible; }
 :is(.hw-checkbox, .hw-radio):active:not(:disabled, [readonly], [aria-disabled='true']) { border-color: var(--hw-dga-on, revert) var(--hw-dga-off, var(--hw-color-choice-active)); --hw-choice-mark: var(--hw-color-choice-active); }
 .hw-checkbox:active:not(:disabled, [readonly], [aria-disabled='true']) { background: var(--hw-dga-on, revert) var(--hw-dga-off, var(--hw-color-surface-muted)); }
 .hw-checkbox:is(:checked, :indeterminate):active:not(:disabled, [readonly], [aria-disabled='true']) { background: var(--hw-dga-on, revert) var(--hw-dga-off, var(--hw-color-choice-active)); }

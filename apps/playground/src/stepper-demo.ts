@@ -5,7 +5,7 @@ export function stepperSample(locale: Locale): string {
   const t = (en: string, ar: string) => locale === 'ar' ? ar : en;
   const palette = `<option value="">${t('Theme default', 'اللون الافتراضي للسمة')}</option><option value="#175cd3">${t('Blue', 'أزرق')}</option><option value="#6941c6">${t('Purple', 'بنفسجي')}</option>`;
   return `<div class="hw-stack" data-stepper-demo>
-    <ol class="hw-stepper" aria-label="${t('Application progress', 'تقدم الطلب')}">
+    <ol class="hw-stepper" aria-label="${t('Application progress', 'تقدم الطلب')}" data-hw-complete-label="${t('Complete', 'مكتملة')}" data-hw-upcoming-label="${t('Upcoming', 'قادمة')}">
       <li class="hw-step" data-state="complete"><span>${t('Details', 'البيانات')}</span></li>
       <li class="hw-step" data-state="current" aria-current="step"><span>${t('Review', 'المراجعة')}</span></li>
       <li class="hw-step" data-state="upcoming"><span>${t('Confirmation', 'التأكيد')}</span></li>

@@ -43,6 +43,8 @@ export async function checkNicButtons(page: Page) {
   for (const mode of ['light', 'dark']) {
     await scope.evaluate((node, mode) => node.setAttribute('data-hw-mode', mode), mode);
     await page.keyboard.press('Tab'); await page.mouse.move(0, 0);
+    // Colours are measured at rest: a mode change starts transitions, and a mid-transition frame is not a resting state.
+    await page.waitForFunction(() => document.getAnimations().every(animation => animation.playState !== 'running'));
     expect((await new AxeBuilder({ page }).include('[data-testid="button-showcase"]').analyze()).violations).toEqual([]);
     await button('secondary').hover();
     await expect(button('secondary')).toHaveCSS('background-color', mode === 'dark' ? 'rgb(77, 87, 97)' : 'rgb(229, 231, 235)');

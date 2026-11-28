@@ -38,3 +38,33 @@ for (const locale of ['ar', 'en']) {
     await expect(page.locator('[data-demo-result]')).toHaveText((locale === 'ar' ? 'معاينة الإجراء: ' : 'Preview action: ') + action);
   });
 }
+
+// A user click runs microtasks as soon as one listener returns, before listeners on ancestors, so the drawer
+// must decide after the dispatch has finished. element.click() in a unit test cannot show the difference.
+test('a user click that an ancestor listener prevents leaves the drawer open; an unprevented one closes it', async ({ page }) => {
+  const { openFixture } = await import('./style-fixture');
+  const { fileURLToPath } = await import('node:url');
+  const vanilla = '/@fs/' + fileURLToPath(new URL('../../packages/vanilla/dist/index.js', import.meta.url)).replaceAll('\\', '/');
+  await openFixture(page, `<button type="button" id="open">Menu</button>
+<dialog id="drawer" aria-labelledby="drawer-title"><div class="hw-dialog-header"><h2 id="drawer-title">Menu</h2><button type="button" data-hw-dialog-close aria-label="Close"></button></div>
+<nav class="hw-navigation-drawer-nav" aria-label="Main"><ul><li><a class="hw-navigation-drawer-row" href="#target"><span class="hw-navigation-drawer-label">Target</span></a></li></ul></nav></dialog>
+<p id="target" tabindex="-1">Target</p>`, { name: 'navigation-drawer-click' });
+  await page.evaluate(async url => {
+    const { createNavigationDrawer } = await import(/* @vite-ignore */ url);
+    const controller = createNavigationDrawer(document.querySelector('#drawer'), { navigationLabel: 'Main' });
+    document.querySelector('#open')!.addEventListener('click', event => controller.show(event.currentTarget as HTMLElement));
+    const prevent = (event: Event) => { if ((event.target as Element).closest('#drawer a')) event.preventDefault(); };
+    document.addEventListener('click', prevent);
+    (window as unknown as { allow: () => void }).allow = () => document.removeEventListener('click', prevent);
+  }, vanilla);
+  const dialog = page.locator('#drawer'), link = dialog.locator('a');
+  const open = () => dialog.evaluate(node => (node as HTMLDialogElement).open);
+  await page.locator('#open').click(); expect(await open()).toBe(true);
+  await link.click(); await page.waitForTimeout(150);
+  expect(await open(), 'prevented by a document listener').toBe(true);
+  expect(page.url()).not.toContain('#target');
+  await page.evaluate(() => (window as unknown as { allow: () => void }).allow());
+  await link.click();
+  await expect.poll(open).toBe(false);
+  await expect(page.locator('#open')).toBeFocused();
+});

@@ -1,0 +1,3 @@
+import 'domino';
+
+export default {};

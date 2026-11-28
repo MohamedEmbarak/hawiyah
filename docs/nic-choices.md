@@ -18,8 +18,8 @@ native text field, the HTML readonly attribute alone does not stop a checkbox
 or radio. The shared `observeReadonlyChoice` helper guards activation without
 rendering DOM, preserves radio peers, tracks form reset and provides cleanup.
 Vanilla `enhance` installs it; each native adapter installs it in its lifecycle.
-Vue and Angular now expose `readOnly` for Checkbox, Radio and Switch. React's
-existing read-only API uses the same guard. Disabled controls retain native
+Angular exposes `readOnly` and Vue `readonly` (its spelling for every control)
+for Checkbox, Radio and Switch. React's existing `readOnly` uses the same guard. Disabled controls retain native
 disabled behavior. The switch's geometry is unchanged by this task.
 
 The guide shows default, selected, disabled and read-only examples. Keep labels

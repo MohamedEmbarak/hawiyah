@@ -18,7 +18,7 @@ for (const Component of [Dialog, Drawer]) {
   it(`${Component.name} ignores content-to-backdrop drags and accepts a genuine backdrop gesture`, async () => {
     const container = document.createElement('div'); document.body.append(container);
     const root = createRoot(container); roots.push(root);
-    await act(() => root.render(<Component title="Review" defaultOpen><button>Content</button></Component>));
+    await act(() => root.render(<Component title="Review" closeLabel="Close" defaultOpen><button>Content</button></Component>));
     const dialog = container.querySelector('dialog')!;
     vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 100, right: 400, bottom: 400 } as DOMRect);
     await dispatch(dialog.querySelector('.hw-dialog-body button')!, 'pointerdown', false);
@@ -33,7 +33,7 @@ for (const Component of [Dialog, Drawer]) {
     const root = createRoot(container); roots.push(root);
     let preventClick = false; let preventDown = false;
     const canceled = vi.fn();
-    await act(() => root.render(<Component title="Review" defaultOpen trigger={<button>Open</button>}
+    await act(() => root.render(<Component title="Review" closeLabel="Close" defaultOpen trigger={<button>Open</button>}
       onClick={event => { if (preventClick) event.preventDefault(); }}
       onPointerDown={event => { if (preventDown) event.preventDefault(); }} onPointerCancel={canceled}>Content</Component>));
     const dialog = container.querySelector('dialog')!;

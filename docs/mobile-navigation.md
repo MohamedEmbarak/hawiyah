@@ -32,3 +32,13 @@ not a sliding indicator or tab-panel animation. Semantic colors adapt to theme;
 icon color follows the label, since imported icon override endpoints were not
 resolved. Arabic width differs from English in the source, so no fixed item
 width is imposed. This is a source-informed composition, not certified parity.
+
+## Portal header branches below 48rem
+
+Decision for 0.3.0: in the mobile menu of PortalHeader, one press on another
+branch heading opens that branch and closes the open one, in all four adapters.
+A press no longer closes the open branch before its click is dispatched, so the
+heading does not move away from the pointer and the click is not lost. The menu
+open state is `open` in every adapter (React `open` / `defaultOpen` /
+`onOpenChange`, Vue `v-model:open`, Angular `[(open)]`, vanilla the controller),
+so an application can close the menu after a client-side route change.

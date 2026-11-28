@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { HwCheckboxComponent, HwRadioComponent, HwCardComponent, HwButtonDirective, HwIconButtonComponent, HwInputGroupComponent, HwAlertComponent, HwBadgeComponent, HwToastRegionComponent, HwPortalHeaderComponent, HwPortalFooterComponent } from '@hawiyah/angular';
+import { HwCheckboxComponent, HwRadioGroupComponent, HwCardComponent, HwButtonDirective, HwIconButtonComponent, HwInputGroupComponent, HwAlertComponent, HwBadgeComponent, HwToastRegionComponent, HwPortalHeaderComponent, HwPortalFooterComponent } from '@hawiyah/angular';
 @Component({
-  selector: 'app-root', standalone: true, imports: [HwCheckboxComponent, HwRadioComponent, HwCardComponent, HwButtonDirective, HwIconButtonComponent, HwInputGroupComponent, HwAlertComponent, HwBadgeComponent, HwToastRegionComponent, HwPortalHeaderComponent, HwPortalFooterComponent],
+  selector: 'app-root', standalone: true, imports: [HwCheckboxComponent, HwRadioGroupComponent, HwCardComponent, HwButtonDirective, HwIconButtonComponent, HwInputGroupComponent, HwAlertComponent, HwBadgeComponent, HwToastRegionComponent, HwPortalHeaderComponent, HwPortalFooterComponent],
   template: `<main class="hw-container hw-stack" data-testid="nic-showcase" data-hw-theme="dga" [attr.lang]="english ? 'en' : 'ar'" [attr.dir]="english ? 'ltr' : 'rtl'" style="padding-block:2rem;background:var(--hw-color-canvas);color:var(--hw-color-text)">
     <h1>{{ t('مرجع واجهة المركز', 'NIC UI reference') }}</h1>
     <button class="hw-button" (click)="english = !english">{{ english ? 'العربية' : 'English' }}</button>
@@ -11,18 +11,18 @@ import { HwCheckboxComponent, HwRadioComponent, HwCardComponent, HwButtonDirecti
       <hw-icon-button data-testid="button-icon" variant="default" [label]="t('إضافة', 'Add')" (activated)="buttonCount = buttonCount + 1"><span class="hw-icon" data-icon="add-01" aria-hidden="true"></span></hw-icon-button>
       <output data-testid="button-count">{{ buttonCount }}</output></section>
 <section class="hw-stack" data-testid="status-showcase" [attr.aria-label]="t('الحالات', 'Statuses')"><hw-alert data-testid="alert-neutral" tone="neutral" title="neutral" role="group"><p>{{ t('تفاصيل الحالة', 'Status details') }}</p></hw-alert><hw-badge tone="neutral" variant="dot">neutral</hw-badge><hw-alert data-testid="alert-info" tone="info" title="info" role="group"><p>{{ t('تفاصيل الحالة', 'Status details') }}</p></hw-alert><hw-badge tone="info" variant="dot">info</hw-badge><hw-alert data-testid="alert-success" tone="success" title="success" role="group"><p>{{ t('تفاصيل الحالة', 'Status details') }}</p></hw-alert><hw-badge tone="success" variant="dot">success</hw-badge><hw-alert data-testid="alert-warning" tone="warning" title="warning" role="group"><p>{{ t('تفاصيل الحالة', 'Status details') }}</p></hw-alert><hw-badge tone="warning" variant="dot">warning</hw-badge><hw-alert data-testid="alert-danger" tone="danger" title="danger" role="group"><p>{{ t('تفاصيل الحالة', 'Status details') }}</p></hw-alert><hw-badge tone="danger" variant="dot">danger</hw-badge><hw-alert data-testid="alert-outline" tone="success" variant="outline" title="Outline" role="group"><p>Details</p></hw-alert><hw-alert data-testid="alert-minimal" tone="warning" variant="minimal" title="Minimal" role="group"><p>Details</p></hw-alert>
-      <hw-toast-region data-testid="status-toasts" variant="inline" [messages]="statusMessages" (dismissed)="dismissStatus($event)" style="display:block" />
+      <hw-toast-region data-testid="status-toasts" variant="inline" [label]="t('الإشعارات', 'Notifications')" [getDismissLabel]="dismissLabel" [messages]="statusMessages" (dismissed)="dismissStatus($event)" style="display:block" />
     </section><section data-testid="chrome-showcase" (click)="containPreview($event)">
-      <hw-portal-header brand="هوية" homeHref="/" mainId="nic-demo-main" [links]="[{label:t('الخدمات','Services'),href:'/services',current:true},{label:t('طلباتي','My requests'),href:'/requests'}]"><button hwButton type="button">{{ t('تسجيل الدخول','Sign in') }}</button></hw-portal-header>
+      <hw-portal-header brand="هوية" homeHref="/" mainId="nic-demo-main" [skipLabel]="t('انتقل إلى المحتوى', 'Skip to content')" [menuLabel]="t('القائمة', 'Menu')" [navigationLabel]="t('التنقل الرئيسي', 'Main navigation')" [links]="[{label:t('الخدمات','Services'),href:'/services',current:true},{label:t('طلباتي','My requests'),href:'/requests'}]"><button hwButton type="button">{{ t('تسجيل الدخول','Sign in') }}</button></hw-portal-header>
       <section id="nic-demo-main" tabindex="-1"><h2>{{ t('محتوى الصفحة','Page content') }}</h2></section>
-      <hw-portal-footer brand="هوية" [links]="[{label:t('الخصوصية','Privacy'),href:'/privacy'},{label:t('تواصل معنا','Contact'),href:'/contact'}]" copyright="2026"><p>{{ t('منصة توضيحية','Example platform') }}</p></hw-portal-footer>
+      <hw-portal-footer brand="هوية" [navigationLabel]="t('روابط التذييل', 'Footer links')" [externalLabel]="t('يفتح في نافذة جديدة', 'opens in a new window')" [links]="[{label:t('الخصوصية','Privacy'),href:'/privacy'},{label:t('تواصل معنا','Contact'),href:'/contact'}]" copyright="2026"><p>{{ t('منصة توضيحية','Example platform') }}</p></hw-portal-footer>
     </section>
     <section data-testid="choices-showcase" class="hw-stack">
       <hw-checkbox controlId="nic-check" label="Checkbox" /><hw-checkbox controlId="nic-mixed" label="Mixed" indeterminate />
       <hw-checkbox controlId="nic-disabled" label="Disabled" disabled [value]="true" />
       <hw-checkbox controlId="nic-readonly" label="Read only" readOnly [value]="true" />
-      <hw-radio controlId="nic-radio" name="nic-radio" label="Radio group" [options]="[{value:'a',label:'First radio'},{value:'b',label:'Second radio'}]" value="a" />
-      <hw-radio controlId="nic-radio-readonly" name="nic-radio" label="Read only radio" [options]="[{value:'locked',label:'Read only radio'}]" readOnly />
+      <hw-radio-group controlId="nic-radio" name="nic-radio" label="Radio group" [options]="[{value:'a',label:'First radio'},{value:'b',label:'Second radio'}]" value="a" />
+      <hw-radio-group controlId="nic-radio-readonly" name="nic-radio" label="Read only radio" [options]="[{value:'locked',label:'Read only radio'}]" readOnly />
     </section><section class="hw-field" data-testid="group-example"><label class="hw-label" for="group-email">{{ t('البريد الإلكتروني','Email') }}</label><hw-input-group data-testid="group-field"><span hwPrefix>@</span><input class="hw-input" id="group-email" name="group-email" type="email" [value]="groupEmail" (input)="groupEmail = $any($event.target).value" required></hw-input-group></section>
     <section class="hw-grid" style="--hw-layout-columns:1;--hw-layout-columns-md:2">
       <hw-card data-testid="base-card"><h2 hwCardHeader class="hw-card-title">{{ t('بطاقة معلومات', 'Information card') }}</h2><p class="hw-card-description">{{ t('محتوى واضح بمسافات موحدة.', 'Clear content with consistent spacing.') }}</p><span hwCardFooter>{{ t('تفاصيل إضافية', 'Additional details') }}</span></hw-card>
@@ -38,6 +38,7 @@ import { HwCheckboxComponent, HwRadioComponent, HwCardComponent, HwButtonDirecti
 })
 export class NicReferenceExampleComponent {
   statusMessages: import('@hawiyah/angular').HwToast[] = ['neutral','info','success','warning','danger'].map(tone => ({id:tone,tone: tone as 'neutral'|'info'|'success'|'warning'|'danger',title:tone,message:'تفاصيل الإشعار'}));
+  dismissLabel = (): string => this.t('إغلاق الإشعار', 'Close notification');
   dismissStatus(id: string) { this.statusMessages = this.statusMessages.filter(item => item.id !== id); }
   containPreview(event: MouseEvent) { if ((event.target as Element).closest('a[href]')) event.preventDefault(); }
   groupEmail = 'ready@example.test'; buttonCount = 0; english = false; disabled = true; activations = 0;

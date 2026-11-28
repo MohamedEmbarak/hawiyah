@@ -16,5 +16,5 @@ test('custom date field keeps typed drafts separate from canonical submission', 
   await input.press('Alt+ArrowDown'); await expect(picker.locator('dialog')).toBeVisible();
   await page.keyboard.press('Escape'); await expect(input).toBeFocused();
   await input.fill(''); await expect(canonical).toHaveValue('');
-  expect(await input.evaluate(node => (node as HTMLInputElement).validity.valueMissing)).toBe(true);
+  await expect.poll(() => input.evaluate(node => (node as HTMLInputElement).validity.valueMissing)).toBe(true);
 });

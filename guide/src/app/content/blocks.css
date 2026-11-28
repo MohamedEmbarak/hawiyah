@@ -1,0 +1,33 @@
+/* The host keeps the browser's display of a custom element (inline): inside the
+   prose it is matched by the package's flow rules (.hw-prose > *), so guide CSS does
+   not style it, and its block children lie in the prose flow. */
+
+/*
+ * The blocks are boxes of the prose container but not its children in the
+ * document, so the package's flow rules (.hw-prose > * + *) do not reach them.
+ * The same spacing, from the same tokens; placement only.
+ */
+:host > * + * {
+  margin-block-start: var(--hw-space-4);
+}
+
+:host > * + h3 {
+  margin-block-start: var(--hw-space-8);
+}
+
+:host > * + h4 {
+  margin-block-start: var(--hw-space-6);
+}
+
+:host > :is(h3, h4) + * {
+  margin-block-start: var(--hw-space-3);
+}
+
+:host > * + guide-example-block {
+  margin-block-start: var(--hw-space-6);
+}
+
+/* The first block of a section follows the section heading. */
+:host(.section) > :first-child {
+  margin-block-start: var(--hw-space-3);
+}

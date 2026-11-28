@@ -11,9 +11,19 @@ import { createAccordion } from './accordion.js';
 export { createAccordion };
 export type { AccordionOptions, AccordionController } from './accordion.js';
 import { createPortalHeader } from './portal.js';
+import { createSkipLink } from './skip-link.js';
+export { createSkipLink };
+export type { SkipLinkController } from './skip-link.js';
 import { createNavigationDrawer } from './navigation-drawer.js';
 export { createNavigationDrawer };
 export type { NavigationDrawerOptions, NavigationDrawerController } from './navigation-drawer.js';
+import { createSideNavigation } from './side-navigation.js';
+export { createSideNavigation };
+export type { SideNavigationOptions, SideNavigationController } from './side-navigation.js';
+import { createCopyButton } from './copy-button.js';
+export { createCopyButton };
+export type { CopyButtonOptions, CopyButtonController } from './copy-button.js';
+export type { CopyStatus, CopyResult } from '@hawiyah/core';
 export { createPortalHeader };
 export type { PortalHeaderOptions, PortalHeaderController } from './portal.js';
 import { createDialog } from './dialog.js';
@@ -31,9 +41,9 @@ export type { SearchFieldOptions, SearchFieldController } from './search-field.j
 export { createPasswordField, createRangeSlider, createRating, createPinInput, createTagInput, createMultiSelect, createFileDropzone, createPopover, createMenu, createDrawer, createToastRegion };
 export { createCalendar, createDatePicker };
 export { createToggleGroup, createFeedback, createCookieConsent, createTreeView, createCarousel, createDataTable };
-export type { ToggleGroupOptions, ToggleGroupController, FeedbackOptions, FeedbackController, ConsentChoice, CookieConsentOptions, CookieConsentController, TreeViewOptions, TreeViewController, CarouselOptions, CarouselController, SortDirection, DataTableOptions, DataTableController } from './content.js';
+export type { ToggleGroupOptions, ToggleGroupController, FeedbackOptions, FeedbackController, FeedbackValue, ConsentChoice, CookieConsentOptions, CookieConsentController, TreeViewOptions, TreeViewController, TreeViewNode, CarouselOptions, CarouselController, SortDirection, DataTableOptions, DataTableController } from './content.js';
 export type { CalendarOptions, CalendarController, DatePickerOptions, DatePickerController } from './calendar.js';
-export type { ValueController, PasswordFieldOptions, RangeSliderOptions, RatingOptions, PinInputOptions, TagInputOptions, MultiSelectOptions, FileDropzoneOptions } from './controls.js';
+export type { ValueController, PasswordFieldOptions, PasswordFieldController, RangeSliderOptions, RatingOptions, PinInputOptions, TagInputOptions, MultiSelectOptions, FileDropzoneOptions } from './controls.js';
 export type { PopoverOptions, PopoverController, MenuOptions, ToastRegionOptions } from './disclosures.js';
 export type { TabsOptions, TabsController } from './tabs.js';
 export type { DialogOptions, DialogController } from './dialog.js';
@@ -48,7 +58,9 @@ const factories: Record<string, (element: HTMLElement) => Controller> = {
   stepper: element => createStepper(element as HTMLOListElement),
   accordion: createAccordion,
   'navigation-drawer': element => createNavigationDrawer(element as HTMLDialogElement),
+  'side-navigation': createSideNavigation, 'copy-button': createCopyButton,
   'portal-header': createPortalHeader,
+  'skip-link': element => createSkipLink(element as HTMLAnchorElement),
   tabs: createTabs, dialog: element => createDialog(element as HTMLDialogElement), combobox: createCombobox,
   'search-field': createSearchField, tooltip: createTooltip, pagination: createPagination, 'password-field': createPasswordField,
   'range-slider': createRangeSlider, rating: createRating, 'pin-input': createPinInput, 'tag-input': createTagInput,

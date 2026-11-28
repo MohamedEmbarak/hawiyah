@@ -1,6 +1,6 @@
-import { createCleanup, getNextEnabledIndex, isDisabled, normalizeSearch, restoreFocus, prepareToastDismissFocus } from '@hawiyah/core';
+import { createCleanup, createTypeahead, requireText, getNextEnabledIndex, isDisabled, isTypeaheadKey, restoreFocus, prepareToastDismissFocus } from '@hawiyah/core';
 import { createDialog, type DialogController, type DialogOptions } from './dialog.js';
-import { emit, ensureId, eventElement, remember, required, translated } from './dom.js';
+import { emit, ensureId, eventElement, named, remember, required, templated, text, writeText } from './dom.js';
 
 export interface PopoverOptions { onOpenChange?: (open: boolean) => void; focusOnOpen?: boolean }
 export interface PopoverController { readonly open: boolean; show(): void; close(restore?: boolean): void; destroy(): void }
@@ -21,24 +21,24 @@ export function createPopover(root: HTMLElement, options: PopoverOptions = {}): 
   };
   scope.listen(trigger, 'click', event => { if (isDisabled(trigger)) return; event.preventDefault(); if (open) close(); else show(); });
   scope.listen(root, 'click', event => { if (eventElement(event)?.closest('[data-hw-close]')) { event.preventDefault(); close(true); } });
-  scope.listen(root, 'keydown', event => { if ((event as KeyboardEvent).key === 'Escape' && open) { event.preventDefault(); event.stopPropagation(); close(true); } });
+  // An Escape that a control inside the panel has used for itself (default-prevented) is not the popover's.
+  scope.listen(root, 'keydown', event => { if ((event as KeyboardEvent).key === 'Escape' && open && !event.defaultPrevented) { event.preventDefault(); event.stopPropagation(); close(true); } });
   scope.listen(root.ownerDocument, 'pointerdown', event => { if (!root.contains(event.target as Node | null)) close(); });
   scope.listen(root, 'focusout', event => { const next = (event as FocusEvent).relatedTarget as Node | null; if (next && !root.contains(next)) close(); });
   render();
   return { get open() { return open; }, show, close, destroy() { if (scope.destroyed) return; if (open && panel.contains(root.ownerDocument.activeElement)) restoreFocus(trigger); scope.destroy(); } };
 }
 
-export interface MenuOptions { onSelect?: (value: string) => void }
+export interface MenuOptions { onAction?: (value: string) => void; onOpenChange?: (open: boolean) => void }
 export function createMenu(root: HTMLElement, options: MenuOptions = {}): PopoverController {
   const trigger = required<HTMLElement>(root, '[data-hw-trigger]'); const panel = required<HTMLElement>(root, '[data-hw-panel]');
   const items = [...panel.querySelectorAll<HTMLElement>('[role="menuitem"]')]; const scope = createCleanup();
   remember(scope, trigger, ['aria-haspopup']); remember(scope, panel, ['role']); trigger.setAttribute('aria-haspopup', 'menu'); panel.setAttribute('role', 'menu');
   items.forEach(item => { remember(scope, item, ['tabindex']); item.tabIndex = -1; });
-  const disclosure = createPopover(root);
+  const typeahead = createTypeahead(); scope.add(() => typeahead.reset());
+  const disclosure = createPopover(root, { onOpenChange: open => { if (!open) typeahead.reset(); options.onOpenChange?.(open); } });
   const focus = (index: number) => { if (index < 0) return; items.forEach((item, position) => { item.tabIndex = position === index ? 0 : -1; }); items[index]!.focus(); };
   const navigate = (current: number, key: string) => focus(getNextEnabledIndex(current, key, items.map(item => ({ disabled: isDisabled(item) })), 'ltr', 'vertical'));
-  let query = ''; let timer: ReturnType<typeof setTimeout> | undefined;
-  scope.add(() => { if (timer !== undefined) clearTimeout(timer); });
   scope.listen(trigger, 'keydown', event => { const key = event as KeyboardEvent; if (isDisabled(trigger) || key.altKey || key.ctrlKey || key.metaKey) return; if (['ArrowDown', 'ArrowUp'].includes(key.key)) { event.preventDefault(); disclosure.show(); navigate(-1, key.key); } });
   scope.listen(trigger, 'click', () => { if (disclosure.open) navigate(-1, 'ArrowDown'); });
   scope.listen(panel, 'keydown', event => {
@@ -47,21 +47,26 @@ export function createMenu(root: HTMLElement, options: MenuOptions = {}): Popove
     if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(key.key)) { event.preventDefault(); navigate(current, key.key); }
     else if ((key.key === 'Enter' || key.key === ' ') && current >= 0 && !isDisabled(items[current]!)) { event.preventDefault(); items[current]!.click(); }
     else if (key.key === 'Tab') disclosure.close();
-    else if (key.key.length === 1 && key.key !== ' ') {
-      query += normalizeSearch(key.key); if (timer !== undefined) clearTimeout(timer); timer = setTimeout(() => { query = ''; }, 500);
-      for (let offset = 1; offset <= items.length; offset++) { const index = (current + offset + items.length) % items.length; if (!isDisabled(items[index]!) && normalizeSearch(items[index]!.textContent || '').startsWith(query)) { event.preventDefault(); focus(index); break; } }
-    }
+    else if (isTypeaheadKey(key)) { const next = typeahead.next(key.key, items.map(item => item.textContent ?? ''), current, index => isDisabled(items[index]!)); if (next >= 0) { event.preventDefault(); focus(next); } }
   });
-  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.hwValue ?? item.textContent?.trim() ?? ''; disclosure.close(true); emit(root, { value }); options.onSelect?.(value); });
+  // The trigger takes focus before the action, so a dialog the action opens returns focus to it; an action that moves focus elsewhere wins.
+  scope.listen(panel, 'click', event => { const item = eventElement(event)?.closest<HTMLElement>('[role="menuitem"]'); if (!item || !items.includes(item)) return; if (isDisabled(item)) { event.preventDefault(); return; } const value = item.dataset.hwValue ?? item.textContent?.trim() ?? ''; restoreFocus(trigger); emit(root, { value }); options.onAction?.(value); disclosure.close(true); });
   return { get open() { return disclosure.open; }, show() { disclosure.show(); navigate(-1, 'ArrowDown'); }, close: disclosure.close, destroy() { disclosure.destroy(); scope.destroy(); } };
 }
 
 export function createDrawer(dialog: HTMLDialogElement, options: DialogOptions = {}): DialogController { return createDialog(dialog, options); }
 
+/** Title of a toast for the `{title}` placeholder of data-hw-dismiss-label. */
+function toastTitle(toast: HTMLElement): string {
+  const heading = toast.querySelector('[data-hw-toast-title], strong, h2, h3, h4');
+  return (heading ?? toast.querySelector('.hw-toast-content, p'))?.textContent?.trim() ?? '';
+}
 export interface ToastRegionOptions {
   variant?: 'default' | 'inline' | 'banner';
   position?: 'inline' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
+  /** Accessible name of the region (data-hw-label), unless the markup names it. Required. */
   label?: string;
+  /** Accessible name of a toast's dismiss button that has no authored name (data-hw-dismiss-label="… {title}"). Required when a message can be dismissed. */
   getDismissLabel?: (toast: HTMLElement) => string;
   onDismiss?: (id: string) => void;
 }
@@ -76,7 +81,8 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
   };
   if (options.variant) root.dataset.variant = options.variant;
   if (options.position) root.dataset.position = options.position;
-  if (options.label || (!root.hasAttribute('aria-label') && !root.hasAttribute('aria-labelledby'))) root.setAttribute('aria-label', options.label ?? translated(root, 'Notifications', 'الإشعارات'));
+  if (options.label !== undefined || !named(root)) writeText(root, 'aria-label', 'ToastRegion', 'label', text(root, 'label', options.label));
+  const dismissLabel = templated(root, 'getDismissLabel', options.getDismissLabel, (toast: HTMLElement) => ({ title: toastTitle(toast) }));
   if (!root.hasAttribute('tabindex')) root.tabIndex = -1;
 
   const grouped = root.querySelectorAll<HTMLElement>(':scope > :is([data-hw-live="polite"], [data-hw-live="assertive"], [role="status"], [role="alert"], [aria-live="polite"], [aria-live="assertive"]):not([data-hw-toast], .hw-toast)');
@@ -127,12 +133,10 @@ export function createToastRegion(root: HTMLElement, options: ToastRegionOptions
         if (generated !== undefined) restoreLabel(button);
         continue;
       }
-      const heading = toast.querySelector('[data-hw-toast-title], strong, h2, h3, h4');
-      const title = (heading ?? toast.querySelector('.hw-toast-content, p'))?.textContent?.trim();
-      const prefix = translated(root, 'Dismiss notification', 'إغلاق الإشعار');
-      const label = options.getDismissLabel?.(toast) ?? (title ? `${prefix}: ${title}` : prefix);
-      button.setAttribute('aria-label', label);
-      generatedLabels.set(button, label);
+      const label = dismissLabel(toast);
+      if (!requireText('ToastRegion', 'getDismissLabel', label, 'a message can be dismissed')) { if (generated !== undefined) restoreLabel(button); continue; }
+      button.setAttribute('aria-label', label!);
+      generatedLabels.set(button, label!);
     }
   };
   sync();

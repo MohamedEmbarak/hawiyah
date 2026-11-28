@@ -33,21 +33,21 @@ const justifyValues: Record<LayoutJustify, string> = {
 };
 
 function cssLength(value: string): string {
-  if (typeof value !== 'string' || !value.trim()) throw new TypeError('Layout CSS lengths must be non-empty strings.');
+  if (typeof value !== 'string' || !value.trim()) throw new TypeError('Hawiyah: Layout CSS lengths must be non-empty strings.');
   return value.trim();
 }
 
 function space(value: LayoutSpacing): string {
   if (typeof value === 'string') return cssLength(value);
   if (!Number.isInteger(value) || value < 0 || value > 16) {
-    throw new RangeError('Layout spacing numbers must be integer tokens from 0 through 16; use a CSS length string otherwise.');
+    throw new RangeError('Hawiyah: Layout spacing numbers must be integer tokens from 0 through 16; use a CSS length string otherwise.');
   }
   // All spacing steps are supported, including steps absent from a theme's scale.
   return `var(--hw-space-${value}, ${value === 0 ? '0px' : `${value / 4}rem`})`;
 }
 
 function columnCount(value: number): number {
-  if (!Number.isSafeInteger(value) || value < 1) throw new RangeError('Layout columns must be positive integers.');
+  if (!Number.isSafeInteger(value) || value < 1) throw new RangeError('Hawiyah: Layout columns must be positive integers.');
   return value;
 }
 
@@ -88,7 +88,7 @@ export function layoutStyles(props: LayoutProps = {}): Record<string, string | n
   if (props.sidebarWidth !== undefined) styles['--hw-layout-sidebar-width'] = cssLength(props.sidebarWidth);
   if (props.maxWidth !== undefined) styles['--hw-layout-max-width'] = cssLength(props.maxWidth);
   if (props.ratio !== undefined) {
-    if (!Number.isFinite(props.ratio) || props.ratio <= 0) throw new RangeError('Layout aspect ratio must be a positive finite number.');
+    if (!Number.isFinite(props.ratio) || props.ratio <= 0) throw new RangeError('Hawiyah: Layout aspect ratio must be a positive finite number.');
     styles['--hw-layout-ratio'] = props.ratio;
   }
   return styles;

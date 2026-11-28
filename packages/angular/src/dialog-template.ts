@@ -1,0 +1,6 @@
+/** The one template of hw-dialog and hw-drawer. Internal: not exported from public-api.ts.
+ * The footer region is always rendered, because projection cannot be detected; it holds no white space,
+ * so the stylesheet hides it with :empty while nothing is projected. */
+export function dialogTemplate(footer: 'hwDialogFooter' | 'hwDrawerFooter', drawer = false): string {
+  return `<dialog #dialog class="hw-dialog${drawer ? ' hw-drawer' : ''}" ${drawer ? '[attr.data-side]="side"' : ''} [attr.aria-label]="ariaLabel" [attr.aria-labelledby]="ariaLabelledby ?? titleId" [attr.aria-describedby]="ariaDescribedby" (close)="closed()" (cancel)="cancelledBackdrop()" (pointerdown)="backdropStart($event)" (pointercancel)="resetBackdrop()" (click)="backdrop($event)"><header class="hw-dialog-header"><h2 [id]="titleId">{{ title }}</h2><button class="hw-button" data-variant="ghost" type="button" [attr.aria-label]="texts.need('closeLabel', closeLabel)" (click)="close()"><span class="hw-icon" data-icon="cancel-01" data-size="md" aria-hidden="true"></span></button></header><div class="hw-dialog-body"><ng-content /></div><footer class="hw-dialog-footer"><ng-content select="[${footer}]" /></footer></dialog>`;
+}

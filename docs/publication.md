@@ -1,18 +1,19 @@
 # Public source, guide, and package releases
 
 Hawiyah is available from [MohamedEmbarak/hawiyah](https://github.com/MohamedEmbarak/hawiyah)
-as a **0.2 source preview**, with an interactive guide at
+as a **0.3 source preview**, with a guide at
 [GitHub Pages](https://mohamedembarak.github.io/hawiyah/). Original project code,
 documentation, and artwork use [Apache License 2.0](../LICENSE). Bundled fonts
 and calendar reference data retain their own licenses and attribution; see
 [NOTICE](../NOTICE) and their adjacent third-party notices.
 
-**Version 0.2.1 is on npm.** 0.2.0 was the first registry release of all seven
-`@hawiyah/*` packages. These are pre-1.0 releases: a minor version may still change
+**Version 0.3.0 is on npm with the `next` dist-tag; `latest` remains 0.2.1**
+until the public guide documents 0.3. 0.2.0 was the first registry release of
+all seven `@hawiyah/*` packages. These are pre-1.0 releases: a minor version may still change
 APIs, and publication is not a production-readiness or DGA certification claim.
 
 ```sh
-npm install @hawiyah/styles @hawiyah/react   # or vanilla, vue, angular
+npm install @hawiyah/styles@next @hawiyah/react@next   # or vanilla, vue, angular
 ```
 
 The source manifests keep `private: true`, so running `npm publish` inside a
@@ -21,28 +22,77 @@ same tarballs the package check verified.
 
 ## The public guide
 
-The guide contains getting-started instructions, live component recipes,
-component APIs and lifecycles, framework setup, themes, Arabic/RTL behavior,
-calendar provenance, layout composition, and extension guidance. The source
-lives in `apps/playground`; the brand guide is in `brand`.
+The guide has a page for each component, getting-started instructions, page
+templates, the foundations and the brand, in Arabic and English. Its source is
+`guide/` (Angular, outside the pnpm workspace); it installs the published
+`@hawiyah/*` packages at the version it pins, never the workspace sources, and
+renders every live example from them in vanilla JavaScript, React, Vue and
+Angular. [guide/README.md](../guide/README.md) describes its commands and checks.
+The earlier guide in `apps/playground` remains a local development entry point
+and is no longer deployed.
 
 GitHub Pages serves this project beneath `/hawiyah/`. A deployment must use that
-base path for scripts, styles, images, fonts, downloads, and guide navigation.
-Check direct links to component pages, reloads, search, narrow screens,
-Arabic/RTL, and reduced-motion behavior against the built site. Deploy only
-reviewed build output from this public repository. The documentation site does
-not perform npm publication or connect its simulated service journeys to a
-backend.
+base path for scripts, styles, images, fonts and guide navigation. The
+documentation site does not perform npm publication.
 
-The [Pages workflow](../.github/workflows/pages.yml) builds with:
+The [Guide workflow](../.github/workflows/guide.yml) checks and builds the guide
+on every change to its inputs:
+
+```sh
+cd guide
+npm ci
+HAWIYAH_BASE_PATH=/hawiyah/ npm run build
+```
+
+It compares every live example in four shards and runs the browser tests in eight
+shards on that one build. The [Pages workflow](../.github/workflows/pages.yml)
+runs when a run of the Guide workflow on `main` has passed every job, checks that
+the build is deployable, and deploys that run's build output through GitHub
+Pages without building it again.
+
+## Continuous integration
+
+The [CI workflow](../.github/workflows/ci.yml) runs on every push and pull
+request, with read-only repository permissions; a newer run on the same ref
+cancels the older one. It installs with the pinned pnpm and Node.js 24, then
+runs:
 
 ```sh
 pnpm install --frozen-lockfile
-HAWIYAH_BASE_PATH=/hawiyah/ pnpm build:docs
+pnpm build:packages
+pnpm test
+pnpm typecheck:playground
+pnpm check:packages
+pnpm exec playwright install --with-deps chromium
+node scripts/prepare-demo.mjs
+pnpm test:browser
 ```
 
-It publishes `apps/playground/dist` through GitHub Pages. The separate `pnpm build`
-command also builds the three native framework examples for local verification.
+It deploys and publishes nothing. The Pages and publish workflows do not wait
+for it, so check its result on the commit before merging to `main` or tagging a
+release. The Pages workflow waits for the Guide workflow only.
+
+## Package contents
+
+`pnpm build:packages` deletes each package's `dist` before building it, so a
+file removed from the sources cannot survive in a later tarball, and records
+what the clean build wrote (path and SHA-256) under
+`.artifacts/build-manifest/`. Packages build in dependency order and nothing
+else writes into a package's `dist`, so no file needs to survive between
+builds. `pnpm check:packages` then refuses to pack when:
+
+- a file in `dist` was not written by the last clean build, is missing, or
+  changed since; rebuild with `pnpm build:packages`;
+- the tarball contains anything other than `package.json`, that clean `dist`
+  output, and the other entries of the manifest's `files` field, copied from
+  the package source;
+- an `exports` target (or a `main`, `module` or `types` field) names a file
+  that is not in the tarball. Pattern targets such as `./dist/assets/*` need at
+  least one matching file.
+
+The clean consumer also resolves
+`@hawiyah/tokens/reference/dga-foundations.json`, which the 0.2.1 tarball
+exported without containing.
 
 ## Publishing a release
 
@@ -57,9 +107,11 @@ All seven packages share one version and release together.
    pnpm release:packages
    ```
 
-   This rebuilds the packages, runs the full `check:packages` consumer check
-   with `HAWIYAH_RELEASE=1` (which drops `private` from the staged manifests
-   only), and runs `npm publish --dry-run` on each verified tarball.
+   This rebuilds the packages from an empty `dist`, runs the full
+   `check:packages` content, exports and consumer check with
+   `HAWIYAH_RELEASE=1` (which drops `private` from the staged manifests only),
+   and runs `npm publish --dry-run` on each verified tarball. Confirm that the
+   [CI workflow](../.github/workflows/ci.yml) passed on the release commit.
 3. Record the release in the [validation record](validation.md) and
    [changelog](../CHANGELOG.md), commit, and confirm the working tree is clean.
 4. Push the tag `v<version>` on the release commit, for example by creating a

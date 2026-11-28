@@ -9,15 +9,16 @@ export interface AccordionMotion {
 const groups = new WeakMap<Node, Map<string, Set<AccordionMotion>>>();
 
 /** Adapters bind events and own markup; this helper owns only the transient motion.
- * No browser globals are read during module evaluation. */
+ * No browser globals are read during module evaluation, and a DOM without iterable
+ * child collections or getRootNode (server rendering) is tolerated. */
 export function createAccordionMotion(details: HTMLDetailsElement, content: HTMLElement,
   onOpenChange?: (open: boolean) => void): AccordionMotion {
-  const summary = [...details.children].find(child => child.localName === 'summary') as HTMLElement | undefined;
+  const summary = Array.prototype.find.call(details.children, (child: Element) => child.localName === 'summary') as HTMLElement | undefined;
   if (!summary) throw new Error('Hawiyah: accordion items require a summary.');
   const view = details.ownerDocument.defaultView;
   const media = view?.matchMedia?.('(prefers-reduced-motion: reduce)');
   const name = details.getAttribute('name');
-  const tree = details.getRootNode();
+  const tree: Node = typeof details.getRootNode === 'function' ? details.getRootNode() : details.ownerDocument;
   const initial = {
     expanded: summary.getAttribute('aria-expanded'), hidden: content.getAttribute('aria-hidden'),
     inert: content.hasAttribute('inert'), overflow: details.style.overflow,

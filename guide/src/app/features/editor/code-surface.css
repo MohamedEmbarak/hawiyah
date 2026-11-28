@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.surface {
+  min-inline-size: 0;
+}
+
+.surface[hidden] {
+  display: none;
+}

@@ -1,7 +1,8 @@
 # Portal layout
 
 `PortalLayout` composes `PortalHeader`, optional `SecondaryNav`, `Breadcrumb`,
-a focusable main container and `PortalFooter`. It defaults to `lang="ar" dir="rtl"`.
+a focusable main container and `PortalFooter`. It renders `dir` only when the
+application passes one, and it never sets `lang`.
 
 ```vue
 <script setup lang="ts">
@@ -10,27 +11,84 @@ import '@hawiyah/styles/styles.css';
 const links = [{ label: 'الخدمات', href: '/services', current: true }];
 </script>
 <template>
-  <PortalLayout brand="هوية" :links="links" :secondary-navigation="links"
+  <PortalLayout dir="rtl" brand="هوية" :links="links" :secondary-navigation="links"
     :breadcrumbs="[{ label: 'الرئيسية', href: '/' }, { label: 'الخدمات', current: true }]"
-    :footer-links="[{ label: 'الخصوصية', href: '/privacy' }]">
+    :footer-links="[{ label: 'الخصوصية', href: '/privacy' }]"
+    skip-label="انتقل إلى المحتوى" menu-label="القائمة" navigation-label="التنقل الرئيسي"
+    secondary-label="التنقل الثانوي" breadcrumb-label="مسار التنقل" footer-label="روابط التذييل"
+    :footer-props="{ externalLabel: 'يفتح في نافذة جديدة' }">
     <h1>الخدمات</h1>
   </PortalLayout>
 </template>
 ```
 
-Props: `brand` (required), `homeHref`, `links`, `secondaryNavigation`, `footerLinks`,
-`breadcrumbs`, `copyright`, `mainId`, `lang`, `dir`. Accessible labels:
-`skipLabel`, `menuLabel`, `navigationLabel`, `secondaryLabel`, `breadcrumbLabel`,
-`footerLabel`. `mainId` uses Vue `useId` by default. Slots: `logo`, `actions`,
-`footer`, default (page content). Supply actual artwork through `logo`.
+Props: `brand`, `brandLabel`, `homeHref`, `links`, `secondaryNavigation`, `footerLinks`,
+`breadcrumbs`, `copyright`, `mainId`, `dir`, `footerProps` (further `PortalFooter`
+props such as `externalLabel`, `legalLinksLabel`, `supportLabel`). Required text:
+`skipLabel`, `menuLabel` and `navigationLabel` always; `secondaryLabel` when
+`secondaryNavigation` is given; `breadcrumbLabel` when `breadcrumbs` are given;
+`footerLabel` (the footer's `navigationLabel`) when `footerLinks` are given; and
+`footerProps.externalLabel` always, because footer links may be marked external.
+`mainId` uses Vue `useId` by default. Slots: `brand`, `notice`, `actions`, `footer`, default
+(page content). `notice` and `actions` are forwarded to the header.
 
-For English, pass `lang="en" dir="ltr"` and translate all content and labels.
-Direction and language remain independent. Existing standalone `PortalHeader`
-keeps `brand`, `homeHref`, `links`, `navLabel` and its slots, adding `menuLabel`,
-`navigationId`, `mainId` and `skipLabel`. Escape returns focus to the toggle;
-selection, outside press and focus leaving close the mobile disclosure. Tab is
-native. Desktop links remain visible. `SecondaryNav` uses `items`, `label` and
-ordinary page links with `aria-current`, not menu/tablist semantics.
+`PortalHeader` alone also takes `v-model:open` / `defaultOpen`: the open state of
+the navigation below 48rem. The toggle, Escape (focus returns to the toggle), an
+outside press, focus leaving the header and a navigation link each change it
+once, and a controlled value is followed as given, so an application can close
+the menu after a client-side route change. `PortalLayout` does not pass `open`
+to its header in 0.3.0; compose `PortalHeader` directly where the state is
+needed. In the menu, one press on another group heading opens it and closes the
+open one; the press itself closes nothing.
+
+## Text is supplied by the application
+
+The shell ships no built-in strings and does not read `lang` or a locale. Every
+label above is application text; a missing required label renders nothing in
+its place (the attribute is omitted) and warns once in development with a
+`Hawiyah:` console message.
+
+## Brand
+
+The brand is application content. Pass plain text with `brand`, artwork through
+the `brand` slot, or both. A brand made of artwork alone takes its accessible
+name from `brandLabel`, which is written as `aria-label` on the brand link. When
+`homeHref` is empty the brand is a `div` (no link, `href` or link role), and
+`brandLabel` gives it `role="img"` and its `aria-label`; without `brandLabel` it
+has neither. When visible brand text is supplied and `brandLabel` is
+absent, nothing is added. In development, after mounting in a browser, a brand
+with no text, no `aria-label` and no image with a non-empty `alt` warns that it
+needs `brandLabel`. `PortalFooter` follows the same rules, and renders its
+support section only when its `support` slot is supplied.
+
+```vue
+<PortalLayout brand-label="هوية، الصفحة الرئيسية" skip-label="انتقل إلى المحتوى"
+  menu-label="القائمة" navigation-label="التنقل الرئيسي" :footer-props="{ externalLabel: 'يفتح في نافذة جديدة' }">
+  <template #brand><img src="/logo.svg" alt="" width="96" height="40" /></template>
+  <h1>الخدمات</h1>
+</PortalLayout>
+```
+
+## Header and secondary navigation
+
+Standalone `PortalHeader` takes `brand`, `brandLabel`, `homeHref`, `links`,
+required `navigationLabel` and `menuLabel`, and `navigationId`. Its `notice` slot
+(for example the official-site notice) renders in `div.hw-portal-notice`, a direct
+child of the header between the skip link and the brand; it is application
+content with no text requirement, role or ARIA attribute. The `actions` slot renders
+in `div.hw-portal-header-actions` after the navigation (`hw-portal-actions` is
+replaced by `hw-portal-header-actions`); each container is rendered only when its
+slot is given. Reading and tab order: skip link, notice, brand, menu toggle,
+navigation, actions. Its skip link is
+rendered only when `mainId` names a target; `skipLabel` is then required. The
+skip link is a packaged fragment link: it is rendered as `href="#id"` on the
+server and on first render, is bound with core `bindFragmentLink` after mounting,
+and from the first interaction resolves against the current document under any
+`<base href>`. Escape returns focus to the toggle; selection, outside press and
+focus leaving close the mobile disclosure. Tab is native. Desktop links remain
+visible. `SecondaryNav` uses `items`, a `label` (or `aria-label` /
+`aria-labelledby`) and ordinary page links with `aria-current`, not menu/tablist
+semantics.
 
 The 48rem mobile breakpoint is Hawiyah policy. Shared tokens preserve DGA, Hawiyah
 and custom themes. The shell introduces no animations. Source-informed

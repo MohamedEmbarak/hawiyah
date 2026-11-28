@@ -23,8 +23,9 @@
   --hw-profile-breadcrumb-margin: initial;
 }
 .hw-link { --hw-link-rest: var(--hw-color-link); --hw-link-hover: var(--hw-color-link-hover); --hw-link-active: var(--hw-color-link-active); --hw-link-visited: var(--hw-color-link-visited); color: var(--hw-link-rest); }
-/* Hosts may supply their own decorative indicator using data-hw-external-icon. */
-:is(.hw-link, .hw-portal-header a)[target='_blank']:not([data-hw-external-icon='none']):not(:has([data-hw-external-icon], .hw-portal-footer-external))::after {
+/* Hosts may supply their own decorative indicator using data-hw-external-icon.
+   A class-less link inside .hw-prose is marked the same way (prose.css). */
+:is(.hw-link, .hw-portal-header a, :where(.hw-prose) :where(a:not([class])):not(:where(.hw-prose [class] *)))[target='_blank']:not([data-hw-external-icon='none']):not(:has([data-hw-external-icon], .hw-portal-footer-external))::after {
   content: ''; display: inline-block; flex: none; inline-size: 1em; block-size: 1em;
   margin-inline-start: .25em; vertical-align: -.125em;
   background: currentColor; mask: url('./assets/icons/link-square-02.svg') center / contain no-repeat;
@@ -50,7 +51,7 @@
 .hw-breadcrumb li + li::before { content: var(--hw-profile-breadcrumb-separator, '/'); flex: none; inline-size: var(--hw-profile-breadcrumb-size, auto); block-size: var(--hw-profile-breadcrumb-size, auto); margin-inline: var(--hw-profile-breadcrumb-margin, 0px); border-block-start: var(--hw-profile-breadcrumb-border, 0px) solid currentColor; border-inline-end: var(--hw-profile-breadcrumb-border, 0px) solid currentColor; transform: rotate(calc(var(--_hw-inline-sign, 1) * var(--hw-profile-breadcrumb-angle, 0deg))); color: var(--hw-color-text-subtle); }
 @media (prefers-reduced-motion: reduce) { .hw-breadcrumb a { transition: none; } }
 @media (forced-colors: active) {
-  :is(.hw-link, .hw-portal-header a)[target='_blank']::after { background: LinkText; forced-color-adjust: none; }
+  :is(.hw-link, .hw-portal-header a, :where(.hw-prose) :where(a:not([class])):not(:where(.hw-prose [class] *)))[target='_blank']::after { background: LinkText; forced-color-adjust: none; }
   .hw-link, .hw-link[data-variant] { --hw-link-rest: LinkText; --hw-link-hover: LinkText; --hw-link-active: LinkText; --hw-link-visited: VisitedText; color: LinkText; }
   .hw-breadcrumb a { color: LinkText; }
   .hw-link:visited { color: VisitedText; }

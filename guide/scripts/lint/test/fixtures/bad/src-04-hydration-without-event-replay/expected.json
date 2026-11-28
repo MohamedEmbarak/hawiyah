@@ -1,0 +1,7 @@
+[
+  {
+    "rule": "L-SRC-4",
+    "file": "src/app/app.config.ts",
+    "line": 5
+  }
+]

@@ -1,0 +1,9 @@
+[
+  {
+    "component": "accordion",
+    "attribute": "data-hw-value",
+    "reason": "createAccordion of @hawiyah/vanilla reads the value of each section from data-hw-value on its details element, where React, Vue and Angular take the value as a field of the item and write no attribute; the stylesheet does not select it.",
+    "reference": "CHANGELOG.md, 0.3.0, The same in the four adapters: **One item shape per component**: Menu and Accordion items are keyed by `value`",
+    "approvedBy": "lead"
+  }
+]

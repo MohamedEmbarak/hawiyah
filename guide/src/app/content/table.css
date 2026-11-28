@@ -1,0 +1,21 @@
+/* A block of the prose flow, so the flow spacing applies to it. */
+:host {
+  display: block;
+}
+
+/* Alignment of a column's content inside its cell (Markdown :--, :-:, --:). */
+.cell {
+  display: block;
+}
+
+.align-start {
+  text-align: start;
+}
+
+.align-center {
+  text-align: center;
+}
+
+.align-end {
+  text-align: end;
+}

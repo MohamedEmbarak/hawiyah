@@ -9,10 +9,12 @@ beforeEach(() => {
   Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value() { this.open = false; this.dispatchEvent(new Event('close')); } });
 });
 afterEach(() => { apps.splice(0).forEach(app => app.unmount()); document.body.replaceChildren(); });
+// The drawer decides in a timer after the click was dispatched, so that listeners on ancestors have run (a microtask would run before them during a user click).
+const dispatched = () => new Promise<void>(resolve => setTimeout(resolve));
 it('composes native drawer/groups with disabled entries, route cancellation and focus return', async () => {
   const container = document.createElement('div'); document.body.append(container);
   let prevent = false;
-  const app = createApp({ render: () => h(NavigationDrawer, { title: 'القائمة', items: [
+  const app = createApp({ render: () => h(NavigationDrawer, { title: 'القائمة', navigationLabel: 'التنقل الرئيسي', closeLabel: 'إغلاق القائمة', items: [
     { id: 'group', label: 'الخدمات', children: [{ id: 'route', label: 'طلب خدمة', href: '#service', current: true, icon: 'home-06' }] },
     { id: 'disabled', label: 'غير متاح', href: '#blocked', disabled: true },
     { id: 'disabled-group', label: 'Disabled group', disabled: true, children: [{ id: 'hidden', label: 'Hidden', href: '#hidden' }] },
@@ -25,10 +27,13 @@ it('composes native drawer/groups with disabled entries, route cancellation and 
   expect(dialog.open).toBe(true); expect(dialog.classList.contains('hw-navigation-drawer')).toBe(true);
   expect(dialog.querySelector('nav')!.getAttribute('aria-label')).toBe('التنقل الرئيسي');
   expect(dialog.querySelector('a[href="#blocked"], a[href="#hidden"]')).toBeNull();
-  const summary = dialog.querySelector('summary')!; summary.focus(); summary.click(); await nextTick();
+  // The group that holds the current page starts open; the reader's toggles stand.
+  const summary = dialog.querySelector('summary')!; expect(summary.parentElement!.hasAttribute('open')).toBe(true);
+  summary.focus(); summary.click(); await nextTick(); expect(summary.parentElement!.hasAttribute('open')).toBe(false);
+  summary.click(); await nextTick();
   expect(summary.parentElement!.hasAttribute('open')).toBe(true); expect(dialog.open).toBe(true);
   const link = dialog.querySelector<HTMLAnchorElement>('a')!; link.focus();
-  prevent = true; link.click(); await nextTick(); expect(dialog.open).toBe(true);
-  prevent = false; link.click(); await nextTick(); await nextTick();
+  prevent = true; link.click(); await dispatched(); await nextTick(); expect(dialog.open).toBe(true);
+  prevent = false; link.click(); await nextTick(); expect(dialog.open).toBe(true); await dispatched(); await nextTick();
   expect(dialog.open).toBe(false); expect(document.activeElement).toBe(trigger);
 });

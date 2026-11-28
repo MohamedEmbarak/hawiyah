@@ -1,4 +1,5 @@
 import '@angular/compiler';
+import './fixtures/texts';
 import { TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
@@ -15,7 +16,7 @@ function dispatch(element: Element, type: string, outside = true) {
 }
 for (const Component of [HwDialogComponent, HwDrawerComponent]) {
   it(`${Component.name} honors gesture origin, cancellation, consumer prevention and reopen`, () => {
-    const fixture = TestBed.createComponent(Component); fixture.componentRef.setInput('title', 'Review'); fixture.detectChanges();
+    const fixture = TestBed.createComponent(Component); fixture.componentRef.setInput('title', 'Review'); fixture.componentRef.setInput('closeLabel', 'Close'); fixture.detectChanges();
     fixture.componentInstance.show(); fixture.detectChanges();
     const dialog = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
     vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 100, right: 400, bottom: 400 } as DOMRect);

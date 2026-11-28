@@ -46,10 +46,11 @@ to the common 20-star cap. Core exports `normalizeRatingMax` and
 `normalizeRatingValue` for applications composing equivalent vanilla markup.
 Normalization does not emit change events merely because props are supplied.
 
-Arabic names and Latin digits are default. React uses `getValueLabel` for the
-display name, Vue/Angular use `valueLabel`; each receives the normalized value and
-maximum. `showValue=false` hides the visible score without removing the accessible
-name. Input label formatters remain separately configurable. Stars fill from
+The application supplies every name; digits remain Latin. RatingDisplay takes
+`getValueLabel(value, max)` in every adapter, which receives the normalized value
+and maximum and returns the whole text alternative; it has no `label`. Rating
+takes `getRatingLabel(value, max)` for each option. `showValue=false` hides the
+visible score without removing the accessible name. Stars fill from
 inline start independently of language, wrap for larger maxima, and never turn
 an aggregate display into a clickable input.
 

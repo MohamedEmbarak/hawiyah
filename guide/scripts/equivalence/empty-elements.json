@@ -1,0 +1,51 @@
+[
+  {
+    "component": "empty-state",
+    "class": "hw-empty-icon",
+    "reason": "@hawiyah/angular always renders span.hw-empty-icon, which the stylesheet hides while nothing is projected with [hwEmptyIcon]; React and Vue render the region only with an icon.",
+    "reference": "@hawiyah/angular README.md: \"The icon region is always rendered and the stylesheet hides it while it is empty.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "stat",
+    "class": "hw-stat-trend",
+    "reason": "@hawiyah/angular always renders span.hw-stat-trend, which the stylesheet hides while it is empty; React and Vue render the trend only when one is given.",
+    "reference": "@hawiyah/angular README.md: \"Both regions are always rendered and an empty trend is hidden by the stylesheet.\"",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "card",
+    "class": "hw-card-header",
+    "reason": "@hawiyah/angular 0.3.0 always renders header.hw-card-header, empty when no [hwCardHeader] content is projected; React and Vue render it only with header content, and the stylesheet hides it while it is empty.",
+    "reference": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Card (Angular): `hw-card` always renders `header.hw-card-header` and `footer.hw-card-footer`, empty when no `[hwCardHeader]` or `[hwCardFooter]` content is projected",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "card",
+    "class": "hw-card-footer",
+    "reason": "@hawiyah/angular 0.3.0 always renders footer.hw-card-footer, empty when no [hwCardFooter] content is projected; React and Vue render it only with footer content, and the stylesheet hides it while it is empty.",
+    "reference": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: Card (Angular): `hw-card` always renders `header.hw-card-header` and `footer.hw-card-footer`, empty when no `[hwCardHeader]` or `[hwCardFooter]` content is projected",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "input-group",
+    "class": "hw-input-addon",
+    "reason": "@hawiyah/angular 0.3.0 always renders both span.hw-input-addon elements of hw-input-group, empty when no [hwPrefix] or [hwSuffix] content is projected; React and Vue render an addon only when it is given, and the stylesheet hides an empty addon.",
+    "reference": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: InputGroup (Angular) always writes `data-size` (`md` when no size is given) on `.hw-input-group` and always renders both `span.hw-input-addon` elements, empty when no `[hwPrefix]` or `[hwSuffix]` content is projected",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "site-verification",
+    "class": "hw-verification-mark",
+    "reason": "@hawiyah/angular 0.3.0 always renders span.hw-verification-mark of hw-site-verification, empty when no [hwVerificationMark] content is projected; React and Vue render the region only with a mark, and the stylesheet hides it while it is empty.",
+    "reference": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: SiteVerification (Angular): `hw-site-verification` always renders `span.hw-verification-mark`, empty when no `[hwVerificationMark]` content is projected",
+    "approvedBy": "lead"
+  },
+  {
+    "component": "page-header",
+    "class": "hw-page-header-actions",
+    "reason": "@hawiyah/angular 0.3.0 always renders div.hw-page-header-actions, empty when nothing is projected; React and Vue render the region only with actions.",
+    "reference": "CHANGELOG.md, 0.3.0, Known defects in 0.3.0: PageHeader (Angular) always renders `div.hw-page-header-actions`, empty when",
+    "approvedBy": "lead"
+  }
+]

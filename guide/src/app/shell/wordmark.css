@@ -1,0 +1,49 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* The images are flex items of the host; their wrappers add no box. CSS switches the
+   wrappers, never the images (see wordmark.ts). */
+.light,
+.dark {
+  display: contents;
+}
+
+.dark {
+  display: none;
+}
+
+:host-context([data-hw-mode='dark']) .light {
+  display: none;
+}
+
+:host-context([data-hw-mode='dark']) .dark {
+  display: contents;
+}
+
+picture {
+  display: block;
+}
+
+/* Forced colours: the page surfaces take the system colours, so the artwork follows
+   the colour scheme of the system, not the stored mode. */
+@media (forced-colors: active) and (prefers-color-scheme: light) {
+  :host-context([data-hw-mode]) .light {
+    display: contents;
+  }
+
+  :host-context([data-hw-mode]) .dark {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :host-context([data-hw-mode]) .light {
+    display: none;
+  }
+
+  :host-context([data-hw-mode]) .dark {
+    display: contents;
+  }
+}

@@ -34,6 +34,7 @@ import {
   Carousel,
   Stack,
 } from "../src/index.js";
+import { calendarText, datePickerText } from "./texts.js";
 const applications: App[] = [];
 function mount(component: Component) {
   const root = document.createElement("div");
@@ -129,6 +130,9 @@ describe("expanded Vue controls", () => {
             h(MultiSelect, {
               label: "Cities",
               searchLabel: "Find city",
+              emptyMessage: "No matching city",
+              getResultsMessage: (count: number) => `${count} cities shown`,
+              requiredMessage: "Choose at least one city.",
               name: "city",
               modelValue: values.value,
               defaultValue: ["r"],
@@ -157,9 +161,14 @@ describe("expanded Vue controls", () => {
     ]);
     readonly.value = true;
     await nextTick();
-    expect(
-      root.querySelector<HTMLInputElement>("input[type=checkbox]")!.disabled,
-    ).toBe(true);
+    // [RO-01][RO-04][rich-inputs-6] read-only checkboxes stay enabled and focusable with aria-disabled.
+    const readonlyBox = root.querySelector<HTMLInputElement>("input[type=checkbox]")!;
+    expect(readonlyBox.disabled).toBe(false);
+    expect(readonlyBox.getAttribute("aria-disabled")).toBe("true");
+    readonlyBox.click();
+    await nextTick();
+    expect(readonlyBox.checked).toBe(true);
+    expect(new FormData(root.querySelector("form")!).getAll("city")).toEqual(["r", "j"]);
     root.querySelector("form")!.reset();
     await Promise.resolve();
     await nextTick();
@@ -173,7 +182,7 @@ describe("expanded Vue controls", () => {
           h(
             "form",
             {},
-            h(TagInput, { label: "Tags", name: "tag", required: true }),
+            h(TagInput, { label: "Tags", name: "tag", required: true, requiredMessage: "Add at least one tag.", getRemoveLabel: (tag: string) => `Remove ${tag}` }),
           ),
       ),
     );
@@ -205,6 +214,8 @@ describe("expanded Vue controls", () => {
             {},
             h(RangeSlider, {
               label: "Budget",
+              lowerLabel: "Minimum",
+              upperLabel: "Maximum",
               lowerName: "min",
               upperName: "max",
               modelValue: values.value,
@@ -235,7 +246,7 @@ describe("expanded Vue controls", () => {
       defineComponent(
         () => () =>
           h("form", {}, [
-            h(PasswordField, { label: "Password", defaultValue: "secret" }),
+            h(PasswordField, { label: "Password", defaultValue: "secret", showLabel: "Show password", hideLabel: "Hide password" }),
             h(SearchField, { label: "Search", clearLabel: "Clear search", defaultValue: "query" }),
           ]),
       ),
@@ -310,6 +321,8 @@ describe("expanded Vue controls", () => {
         () => () =>
           h(FileDropzone, {
             label: "Upload",
+            dropLabel: "Choose files or drop them here",
+            getRejectedMessage: (rejected: readonly File[]) => `${rejected.length} file not accepted`,
             accept: ".pdf",
             onReject: reject,
             "onUpdate:files": files,
@@ -323,7 +336,9 @@ describe("expanded Vue controls", () => {
     root.querySelector(".hw-file-dropzone")!.dispatchEvent(drop);
     await nextTick();
     expect(reject).toHaveBeenCalledOnce();
-    expect(files).toHaveBeenCalledWith([]);
+    expect(reject.mock.calls[0]![0].map((file: File) => file.name)).toEqual(["image.png"]);
+    // [RESET-03][files-2] nothing was held, so the value is not notified.
+    expect(files).not.toHaveBeenCalled();
   });
 });
 describe("Vue calendars and interactions", () => {
@@ -336,8 +351,8 @@ describe("Vue calendars and interactions", () => {
             "div",
             { dir: "rtl" },
             h(Calendar, {
+              ...calendarText,
               label: "Dates",
-              locale: "en-US",
               modelValue: value.value,
               min: "2024-02-28",
               max: "2024-03-05",
@@ -380,8 +395,8 @@ describe("Vue calendars and interactions", () => {
       defineComponent(
         () => () =>
           h(DatePicker, {
+            ...datePickerText,
             label: "Date",
-            locale: "en-US",
             modelValue: value.value,
             calendar: system.value,
             "onUpdate:modelValue": (next) => {
@@ -436,7 +451,7 @@ describe("Vue calendars and interactions", () => {
       defineComponent(
         () => () =>
           h(Calendar, {
-            locale: "en-US",
+            ...calendarText,
             calendar: "islamic-umalqura",
             modelValue: value.value,
           }),
@@ -471,6 +486,8 @@ describe("Vue calendars and interactions", () => {
       defineComponent(
         () => () =>
           h(DatePicker, {
+            ...datePickerText,
+            locale: "ar-SA",
             label: "Historic date",
             calendar: "islamic-umalqura",
             defaultValue: "1900-01-01",
@@ -492,12 +509,13 @@ describe("Vue calendars and interactions", () => {
           h("div", {}, [
             h(Menu, {
               label: "Actions",
+              triggerLabel: "Actions",
               items: [
                 { value: "a", label: "First" },
                 { value: "b", label: "Disabled", disabled: true },
                 { value: "c", label: "Last" },
               ],
-              onSelect: selected,
+              onAction: selected,
             }),
             h(Popover, { label: "Help details", triggerLabel: "Help" }, () =>
               h("a", { href: "#help" }, "Read more"),
@@ -518,12 +536,12 @@ describe("Vue calendars and interactions", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
     root.querySelector<HTMLButtonElement>(".hw-popover button")!.click();
     await nextTick();
-    expect(root.querySelector<HTMLElement>(".hw-popover-content")!.hidden).toBe(
+    expect(root.querySelector<HTMLElement>(".hw-popover-panel")!.hidden).toBe(
       false,
     );
     document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
     await nextTick();
-    expect(root.querySelector<HTMLElement>(".hw-popover-content")!.hidden).toBe(
+    expect(root.querySelector<HTMLElement>(".hw-popover-panel")!.hidden).toBe(
       true,
     );
   });
@@ -537,6 +555,8 @@ describe("Vue calendars and interactions", () => {
             { dir: "rtl" },
             h(TreeView, {
               label: "Services",
+              getExpandLabel: (node: { label: string }) => `Expand ${node.label}`,
+              getCollapseLabel: (node: { label: string }) => `Collapse ${node.label}`,
               items: [
                 {
                   id: "parent",
@@ -558,7 +578,7 @@ describe("Vue calendars and interactions", () => {
     await key(parent, "ArrowLeft");
     expect(parent.getAttribute("aria-expanded")).toBe("true");
     await key(parent, "ArrowLeft");
-    expect(document.activeElement?.getAttribute("aria-label")).toBe("Child");
+    expect(document.getElementById(document.activeElement!.getAttribute("aria-labelledby")!)?.textContent).toBe("Child");
     await key(document.activeElement!, "Enter");
     expect(selected).toHaveBeenCalledWith("child");
     await key(document.activeElement!, "ArrowRight");
@@ -585,6 +605,7 @@ describe("Vue calendars and interactions", () => {
               Drawer,
               {
                 title: "Navigation",
+                closeLabel: "Close",
                 side: "start",
                 open: open.value,
                 "onUpdate:open": (value) => {
@@ -594,6 +615,8 @@ describe("Vue calendars and interactions", () => {
               () => h("a", { href: "#section" }, "Section"),
             ),
             h(ToastRegion, {
+              label: "Notifications",
+              getDismissLabel: (message: { message: string }) => `Dismiss notification: ${message.message}`,
               messages: [
                 { id: "one", message: "Saved" },
                 { id: "two", message: "Urgent", urgent: true },
@@ -615,7 +638,7 @@ describe("Vue calendars and interactions", () => {
     await nextTick();
     expect(document.activeElement).toBe(trigger);
     root
-      .querySelector<HTMLButtonElement>('[aria-label="إغلاق الإشعار: Saved"]')!
+      .querySelector<HTMLButtonElement>('[aria-label="Dismiss notification: Saved"]')!
       .click();
     await nextTick();
     expect(dismiss).toHaveBeenCalledWith("one");
@@ -635,6 +658,8 @@ describe("Vue content and layouts", () => {
         () => () =>
           h(DataTable, {
             caption: "Requests",
+            locale: "en-US",
+            emptyMessage: "No requests",
             rows,
             columns: [
               { key: "id", label: "ID" },
@@ -667,19 +692,25 @@ describe("Vue content and layouts", () => {
       defineComponent(
         () => () =>
           h("div", {}, [
-            h(Feedback, { onSubmit: feedback }),
+            h(Feedback, { label: "Was this page helpful?", yesLabel: "Yes", noLabel: "No", commentLabel: "Tell us more", submitLabel: "Send feedback", successMessage: "Thank you for your feedback.", onFeedback: feedback }),
             h(CookieConsent, {
+              title: "Cookie preferences",
               description: "Optional analytics.",
-              onReject: reject,
+              acceptLabel: "Accept optional cookies",
+              rejectLabel: "Reject optional cookies",
+              preferencesLabel: "Manage preferences",
+              onConsent: reject,
             }),
             h(Carousel, {
               label: "Highlights",
               previousLabel: "Previous slide",
               nextLabel: "Next slide",
-              slideMessage: (index: number, total: number) => `Slide ${index} of ${total}`,
+              indicatorsLabel: "Choose a slide",
+              emptyLabel: "No slides",
+              getSlideLabel: (position: number, total: number) => `Slide ${position} of ${total}`,
               slides: [
-                { id: "a", label: "First", content: "One" },
-                { id: "b", label: "Second", content: "Two" },
+                { id: "a", content: "One" },
+                { id: "b", content: "Two" },
               ],
             }),
           ]),
@@ -691,12 +722,12 @@ describe("Vue content and layouts", () => {
     [...root.querySelectorAll<HTMLButtonElement>("button")]
       .find((button) => button.textContent === "Send feedback")!
       .click();
-    expect(feedback).toHaveBeenCalledWith({ value: "yes", comment: "" });
+    expect(feedback).toHaveBeenCalledWith({ helpful: true, comment: "" });
     buttons
       .find((button) => button.textContent === "Reject optional cookies")!
       .click();
     await nextTick();
-    expect(reject).toHaveBeenCalledOnce();
+    expect(reject).toHaveBeenCalledExactlyOnceWith("rejected");
     expect(root.querySelector<HTMLElement>(".hw-cookie-consent")!.hidden).toBe(
       true,
     );

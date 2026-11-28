@@ -1,0 +1,51 @@
+/* Shared band layout of the install, packages and compliance sections: the heading
+   column beside the content from 48em. */
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.band {
+  display: grid;
+  gap: var(--hw-space-6);
+  min-inline-size: 0;
+  scroll-margin-block-start: var(--hw-space-6);
+}
+
+.band-head {
+  display: grid;
+  gap: var(--hw-space-4);
+  align-content: start;
+  min-inline-size: 0;
+}
+
+.band-head > h2,
+.band-head > p {
+  margin-block: 0;
+}
+
+.band-body {
+  display: grid;
+  gap: var(--hw-space-6);
+  min-inline-size: 0;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hw-space-2) var(--hw-space-6);
+  margin: 0;
+  padding: 0;
+}
+
+/* No list markers: the items are not list items (an inherited list-style-type would reach the package links). */
+.links > li {
+  display: block;
+}
+
+@media (min-width: 48em) {
+  .band {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: var(--hw-space-10);
+  }
+}

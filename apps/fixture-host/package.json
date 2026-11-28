@@ -1,0 +1,33 @@
+{
+  "name": "@hawiyah/fixture-host",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser test host that renders the workspace packages of Hawiyah with the four adapters on one page",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@angular/common": "22.2.3",
+    "@angular/compiler": "22.2.3",
+    "@angular/core": "22.2.3",
+    "@angular/forms": "22.2.3",
+    "@angular/platform-browser": "22.2.3",
+    "@hawiyah/angular": "workspace:*",
+    "@hawiyah/core": "workspace:*",
+    "@hawiyah/react": "workspace:*",
+    "@hawiyah/styles": "workspace:*",
+    "@hawiyah/vanilla": "workspace:*",
+    "@hawiyah/vue": "workspace:*",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "rxjs": "^7.8.2",
+    "vue": "3.5.44"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.1.2",
+    "@vitejs/plugin-vue": "6.0.10",
+    "vite": "8.3.5"
+  },
+  "license": "Apache-2.0"
+}

@@ -24,7 +24,7 @@ Use public theme values to style supported engine options. A foreign canvas or i
 | CAPTCHA / abuse checks | Field help, loading/error states, retry and alternate path | Chosen provider or server-side mechanism, verification, expiry, and an accessible fallback |
 | Consent management | CookieConsent, settings Drawer, ToggleGroup/Checkbox | Actual script gating, persistence/versioning, preference changes, and integration with the application's privacy policy |
 
-`DataTable` currently supplies semantic tables with localized stable sorting. `FileDropzone` supplies local selection and input/drop feedback. `CookieConsent` supplies preference UI and events. These components do not silently activate backend features.
+`DataTable` currently supplies semantic tables with stable sorting in the locale the application passes. `FileDropzone` supplies local selection and input/drop feedback. `CookieConsent` supplies preference UI and events. These components do not silently activate backend features.
 
 ## Native framework ownership
 

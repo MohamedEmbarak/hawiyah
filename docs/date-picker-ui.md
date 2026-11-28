@@ -2,7 +2,8 @@
 
 The compact DatePicker combines an editable text field with an inset calendar icon,
 a 24rem maximum-width modal, and a green animated rectangular Gregorian/Hijri
-switch. Arabic is the default; labels remain localized while all digits use 0–9.
+switch. Every label is supplied by the application, and the required `locale`
+formats month and weekday names; all digits use 0–9.
 The idle field displays the active calendar, and focus exposes the Gregorian ISO
 draft for typing. Submitted values remain ISO.
 

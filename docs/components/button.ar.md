@@ -1,0 +1,256 @@
+---
+source:
+  summary: 421b7d9c72f6
+  example: 9b7f6a99ca77
+  variants-and-states: cc1cc8030691
+  api: f9ede7e02149
+  accessibility: fde8c31f952d
+  rtl-and-localisation: f0b6d337f83f
+  platforms-code-reference: d98931e17a0c
+---
+# زر
+
+يبدأ الزر إجراءً في الصفحة الحالية، مثل إرسال نموذج أو فتح نافذة حوار. ويعرض عنصر زر أصليًا بالطُّرُز المرئية لهوية، وبثلاثة أحجام، وبحالة تحميل.
+
+## مثال
+
+تحتوي الصفحة على زر رئيسي واحد لإجرائها الرئيسي. ويسمّي نصُّ الزر الإجراءَ بمصدرٍ، مثل «متابعة» و«حذف».
+
+```html live example=primary
+<button class="hw-button" type="button" data-variant="primary" data-size="md">متابعة</button>
+```
+
+```tsx live example=primary
+<Button variant="primary">متابعة</Button>
+```
+
+```vue live example=primary
+<Button variant="primary">متابعة</Button>
+```
+
+```ts live example=primary framework=angular
+template: `<button hwButton variant="primary">متابعة</button>`
+```
+
+## الأشكال والحالات
+
+### الأشكال
+
+يضبط الشكلُ الطرازَ المرئي للزر: يميّز الشكل `primary` الإجراء الرئيسي، ويميّز الشكلان `secondary` و`outline` الإجراءات المساندة، ويميّز الشكل `ghost` إجراءً قليل الأهمية، ويميّز الشكل `danger` إجراءً يحذف البيانات أو يتخلّص منها.
+
+```html live example=variants
+<div class="hw-inline">
+  <button class="hw-button" type="button" data-variant="primary" data-size="md">متابعة</button>
+  <button class="hw-button" type="button" data-variant="secondary" data-size="md">حفظ المسودة</button>
+  <button class="hw-button" type="button" data-variant="outline" data-size="md">معاينة</button>
+  <button class="hw-button" type="button" data-variant="ghost" data-size="md">إلغاء</button>
+  <button class="hw-button" type="button" data-variant="danger" data-size="md">حذف</button>
+</div>
+```
+
+```tsx live example=variants
+<div className="hw-inline">
+  <Button variant="primary">متابعة</Button>
+  <Button variant="secondary">حفظ المسودة</Button>
+  <Button variant="outline">معاينة</Button>
+  <Button variant="ghost">إلغاء</Button>
+  <Button variant="danger">حذف</Button>
+</div>
+```
+
+```vue live example=variants
+<div class="hw-inline">
+  <Button variant="primary">متابعة</Button>
+  <Button variant="secondary">حفظ المسودة</Button>
+  <Button variant="outline">معاينة</Button>
+  <Button variant="ghost">إلغاء</Button>
+  <Button variant="danger">حذف</Button>
+</div>
+```
+
+```ts live example=variants framework=angular
+template: `<div class="hw-inline">
+  <button hwButton variant="primary">متابعة</button>
+  <button hwButton variant="secondary">حفظ المسودة</button>
+  <button hwButton variant="outline">معاينة</button>
+  <button hwButton variant="ghost">إلغاء</button>
+  <button hwButton variant="danger">حذف</button>
+</div>`
+```
+
+توفّر الحزم أيضًا الطُّرُز `default` و`light` و`outline-white` و`soft` و`link`. والشكلان `light` و`outline-white` مخصّصان لسطح داكن.
+
+### الأحجام
+
+يضبط الحجم ارتفاع الزر وحشوته. والحجم المتوسط هو الحجم الافتراضي.
+
+```html live example=sizes
+<div class="hw-inline">
+  <button class="hw-button" type="button" data-variant="primary" data-size="sm">صغير</button>
+  <button class="hw-button" type="button" data-variant="primary" data-size="md">متوسط</button>
+  <button class="hw-button" type="button" data-variant="primary" data-size="lg">كبير</button>
+</div>
+```
+
+```tsx live example=sizes
+<div className="hw-inline">
+  <Button size="sm">صغير</Button>
+  <Button size="md">متوسط</Button>
+  <Button size="lg">كبير</Button>
+</div>
+```
+
+```vue live example=sizes
+<div class="hw-inline">
+  <Button size="sm">صغير</Button>
+  <Button size="md">متوسط</Button>
+  <Button size="lg">كبير</Button>
+</div>
+```
+
+```ts live example=sizes framework=angular
+template: `<div class="hw-inline">
+  <button hwButton size="sm">صغير</button>
+  <button hwButton size="md">متوسط</button>
+  <button hwButton size="lg">كبير</button>
+</div>`
+```
+
+### التحميل
+
+يكون الزر في حالة التحميل معطَّلًا تعطيلًا أصليًا ويحمل الخاصية `aria-busy="true"`. ويحتفظ بنصه طوال تنفيذ العملية.
+
+```html live example=loading
+<button class="hw-button" type="button" data-variant="primary" data-size="md" disabled aria-busy="true">إرسال الطلب</button>
+```
+
+```tsx live example=loading
+<Button loading>إرسال الطلب</Button>
+```
+
+```vue live example=loading
+<Button loading>إرسال الطلب</Button>
+```
+
+```ts live example=loading framework=angular
+template: `<button hwButton loading>إرسال الطلب</button>`
+```
+
+### التعطيل
+
+يخرج الزر المعطَّل من ترتيب التنقل بالمفتاح Tab، ولا يستجيب للتفعيل. اذكر سبب عدم إتاحة الإجراء في نص الصفحة.
+
+```html live example=disabled
+<button class="hw-button" type="button" data-variant="primary" data-size="md" disabled>متابعة</button>
+```
+
+```tsx live example=disabled
+<Button disabled>متابعة</Button>
+```
+
+```vue live example=disabled
+<Button disabled>متابعة</Button>
+```
+
+```ts live example=disabled framework=angular
+template: `<button hwButton disabled>متابعة</button>`
+```
+
+## الواجهة البرمجية
+
+### JavaScript
+
+جدول: خصائص العنصر hw-button
+
+| الخيار | النوع | مطلوب | القيمة الافتراضية |
+| --- | --- | --- | --- |
+| `class` | `'hw-button'` | `true` | — |
+| `type` | `'button' \| 'submit' \| 'reset'` | `true` | — |
+| `data-variant` | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
+| `data-size` | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
+| `data-icon-only` | `boolean` | `false` | — |
+| `disabled` | `boolean` | `false` | — |
+| `aria-busy` | `'true'` | `false` | — |
+| `aria-disabled` | `'true'` | `false` | — |
+| `aria-pressed` | `'true'` | `false` | — |
+| `data-shape` | `'circle'` | `false` | — |
+
+ليس للزر متحكم في JavaScript، فالترميز هو واجهته البرمجية: اكتب عنصر زر أصليًا بالصنف `hw-button`، واكتب له دائمًا الخاصية `type`، لأن النوع الافتراضي للزر داخل النموذج في المتصفح هو `submit`. ولحالة التحميل اكتب الخاصيتين `disabled` و`aria-busy="true"` معًا، واحذفهما عند انتهاء العملية. وتُدرج الخاصية `data-icon-only` مع `hw-button` و`data-variant` و`data-size` في صف الإجراءات من جدول الواجهة المستقرة للأصناف والحالات في `@hawiyah/styles`، وتُكتب بلا قيمة. ودون `data-variant` و`data-size` يكون الزر `primary` و`md`، كما يذكر ملف README في `@hawiyah/styles`. والخاصية `disabled` هي خاصية التعطيل الأصلية. أما الخاصية `aria-disabled="true"` فتمنح الزر مظهر التعطيل مع بقائه في ترتيب التنقل بالمفتاح Tab ومؤشر تركيز ظاهر، ولا تمنع النقر بذاتها، فيتجاهل التطبيق التفعيل. وعلى زر يحمل `data-icon-only` تدل الخاصية `aria-pressed="true"` على حالة الضغط لزر تبديل، وتجعل الخاصية `data-shape="circle"` الزر دائريًا؛ واستخدم زر الأيقونة لهذه الحالة.
+
+### React
+
+جدول: خصائص Button
+
+| الخاصية | النوع | مطلوب | القيمة الافتراضية |
+| --- | --- | --- | --- |
+| `variant` | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
+| `size` | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
+| `loading` | `boolean` | `false` | — |
+
+يقبل Button أيضًا خصائص عنصر الزر الأصلي، ومنها `type` و`disabled` و`onClick` و`ref`. ويكون النوع `button` ما لم يُحدَّد نوع آخر. وتعطّل حالة التحميل الزر وتضبط `aria-busy`.
+
+### Vue
+
+جدول: خصائص Button وأحداثه ومنافذه
+
+| الاسم | الفئة | النوع | مطلوب | القيمة الافتراضية |
+| --- | --- | --- | --- | --- |
+| `variant` | prop | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
+| `size` | prop | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
+| `loading` | prop | `boolean` | `false` | `false` |
+| `disabled` | prop | `boolean` | `false` | `false` |
+| `type` | prop | `'button' \| 'submit' \| 'reset'` | `false` | `'button'` |
+| `default` | slot | — | `false` | — |
+
+يحمل المنفذ الافتراضي نص الزر. وتصل الخصائص والمستمعات الأخرى، مثل `@click`، إلى عنصر الزر الأصلي. ويتيح المكوّن `element` و`focus()` عبر مرجع القالب.
+
+### Angular
+
+جدول: مُدخلات button[hwButton] ومخرجاته ومحتواه
+
+| الاسم | الفئة | النوع | مطلوب | القيمة الافتراضية |
+| --- | --- | --- | --- | --- |
+| `variant` | input | `'primary' \| 'default' \| 'secondary' \| 'outline' \| 'outline-white' \| 'light' \| 'danger' \| 'ghost' \| 'soft' \| 'link'` | `false` | `'primary'` |
+| `size` | input | `'sm' \| 'md' \| 'lg'` | `false` | `'md'` |
+| `loading` | input | `boolean` | `false` | `false` |
+| `disabled` | input | `boolean` | `false` | `false` |
+| `type` | input | `string \| null` | `false` | `null` |
+
+يُطبَّق `HwButtonDirective` على `button[hwButton]` و`a[hwButton]`. ويكون الزر الأصلي من النوع `type="button"` ما لم يُكتب نوع آخر. وتُكتب المُدخلات `type` و`disabled` و`loading` قيمًا ثابتة أو مربوطة، مثل `[loading]="saving"`؛ ولا يُدعم ربط `[attr.type]` أو `[attr.disabled]` أو `[attr.aria-busy]` على العنصر. وعلى الرابط لا يكتب التوجيه نوعًا ولا خاصية تعطيل.
+
+## إمكانية الوصول
+
+الزر عنصر زر أصلي، فيوفّر المتصفح دوره وسلوك التركيز عليه وتفعيله من لوحة المفاتيح. واسمه الميسّر هو نصه الظاهر.
+
+جدول: التفاعل من لوحة المفاتيح مع المكوّن: زر
+
+| المفتاح | الإجراء |
+| --- | --- |
+| <kbd>Tab</kbd> | ينقل التركيز إلى الزر، ما لم يكن معطَّلًا أو في حالة تحميل. |
+| <kbd>Enter</kbd> | يفعّل الزر. |
+| <kbd>Space</kbd> | يفعّل الزر. |
+
+- يظهر مؤشر التركيز عند التركيز بلوحة المفاتيح، ويبقى ظاهرًا أثناء الضغط على المفتاح Space.
+- يخرج الزر المعطَّل أو الذي في حالة تحميل من ترتيب التنقل. وبعد انتهاء حالة التحميل أعد التركيز إلى الزر أو إلى نتيجة العملية.
+- يحتاج الزر الذي يعرض أيقونة فقط إلى اسم ميسّر؛ استخدم زر الأيقونة لهذه الحالة.
+- استخدم رابطًا، لا زرًا، للانتقال إلى صفحة أخرى.
+
+> [!NOTE]
+> لا يبلغ الشكلان `light` و`outline-white` تباينًا مقروءًا إلا على سطح داكن، ولا يحلّان محلّ الشكل `primary` في صفحة فاتحة.
+
+## الاتجاه والتوطين
+
+ليس في الزر نص مدمج: يكتب التطبيق كل نص بلغة الصفحة. ويرث العنصر لغة الصفحة واتجاهها، وتستخدم الأنماط المضمّنة في الحزم خصائص CSS المنطقية، فيتبع النص وأي أيقونة اتجاه القراءة.
+
+- اجعل كل نص قصيرًا؛ فالزر يتّسع مع نصه، وينتقل النص إلى سطر جديد داخل الحاوية الضيقة.
+- يستخدم النص العربي والإنجليزي الشكل والحجم نفسيهما، ولا يغيّر أي محوّل مظهر الزر بحسب اللغة.
+
+## مرجع كود المنصات
+
+هوية مكتبة مكوّنات واجهات مبنية للامتثال لكود المنصات الصادر عن هيئة الحكومة الرقمية، وليست منتجًا رسميًا للهيئة، ولا تحمل أي شهادة اعتماد. يذكر هذا القسم مصادر ربط الزر بكود المنصات؛ وتسرد لوحة الأدلة بعده أدلة التحقق التي يسجّلها components.json والبنود التي ما زالت مفتوحة.
+
+### المصادر
+
+- رُبطت الطُّرُز المرئية السبعة، الواردة في ورقة أنماط كود المنصات المزوَّدة، بالأشكال `primary` و`default` و`secondary` و`outline` و`outline-white` و`light` و`danger`، كما هو مسجّل في [ملاحظات الأزرار](../nic-buttons.md).
+- لا يُدّعى أن الارتفاعات المعروضة للحجمين الصغير والكبير تطابق أحجام المصدر تمامًا.
+- يستخدم الشكل `danger` نصًا أبيض بدلًا من النص الأحمر في المصدر لتحقيق تباين مقروء، وهذا التكييف موثّق في ملاحظات الأزرار.

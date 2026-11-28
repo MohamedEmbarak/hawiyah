@@ -6,10 +6,12 @@ export interface TabOverflowOptions {
   onChange: (hidden: number[]) => void;
 }
 
-/** Read-only layout observation: adapters own visibility, disclosure DOM and focus. */
+/** Read-only layout observation: adapters own visibility, disclosure DOM and focus.
+ * Without layout APIs (a server DOM) nothing is measured and no timer is started. */
 export function observeTabOverflow(options: TabOverflowOptions): TabOverflowObserver {
   const { container } = options;
-  const view = container.ownerDocument.defaultView;
+  const view = container.ownerDocument?.defaultView;
+  if (!view || typeof container.getBoundingClientRect !== 'function' || typeof view.getComputedStyle !== 'function') return { refresh() {}, destroy() {} };
   let destroyed = false;
   let frame: number | undefined;
   let last: string | undefined;

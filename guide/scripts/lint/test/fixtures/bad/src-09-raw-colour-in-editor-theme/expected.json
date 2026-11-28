@@ -1,0 +1,7 @@
+[
+  {
+    "rule": "L-SRC-8",
+    "file": "src/app/features/editor/code-theme.ts",
+    "line": 2
+  }
+]

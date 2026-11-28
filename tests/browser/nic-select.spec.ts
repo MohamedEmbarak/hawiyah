@@ -64,7 +64,7 @@ async function exerciseSelects(scope: Locator, direction: Direction) {
   const error = control('error');
   await expect(error).toHaveAttribute('aria-invalid', 'true');
   await expect(scope.locator('[data-select-demo="error"] .hw-error')).toHaveCSS('font-size', '12px');
-  await expect(scope.locator('[data-select-demo="single"] .hw-hint')).toHaveCSS('font-size', '10px');
+  await expect(scope.locator('[data-select-demo="single"] .hw-hint')).toHaveCSS('font-size', '12px');
   await expect(control('disabled')).toBeDisabled();
 
   const multiple = control('multiple');

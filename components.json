@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "name": "Hawiyah",
   "nameAr": "هوية",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "lifecycle": "public-source-preview",
   "description": "UI component library built to comply with the DGA Platforms Code. Compliance evidence and open items are documented; Hawiyah is not an official DGA product.",
   "keywords": [
@@ -27,7 +27,7 @@
     "built": "Source exists for the named adapter; this does not establish complete verification.",
     "verified": "The named adapter has direct behavior, semantic-association, or layout-contract assertions recorded in evidence. Scope is limited to those cases; rendering-only and broad suite checks remain separate. This is not a blanket accessibility or DGA certification."
   },
-  "coverageNote": "83 entries: initial 27 plus 51 expansion entries and 5 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
+  "coverageNote": "85 entries: initial 27 plus 53 expansion entries and 5 portal/mobile compositions. Built records inspected source/export presence. Native/static vanilla entries use semantic HTML/CSS recipes; interactive entries also have exported controllers. The 22 native input types, variants, blocks, and specialist integration recipes are not extra components. Verified requires scoped passing evidence; rendering or source presence alone does not verify behavior. No release, accessibility, or DGA certification is implied.",
   "docs": {
     "overview": "README.md",
     "overviewAr": "README.ar.md",
@@ -92,7 +92,8 @@
         }
       ],
       "notes": [
-        "Use a link for navigation and a button for an action."
+        "Use a link for navigation and a button for an action.",
+        "Native buttons default to type=\"button\"; loading sets disabled and aria-busy (Angular button[hwButton] takes loading and disabled inputs)."
       ],
       "sourceType": "native",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/button"
@@ -1101,7 +1102,8 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Choose announcement semantics according to urgency and timing."
+        "Choose announcement semantics according to urgency and timing.",
+        "Without an explicit role a danger alert is role=\"alert\" and other tones role=\"status\". The dismiss button, named by closeLabel, is rendered only while the application binds the dismiss action (React onDismiss, Vue @dismiss, Angular (dismissed), vanilla an authored .hw-alert-dismiss button); the application removes the alert and places focus."
       ],
       "sourceType": "static",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/alert"
@@ -1132,7 +1134,8 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Filtering, sorting, pagination, and fetching remain explicit application behavior."
+        "Filtering, sorting, pagination, and fetching remain explicit application behavior.",
+        "Columns {key, label, cell?, rowHeader?}; the scroll region is named by the caption through aria-labelledby."
       ],
       "sourceType": "native",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/table"
@@ -1288,7 +1291,8 @@
         }
       ],
       "notes": [
-        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations."
+        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations.",
+        "The current item is one span[aria-current=page], never a link; current chooses it and the last item is the default."
       ],
       "sourceType": "native",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/breadcrumb"
@@ -1317,7 +1321,9 @@
       ],
       "verified": [],
       "evidence": [],
-      "notes": [],
+      "notes": [
+        "A native progress element named by label, aria-label or aria-labelledby; no visible label is rendered and values are written as given."
+      ],
       "sourceType": "native",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/progress"
     },
@@ -1346,7 +1352,7 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Announce the containing loading state rather than every decorative placeholder."
+        "Wrap skeletons in a role=\"status\" container with a visually hidden loading text; the skeletons stay aria-hidden. Size with style or class; variant text or circle."
       ],
       "sourceType": "static",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/skeleton"
@@ -1376,7 +1382,8 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Supply understandable status text in context."
+        "Supply understandable status text in context.",
+        "One element with role=\"status\" that holds its visually hidden label; use aria-hidden=\"true\" for a decorative spinner beside visible text."
       ],
       "sourceType": "static",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/spinner"
@@ -1517,7 +1524,8 @@
         }
       ],
       "notes": [
-        "Do not place essential or interactive content solely in a tooltip."
+        "Do not place essential or interactive content solely in a tooltip.",
+        "In Angular, hw-tooltip wraps one focusable element marked hwTooltipTrigger."
       ],
       "sourceType": "interactive",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tooltip"
@@ -1578,7 +1586,8 @@
       "verified": [],
       "evidence": [],
       "notes": [
-        "Journey navigation and validation belong to the application."
+        "Journey navigation and validation belong to the application.",
+        "Complete and upcoming steps carry visually hidden state text from the required completeLabel and upcomingLabel."
       ],
       "sourceType": "static",
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/stepper"
@@ -1725,7 +1734,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Visibility is the state visible in every adapter (React visible / defaultVisible / onVisibleChange, Vue v-model:visible, Angular [(visible)], vanilla controller and hw:change); a native form reset conceals the value."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/password-field"
     },
     {
@@ -1968,7 +1979,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "The value output is rendered only with showValue; aria-valuetext is written only with formatValue."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/slider"
     },
     {
@@ -2066,7 +2079,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "The optional output shows getRangeLabel(lower, upper); formatValue gives each thumb its aria-valuetext. No adapter writes a separator."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/range-slider"
     },
     {
@@ -2307,7 +2322,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Enter or comma commits; there is no Add button. After a remove button is activated, focus moves to the next remove button, else the previous one, else the text input."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tag-input"
     },
     {
@@ -2406,7 +2423,8 @@
         ]
       },
       "notes": [
-        "Uses native checkboxes; it is not an ARIA single-select combobox."
+        "Uses native checkboxes; it is not an ARIA single-select combobox.",
+        "The filter has a visible label from searchLabel; getResultsMessage(count) is required and fills a polite status after filtering; read-only checkboxes stay focusable with aria-disabled=\"true\"."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/multi-select"
     },
@@ -2695,7 +2713,8 @@
         ]
       },
       "notes": [
-        "Native date input presentation is browser-owned; the calendar display mode does not change the ISO stored day. See docs/date-calendars.md."
+        "Native date input presentation is browser-owned; the calendar display mode does not change the ISO stored day. See docs/date-calendars.md.",
+        "Each opening shows the month of a value inside min and max, else today held inside min and max; a month button is disabled only when the whole neighbouring month is outside min and max (core getCalendarMonth hasPrevious and hasNext)."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/date-picker"
     },
@@ -2769,7 +2788,8 @@
         ]
       },
       "notes": [
-        "Local selection is not upload transport; application code owns storage, server validation, and authoritative progress."
+        "Local selection is not upload transport; application code owns storage, server validation, and authoritative progress.",
+        "A batch with any rejected file (type, maxSize, count) leaves the selection empty and is reported through getRejectedMessage(rejected) with role=\"alert\". No built-in file list: compose FileUploadList."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/file-dropzone"
     },
@@ -2994,7 +3014,8 @@
         ]
       },
       "notes": [
-        "Interactive children use normal Tab navigation; use Menu for action-menu keyboard semantics."
+        "Interactive children use normal Tab navigation; use Menu for action-menu keyboard semantics.",
+        "label is the accessible name of the panel and prints nothing; a visible heading goes in the content with aria-labelledby. Closes when focus moves outside."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/popover"
     },
@@ -3093,7 +3114,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Items {value, label, disabled?, href?}; type-ahead; closes when focus moves outside; a default-prevented Escape leaves it open; the trigger has focus when the action runs, so a dialog the action opens returns focus to it. React takes the application's trigger element; Vue and Angular render a trigger named by triggerLabel and styled by triggerVariant (default secondary)."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/menu"
     },
     {
@@ -3375,9 +3398,10 @@
           "tests": [
             "expands in RTL, skips disabled nodes, selects by keyboard, and restores the DOM",
             "supports visible-node typeahead and leaves modified shortcuts alone",
+            "rejects nested tree items without modifying markup: a labelled item must not contain its child items",
             "rejects duplicate item values without partially modifying markup"
           ],
-          "scope": "RTL tree expansion, disabled skipping, selection, typeahead, modified shortcuts, duplicate validation, and cleanup are checked.",
+          "scope": "RTL tree expansion of the flat list, disabled skipping, selection, typeahead, modified shortcuts, nested-item and duplicate validation, and cleanup are checked.",
           "command": "pnpm test",
           "result": "passed",
           "date": "2026-10-28"
@@ -3436,7 +3460,8 @@
         ]
       },
       "notes": [
-        "No drag-and-drop or virtualization claim."
+        "No drag-and-drop or virtualization claim.",
+        "items and expanded in every adapter; one flat list of li[role=treeitem] with aria-level in every adapter, the authored vanilla markup included (a tree item never contains its child items); the expand and collapse toggle is button.hw-tree-toggle, outside the tab order, named by getExpandLabel(node) and getCollapseLabel(node); type-ahead on visible nodes. The vanilla controller sets the indentation (--hw-tree-depth), owns the hidden attribute of the rows and warns once in development about a toggle or aria-expanded without a child item."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/tree-view"
     },
@@ -3610,7 +3635,8 @@
         ]
       },
       "notes": [
-        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations."
+        "See docs/nic-links.md for source mappings and explicit contrast/accessibility adaptations.",
+        "Angular uses the a[hwLink] directive on the application's own anchor."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/link"
     },
@@ -3901,7 +3927,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "The remove button, named by removeLabel, is rendered only while a remove handler is bound; removing a focused chip moves focus to the neighbouring chip's remove button."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/chip"
     },
     {
@@ -3987,7 +4015,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Label, value, description and trend; value and trend accept rich content, such as an amount with its hidden currency name."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/stat"
     },
     {
@@ -4030,7 +4060,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "Items {id, title, description, dateTime, dateLabel, status}; status complete, current or upcoming; a date is shown only from dateLabel."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/timeline"
     },
     {
@@ -4073,7 +4105,9 @@
           "packages/styles/src/components.css"
         ]
       },
-      "notes": [],
+      "notes": [
+        "A native meter named by label, aria-label or aria-labelledby; min 0, max 100, value 0, and low, high and optimum only when given."
+      ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/meter"
     },
     {
@@ -4124,7 +4158,7 @@
       "name": "DataTable",
       "labelAr": "جدول بيانات",
       "category": "content",
-      "description": "Semantic table with stable localized sorting and aria-sort headers.",
+      "description": "Semantic table with aria-sort headers and stable sorting in the locale the application supplies.",
       "cssClasses": [
         "hw-data-table"
       ],
@@ -4215,7 +4249,8 @@
         ]
       },
       "notes": [
-        "Sorting only: virtualization, cell editing, remote data, and advanced grid selection require application integrations."
+        "Sorting only: virtualization, cell editing, remote data, and advanced grid selection require application integrations.",
+        "Columns {key, label, cell?, sortable?, rowHeader?}; the sort state is sortKey and sortDirection in every adapter."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/data-table"
     },
@@ -4260,7 +4295,8 @@
         ]
       },
       "notes": [
-        "No official identity, endorsement, or government-service connection is implied."
+        "No official identity, endorsement, or government-service connection is implied.",
+        "Facts are metadata {term, description}[] rendered as a description list; the packaged action is a link rendered only with href."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/service-card"
     },
@@ -4305,7 +4341,8 @@
         ]
       },
       "notes": [
-        "Requirements and actions are application-owned content."
+        "Requirements and actions are application-owned content.",
+        "Facts are metadata {term, description}[]; requirements need requirementsLabel; the action is in a footer."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/service-details"
     },
@@ -4538,7 +4575,8 @@
         ]
       },
       "notes": [
-        "Recording feedback on a server requires an application integration."
+        "Recording feedback on a server requires an application integration.",
+        "One contract in every adapter: value {helpful, comment}, two pressed-state choices, a comment step after a choice and a feedback action on submit; nothing is sent anywhere."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/feedback"
     },
@@ -4626,7 +4664,8 @@
         ]
       },
       "notes": [
-        "Preference UI does not gate scripts. Persistence and policy/version handling must be explicitly configured by the application."
+        "Preference UI does not gate scripts. Persistence and policy/version handling must be explicitly configured by the application.",
+        "State open and action consent('accepted' | 'rejected'), an optional preferences action; Accept, Reject and Preferences in a button group; the region is named by its heading."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/cookie-consent"
     },
@@ -4671,7 +4710,8 @@
         ]
       },
       "notes": [
-        "Data and actions belong to the application; the vanilla recipe needs application listeners for custom actions."
+        "Data and actions belong to the application; the vanilla recipe needs application listeners for custom actions.",
+        "Items {id, title, description, href, dateTime, dateLabel, read}; a visible h2 names the region; unread items show a badge from the required unreadLabel; read and dismiss actions are rendered while their handlers are bound."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/notification-list"
     },
@@ -5384,7 +5424,7 @@
       "name": "PortalLayout",
       "labelAr": "هيكل البوابة",
       "category": "platforms",
-      "description": "Arabic-default portal shell composing responsive header, optional secondary navigation and breadcrumb, main container and footer.",
+      "description": "Portal shell composing responsive header, optional secondary navigation and breadcrumb, main container and footer.",
       "cssClasses": [
         "hw-portal-layout",
         "hw-portal-layout-main"
@@ -5478,8 +5518,8 @@
       },
       "notes": [
         "Reuses PortalHeader behavior; vanilla composes semantic HTML and enhances only its header.",
-        "Generated main target IDs connect the skip link; use explicit stable IDs for independently serialized Angular roots. Angular SSR/hydration remains unverified.",
-        "Arabic and RTL are independent defaults; localize all labels when selecting English."
+        "Generated main target IDs connect the skip link. Angular generates ids from one HwIdSource per application; pass explicit stable IDs for independently serialized Angular roots. Angular SSR/hydration remains unverified.",
+        "The layout has no text, language or direction of its own: the application supplies every label, sets dir where it wants one, and sets lang on its own container."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/portal-layout"
     },
@@ -5785,7 +5825,7 @@
       },
       "notes": [
         "Native details/summary works without a JavaScript controller.",
-        "Default wording does not claim government status or registration. Applications supply verified wording, certificate links and authorized artwork."
+        "The component has no wording of its own and does not claim government status or registration. Applications supply every label, verified certificate links and authorized artwork."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/site-verification"
     },
@@ -5905,13 +5945,247 @@
         "Verification remains scoped to explicitly recorded evidence; no official DGA certification is claimed."
       ],
       "documentation": "https://mohamedembarak.github.io/hawiyah/#component/content-navigation"
+    },
+    {
+      "id": "copy-button",
+      "name": "CopyButton",
+      "labelAr": "زر النسخ",
+      "category": "actions",
+      "description": "Button that copies a value the page already shows and reports the outcome in a polite status.",
+      "cssClasses": [
+        "hw-copy",
+        "hw-copy-message"
+      ],
+      "interaction": "interactive",
+      "sourceType": "interactive",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "packages/vanilla/test/copy-button.test.ts",
+          "tests": [
+            "[cb-failures] shows the failed state for every failure until the next activation",
+            "[cb-repeat-announces] empties the status before a repeated result",
+            "[cb-name-constant] keeps the accessible name in every state",
+            "[cb-server] creates without navigator and fails as unavailable"
+          ],
+          "scope": "Unit assertions in jsdom with an injected clipboard writer: the status is emptied before a repeated result, and the accessible name is constant in the idle, copied and failed states. No browser clipboard permission prompt and no screen reader were exercised.",
+          "command": "pnpm exec vitest run packages/vanilla/test/copy-button.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "packages/react/react.copy-button.test.tsx",
+          "tests": [
+            "[cb-repeat-announces] empties the status before a repeated result",
+            "[cb-name-constant] keeps the accessible name in every state",
+            "[cb-server] renders the idle markup on the server and hydrates without a mismatch"
+          ],
+          "scope": "Unit assertions in jsdom with an injected clipboard writer: the status is emptied before a repeated result, and the accessible name is constant in the idle, copied and failed states. No browser clipboard permission prompt and no screen reader were exercised.",
+          "command": "pnpm exec vitest run packages/react/react.copy-button.test.tsx",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "packages/vue/test/copy-button.test.ts",
+          "tests": [
+            "[cb-failures] shows the failure message for every failed status until the next activation",
+            "[cb-repeat-announces] empties the status before a repeated result and restarts the duration",
+            "[cb-name-constant] keeps the accessible name in every state",
+            "[cb-server] renders the idle markup on the server and hydrates without a mismatch"
+          ],
+          "scope": "Unit assertions in jsdom with an injected clipboard writer: the status is emptied before a repeated result, and the accessible name is constant in the idle, copied and failed states. No browser clipboard permission prompt and no screen reader were exercised.",
+          "command": "pnpm exec vitest run packages/vue/test/copy-button.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "packages/angular/test/copy-button.test.ts",
+          "tests": [
+            "[cb-repeat-announces] empties the status before a repeated result, and the copied state lasts a full duration from it",
+            "[cb-name-constant] keeps one accessible name in the idle, copied and failed states"
+          ],
+          "scope": "Unit assertions in jsdom with an injected clipboard writer: the status is emptied before a repeated result, and the accessible name is constant in the idle, copied and failed states. No browser clipboard permission prompt and no screen reader were exercised.",
+          "command": "pnpm exec vitest run packages/angular/test/copy-button.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        }
+      ],
+      "implementationSources": {
+        "react": [
+          "packages/react/src/copy-button.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/copy-button.ts"
+        ],
+        "angular": [
+          "packages/angular/src/copy-button.ts"
+        ],
+        "vanilla": [
+          "packages/vanilla/src/copy-button.ts",
+          "packages/styles/src/copy.css"
+        ],
+        "core": [
+          "packages/core/src/copy.ts"
+        ]
+      },
+      "notes": [
+        "The clipboard is written only on activation through the asynchronous Clipboard API and is never read; there is no execCommand fallback.",
+        "A result that settles at once empties and fills the status inside one task; repetition of an identical message has not been verified with a screen reader."
+      ],
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/copy-button"
+    },
+    {
+      "id": "side-navigation",
+      "name": "SideNavigation",
+      "labelAr": "التنقل الجانبي",
+      "category": "navigation",
+      "description": "The page list of NavigationDrawer outside a drawer: links and native group disclosures in a navigation landmark.",
+      "cssClasses": [
+        "hw-side-navigation",
+        "hw-navigation-drawer-nav",
+        "hw-navigation-drawer-row"
+      ],
+      "interaction": "interactive",
+      "sourceType": "interactive",
+      "planned": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "built": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "verified": [
+        "vanilla",
+        "react",
+        "vue",
+        "angular"
+      ],
+      "evidence": [
+        {
+          "adapter": "vanilla",
+          "kind": "behavior",
+          "source": "packages/vanilla/test/side-navigation.test.ts",
+          "tests": [
+            "[sn-root] keeps the classes, names the landmark and holds one list",
+            "[sn-current] marks only the current link",
+            "[sn-group-open] opens the group of the current page and expanded groups",
+            "[sn-current-moves] follows the current link after refresh()",
+            "[sn-shared-list] gives the same list as an open NavigationDrawer"
+          ],
+          "scope": "Unit assertions in jsdom: named navigation landmark, current link, the open group of the current page, and the same list markup as an open NavigationDrawer. Sticky placement and the current-row contrast are checked separately in tests/browser/side-navigation.spec.ts.",
+          "command": "pnpm exec vitest run packages/vanilla/test/side-navigation.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "react",
+          "kind": "behavior",
+          "source": "packages/react/react.side-navigation.test.tsx",
+          "tests": [
+            "[sn-root] renders a named nav with the two classes and one list",
+            "[sn-current] marks only the current link",
+            "[sn-group-open] opens the group of the current page, an expanded group, and nothing else",
+            "[sn-shared-list] renders the same list as an open NavigationDrawer",
+            "[sn-server] renders open groups and the current page on the server and hydrates without a mismatch"
+          ],
+          "scope": "Unit assertions in jsdom: named navigation landmark, current link, the open group of the current page, and the same list markup as an open NavigationDrawer. Sticky placement and the current-row contrast are checked separately in tests/browser/side-navigation.spec.ts.",
+          "command": "pnpm exec vitest run packages/react/react.side-navigation.test.tsx",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "vue",
+          "kind": "behavior",
+          "source": "packages/vue/test/guide-support.test.ts",
+          "tests": [
+            "[sn-root] renders a labelled nav with the two classes and one list",
+            "[sn-current] marks only the current link",
+            "[sn-group-open] opens the group of the current page and expanded groups",
+            "[sn-shared-list] renders the same list as an open NavigationDrawer",
+            "[sn-server] renders open groups and the current page on the server and hydrates without a mismatch"
+          ],
+          "scope": "Unit assertions in jsdom: named navigation landmark, current link, the open group of the current page, and the same list markup as an open NavigationDrawer. Sticky placement and the current-row contrast are checked separately in tests/browser/side-navigation.spec.ts.",
+          "command": "pnpm exec vitest run packages/vue/test/guide-support.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        },
+        {
+          "adapter": "angular",
+          "kind": "behavior",
+          "source": "packages/angular/test/side-navigation.test.ts",
+          "tests": [
+            "[sn-root] is a navigation landmark named by label, with the two classes in order and one list",
+            "[sn-current] marks only the link of the current item",
+            "[sn-group-open] opens a group that holds the current page or is expanded, and no other",
+            "[sn-shared-list] renders the same list as an open navigation drawer for the same items"
+          ],
+          "scope": "Unit assertions in jsdom: named navigation landmark, current link, the open group of the current page, and the same list markup as an open NavigationDrawer. Sticky placement and the current-row contrast are checked separately in tests/browser/side-navigation.spec.ts.",
+          "command": "pnpm exec vitest run packages/angular/test/side-navigation.test.ts",
+          "result": "passed",
+          "date": "2026-11-11"
+        }
+      ],
+      "implementationSources": {
+        "react": [
+          "packages/react/src/navigation-drawer.tsx"
+        ],
+        "vue": [
+          "packages/vue/src/side-navigation.ts"
+        ],
+        "angular": [
+          "packages/angular/src/side-navigation.ts"
+        ],
+        "vanilla": [
+          "packages/vanilla/src/side-navigation.ts",
+          "packages/styles/src/navigation-drawer.css"
+        ],
+        "core": [
+          "packages/core/src/navigation-list.ts"
+        ]
+      },
+      "notes": [
+        "Native links and details/summary groups; no tree role, roving focus or custom arrow keys.",
+        "A persistent side navigation for pages is not covered by the references in this repository; its placement is a Hawiyah design choice."
+      ],
+      "documentation": "https://mohamedembarak.github.io/hawiyah/#component/side-navigation"
     }
   ],
   "limitations": [
     "Pre-1.0 npm release; minor versions may change APIs. No official DGA certification.",
-    "The 82-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
+    "Components contain no user-visible strings and choose no locale. Applications supply every text and, where a component formats or sorts, the locale; see CONTRACT.md \"Text and localisation\".",
+    "The 85-entry scope is finite and independently designed; exact parity with the current official DGA catalog has not been established.",
     "Combobox is local and single-select. MultiSelect is a separate searchable checkbox list; async data and virtualization are application concerns.",
-    "DataTable provides stable localized sorting, not virtualization or cell editing.",
+    "DataTable sorts stably in the locale the application supplies; it does not provide virtualization or cell editing.",
     "FileUpload and FileDropzone select local files; application code owns transport, storage, and server validation.",
     "Calendar/DatePicker use Gregorian ISO date-only values and Gregorian/Umm al-Qura display. Pinned reference data, supported range, and official-source limits are documented in docs/date-calendars.md. General Intl formatDate is not the canonical converter for persisted dual-calendar records.",
     "Phone, IBAN, identity, and address recipes collect data; they do not verify identity, ownership, or government-service access.",
@@ -6027,12 +6301,12 @@
     "native": "The main interaction uses browser-native semantics.",
     "static": "Semantic composition or CSS layout; content and application actions are caller-owned.",
     "interactive": "Hawiyah adds state, keyboard behavior, or lifecycle management.",
-    "integration": "A documented application recipe for an external engine or service; not counted among the 83 components."
+    "integration": "A documented application recipe for an external engine or service; not counted among the 85 components."
   },
   "scope": {
-    "components": 83,
+    "components": 85,
     "initialComponents": 27,
-    "addedComponents": 56,
+    "addedComponents": 58,
     "layoutComponents": 12,
     "nativeInputTypeCount": 22,
     "nativeInputTypes": [
@@ -6082,7 +6356,7 @@
   },
   "expansionVerification": {
     "status": "scoped-evidence-recorded",
-    "scope": "51 added entries have source/export coverage. Named passing unit/browser assertions are mapped only to directly checked components; unverified entries remain built without fabricated coverage.",
+    "scope": "53 added entries have source/export coverage. Named passing unit/browser assertions are mapped only to directly checked components; unverified entries remain built without fabricated coverage.",
     "record": "docs/validation.md",
     "browser": "Chromium only",
     "manualScreenReader": "not performed"

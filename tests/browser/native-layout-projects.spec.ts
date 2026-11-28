@@ -178,7 +178,7 @@ test('Angular AppShell omits empty regions from desktop layout and keyboard navi
   await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.insertText(`import {Component} from '@angular/core';
 import {HwAppShellComponent} from '@hawiyah/angular';
-@Component({selector:'app-root',standalone:true,imports:[HwAppShellComponent],template:'<div class="demo" data-bare-shell><hw-app-shell><h1>طلبات الخدمة</h1></hw-app-shell></div>'})
+@Component({selector:'app-root',standalone:true,imports:[HwAppShellComponent],template:'<div class="demo" data-bare-shell><hw-app-shell skipLabel="انتقل إلى المحتوى"><h1>طلبات الخدمة</h1></hw-app-shell></div>'})
 export class AppComponent {}`);
   await page.locator('[data-ide-run]').click();
   const project = page.frameLocator('.hw-ide-frame').locator('[data-bare-shell]');

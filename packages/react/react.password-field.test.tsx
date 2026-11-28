@@ -7,7 +7,7 @@ const roots: ReturnType<typeof createRoot>[] = [];
 afterEach(async () => { for (const root of roots.splice(0)) await act(() => root.unmount()); document.body.replaceChildren(); });
 it('defaults to a labelled decorative eye, preserves readonly values/focus, blocks disabled ancestors and resets visibility', async () => {
   const container = document.createElement('div'); document.body.append(container); const root = createRoot(container); roots.push(root);
-  await act(() => root.render(<form><fieldset><PasswordField label="Password" name="password" defaultValue="secret" readOnly /></fieldset></form>));
+  await act(() => root.render(<form><fieldset><PasswordField label="Password" showLabel="Show password" hideLabel="Hide password" name="password" defaultValue="secret" readOnly /></fieldset></form>));
   const input = container.querySelector('input')!; const toggle = container.querySelector('button')!; const fieldset = container.querySelector('fieldset')!;
   expect(toggle.dataset.toggleVariant).toBe('icon'); expect(toggle.textContent).toBe(''); expect(toggle.querySelector('[aria-hidden=true]')).not.toBeNull(); expect(toggle.getAttribute('aria-controls')).toBe(input.id); expect(toggle.getAttribute('aria-label')).toBe('Show password');
   toggle.focus(); await act(() => toggle.click()); expect(input.type).toBe('text'); expect(input.value).toBe('secret'); expect(document.activeElement).toBe(toggle); expect(toggle.getAttribute('aria-label')).toBe('Hide password'); expect(toggle.getAttribute('aria-pressed')).toBe('true');

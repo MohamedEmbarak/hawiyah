@@ -1,0 +1,4 @@
+/* A block of the prose flow, so the flow spacing applies to it. */
+:host {
+  display: block;
+}

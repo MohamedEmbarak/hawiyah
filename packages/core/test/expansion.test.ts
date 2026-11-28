@@ -1,9 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { clampRange, convertCalendarDate, formatCalendarDate, getCalendarDateParts, getCalendarMonth, isCalendarDateSupported, isDateInRange, moveCalendarDate, normalizeDigits, sortRows, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE } from '../src/index.js';
+import { clampRange, convertCalendarDate, formatCalendarDate, getCalendarDateParts, getCalendarMonth, isCalendarDateSupported, isDateInRange, moveCalendarDate, normalizeDigits, normalizePinInput, sortRows, UMALQURA_MAX_DATE, UMALQURA_MIN_DATE } from '../src/index.js';
 
 describe('expanded shared controls', () => {
   it('normalizes both Arabic digit sets without changing other characters', () => {
     expect(normalizeDigits('Code ٠١٢٣٤٥٦٧٨٩ / ۰۱۲۳۴۵۶۷۸۹')).toBe('Code 0123456789 / 0123456789');
+  });
+  it('[PININPUT-04] normalizes a one-time code before limiting its length', () => {
+    expect(normalizePinInput('123456', 6)).toBe('123456');
+    expect(normalizePinInput('123 456', 6)).toBe('123456'); expect(normalizePinInput('12-34-56', 6)).toBe('123456');
+    expect(normalizePinInput('١٢٣٤٥٦', 6)).toBe('123456'); expect(normalizePinInput('۱۲۳ ۴۵۶', 6)).toBe('123456');
+    expect(normalizePinInput('abc', 6)).toBe(''); expect(normalizePinInput('', 6)).toBe('');
+    // Typing a seventh digit does not push a digit out; pasting a longer code keeps its first digits.
+    expect(normalizePinInput('1234567', 6, '123456', 'insertText')).toBe('123456');
+    expect(normalizePinInput('1234567', 6, '123456', 'insertFromPaste')).toBe('123456');
+    expect(normalizePinInput('9876543', 6, '123456', 'insertFromPaste')).toBe('987654');
+    expect(normalizePinInput('9876543', 6, undefined, 'insertText')).toBe('987654');
+    expect(normalizePinInput('12345', 6, '1234', 'insertText')).toBe('12345');
+    expect(normalizePinInput('123', 0)).toBe(''); expect(normalizePinInput('123', -1)).toBe('');
   });
   it('constrains the moved range thumb and handles invalid bounds explicitly', () => {
     expect(clampRange([90, 40], 0, 100, 'lower')).toEqual([40, 40]);
@@ -15,7 +28,7 @@ describe('expanded shared controls', () => {
     const rows = [{ id: 1, value: 'Item 10' }, { id: 2, value: 'Item 2' }, { id: 3, value: 'item 2' }];
     expect(sortRows(rows, 'value', 'ascending', 'en').map(row => row.id)).toEqual([2, 3, 1]);
     expect(rows.map(row => row.id)).toEqual([1, 2, 3]);
-    expect(sortRows([{ value: null }, { value: 1 }, { value: 3 }], 'value', 'descending')).toEqual([{ value: 3 }, { value: 1 }, { value: null }]);
+    expect(sortRows([{ value: null }, { value: 1 }, { value: 3 }], 'value', 'descending', 'ar-SA')).toEqual([{ value: 3 }, { value: 1 }, { value: null }]);
   });
 });
 
@@ -45,7 +58,7 @@ describe('bounded calendar math and canonical formatting', () => {
     expect(first.days.length % 7).toBe(0);
     expect(first.weekdays[0]).toBe('Mon');
     expect(first.days.filter(day => day.value < UMALQURA_MIN_DATE).every(day => day.disabled && day.label === '')).toBe(true);
-    const last = getCalendarMonth({ month: '2100-01-01', calendar: 'islamic-umalqura' });
+    const last = getCalendarMonth({ month: '2100-01-01', calendar: 'islamic-umalqura', locale: 'en' });
     expect(last.next).toBe(last.days.find(day => !day.outside)?.value);
     expect(last.days.filter(day => day.value > UMALQURA_MAX_DATE).every(day => day.disabled && day.label === '')).toBe(true);
   });
@@ -53,6 +66,6 @@ describe('bounded calendar math and canonical formatting', () => {
     expect(formatCalendarDate('2029-08-11', { calendar: 'islamic-umalqura', locale: 'en-GB', year: 'numeric', month: '2-digit', day: '2-digit' })).toBe('01/04/1451 AH');
     expect(formatCalendarDate('2029-08-11', { calendar: 'islamic-umalqura', locale: 'ar-SA', numberingSystem: 'latn' })).toContain('1451');
     expect(formatCalendarDate('2029-08-11', { calendar: 'islamic-umalqura', locale: 'en', numberingSystem: 'deva' })).toContain('1451');
-    expect(() => formatCalendarDate('1800-01-01', { calendar: 'islamic-umalqura' })).toThrow(RangeError);
+    expect(() => formatCalendarDate('1800-01-01', { calendar: 'islamic-umalqura', locale: 'en' })).toThrow(RangeError);
   });
 });

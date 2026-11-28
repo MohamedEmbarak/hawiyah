@@ -193,7 +193,7 @@ function sample(id: ComponentId, p = "sample"): string {
     case "switch":
       return `<label class="choice-line"><input type="checkbox" role="switch" class="hw-switch" checked>${t("Enable notifications", "تفعيل الإشعارات")}</label>`;
     case "combobox":
-      return `<div class="hw-field hw-combobox" data-hw="combobox"><label class="hw-label" for="${uid}">${t("Find a city", "ابحث عن مدينة")}</label><input id="${uid}" class="hw-input" data-hw-combobox-input autocomplete="off" placeholder="${t("Search cities…", "ابحث عن المدن…")}"><input type="hidden" data-hw-combobox-value name="city"><ul class="hw-listbox" data-hw-combobox-list hidden>${[
+      return `<div class="hw-field"><label class="hw-label" for="${uid}">${t("Find a city", "ابحث عن مدينة")}</label><div class="hw-combobox" data-hw="combobox" data-hw-results-message="${t("{count} results available", "{count} نتيجة")}"><input id="${uid}" class="hw-input" data-hw-combobox-input autocomplete="off" placeholder="${t("Search cities…", "ابحث عن المدن…")}"><input type="hidden" data-hw-combobox-value name="city"><ul class="hw-listbox" data-hw-combobox-list hidden>${[
         ["riyadh", "Riyadh", "الرياض"],
         ["jeddah", "Jeddah", "جدة"],
         ["dammam", "Dammam", "الدمام"],
@@ -205,9 +205,9 @@ function sample(id: ComponentId, p = "sample"): string {
         )
         .join(
           "",
-        )}</ul><span class="hw-sr-only" data-hw-combobox-status role="status"></span></div>`;
+        )}</ul><span class="hw-sr-only" data-hw-combobox-status role="status"></span></div></div>`;
     case "tabs":
-      return `<div class="hw-tabs" data-hw="tabs"><div class="hw-tab-list" role="tablist" aria-label="${t("Example sections", "أقسام المثال")}">${["overview", "details", "history"].map((v, i) => `<button class="hw-tab" role="tab" id="${uid}-t${i}" data-hw-value="${v}" aria-controls="${uid}-p${i}" aria-selected="${i === 0}">${[t("Overview", "نظرة عامة"), t("Details", "التفاصيل"), t("History", "السجل")][i]}</button>`).join("")}</div>${["overview", "details", "history"].map((v, i) => `<section class="hw-tab-panel" role="tabpanel" id="${uid}-p${i}" aria-labelledby="${uid}-t${i}" ${i ? "hidden" : ""}>${[t("Everything you need, in one place.", "كل ما تحتاجه في مكان واحد."), t("Clear information for your next step.", "معلومات واضحة لخطوتك القادمة."), t("Your latest updates appear here.", "تظهر آخر تحديثاتك هنا.")][i]}</section>`).join("")}</div>`;
+      return `<div class="hw-tabs" data-hw="tabs" data-hw-overflow-label="${t("More tabs", "المزيد من التبويبات")}"><div class="hw-tab-list" role="tablist" aria-label="${t("Example sections", "أقسام المثال")}">${["overview", "details", "history"].map((v, i) => `<button class="hw-tab" role="tab" id="${uid}-t${i}" data-hw-value="${v}" aria-controls="${uid}-p${i}" aria-selected="${i === 0}">${[t("Overview", "نظرة عامة"), t("Details", "التفاصيل"), t("History", "السجل")][i]}</button>`).join("")}</div>${["overview", "details", "history"].map((v, i) => `<section class="hw-tab-panel" role="tabpanel" id="${uid}-p${i}" aria-labelledby="${uid}-t${i}" ${i ? "hidden" : ""}>${[t("Everything you need, in one place.", "كل ما تحتاجه في مكان واحد."), t("Clear information for your next step.", "معلومات واضحة لخطوتك القادمة."), t("Your latest updates appear here.", "تظهر آخر تحديثاتك هنا.")][i]}</section>`).join("")}</div>`;
     case "dialog":
       return `${button(t("Open dialog", "افتح الحوار"), `data-hw-dialog-open="${uid}"`)}<dialog id="${uid}" class="hw-dialog" data-hw="dialog" aria-labelledby="${uid}-title"><div class="hw-dialog-header"><h2 id="${uid}-title">${t("A moment of clarity", "لحظة وضوح")}</h2>${button(icon("close"), `data-hw-dialog-close aria-label="${t("Close", "إغلاق")}"`, "ghost")}</div><div class="hw-dialog-body"><p>${t("A focused space for a meaningful decision. Escape closes this dialog and returns focus to your starting point.", "مساحة مركّزة لاتخاذ قرار واضح. يغلق مفتاح Escape الحوار ويعيد التركيز إلى نقطة البداية.")}</p></div><div class="hw-dialog-footer">${button(t("Got it", "فهمت"), "data-hw-dialog-close autofocus")}</div></dialog>`;
     case "accordion":
@@ -229,7 +229,7 @@ function sample(id: ComponentId, p = "sample"): string {
     case "spinner":
       return loaderDemo(state.locale);
     case "skeleton":
-      return `<div class="hw-stack" aria-label="${t("Loading content", "جارٍ تحميل المحتوى")}" role="status"><div class="hw-skeleton" style="height:18px;width:70%"></div><div class="hw-skeleton" style="height:12px"></div><div class="hw-skeleton" style="height:12px;width:85%"></div></div>`;
+      return `<div class="hw-stack" role="status"><span class="hw-sr-only">${t("Loading content", "جارٍ تحميل المحتوى")}</span><div class="hw-skeleton" aria-hidden="true" style="block-size:18px;inline-size:70%"></div><div class="hw-skeleton" aria-hidden="true" style="block-size:12px"></div><div class="hw-skeleton" aria-hidden="true" style="block-size:12px;inline-size:85%"></div></div>`;
     case "avatar":
       return `<div class="hw-cluster"><span class="hw-avatar" role="img" aria-label="${t("Noura", "نورة")}">${t("N", "ن")}</span><span class="hw-avatar" role="img" aria-label="${t("Amal", "أمل")}">${t("A", "أ")}</span><span class="hw-avatar" role="img" aria-label="${t("Mohammed", "محمد")}">${t("M", "م")}</span></div>`;
     case "divider":
@@ -827,6 +827,8 @@ app.addEventListener("submit", (event) => {
     ?.focus();
 });
 window.addEventListener("hashchange", () => {
+  // A page that replaced the guide's document (a test fixture) keeps its own fragment links.
+  if (!app.isConnected) return;
   captureDraft();
   state.view = location.hash.slice(1) || "overview";
   state.mobileNav = false;

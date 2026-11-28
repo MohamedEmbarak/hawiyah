@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.frame {
+  box-sizing: border-box;
+  min-inline-size: 0;
+  overflow: hidden;
+  border: 1px solid var(--hw-color-border);
+  border-radius: var(--hw-radius-md);
+  background-color: var(--hw-color-canvas);
+}
+
+iframe {
+  display: block;
+  box-sizing: border-box;
+  inline-size: 100%;
+  block-size: 6rem;
+  border: 0;
+  background-color: var(--hw-color-canvas);
+}
+
+.notice {
+  margin-block: var(--hw-space-2) 0;
+}
+
+/* Empty until a link or a form of the example is used; it takes no room then. */
+.notice:empty {
+  margin-block: 0;
+}
+
+/* The result frame shows no focus ring of its own when focus is in its document
+   (on its body, or on an element without a ring of its own): while focus is inside
+   (class focused, set by preview-frame.ts; :focus-within does not reach the
+   container of a frame with an opaque origin), the border box of the frame shows
+   the focus indicator (WCAG 2.4.7). */
+.frame.focused {
+  outline: 2px solid var(--hw-color-focus);
+  outline-offset: 2px;
+}

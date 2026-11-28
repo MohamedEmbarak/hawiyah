@@ -3,14 +3,14 @@ import type { PropType, VNodeChild } from 'vue';
 import { createComboboxState, getComboboxOptions, getDirection, getNextEnabledIndex, isDisabled, observeTabOverflow, restoreFocus, transitionCombobox } from '@hawiyah/core';
 import type { ComboboxEvent, Option, Orientation } from '@hawiyah/core';
 import { Button, decorate } from './forms.js';
-import { decorationProps, joinIds, useField, useFormReset, useValue } from './shared.js';
+import { decorationProps, joinIds, needText, optionalText, rootLabel, useField, useFormReset, useValue, validity, withoutName } from './shared.js';
 
 export interface TabItem { value: string; label: string; content?: VNodeChild; disabled?: boolean }
 export const Tabs = defineComponent({
   name: 'HwTabs', inheritAttrs: false,
-  props: { items: { type: Array as PropType<readonly TabItem[]>, required: true }, label: { type: String, required: true }, modelValue: String, defaultValue: String,
+  props: { items: { type: Array as PropType<readonly TabItem[]>, required: true }, label: String, modelValue: String, defaultValue: String,
     orientation: { type: String as PropType<Orientation>, default: 'horizontal' }, activationMode: { type: String as PropType<'automatic' | 'manual'>, default: 'automatic' },
-    overflow: {type: String as PropType<'menu' | 'scroll'>, default: 'menu'}, overflowLabel: {type: String, default: 'المزيد من التبويبات'} },
+    overflow: {type: String as PropType<'menu' | 'scroll'>, default: 'menu'}, overflowLabel: String },
   emits: { 'update:modelValue': (_value: string) => true },
   setup(props, { attrs, slots, emit }) {
     const id = `hw-${useId()}`;
@@ -45,9 +45,9 @@ export const Tabs = defineComponent({
     watch(() => [props.items, props.overflow, props.orientation], () => {observer?.refresh(); const focusedElement = bar.value?.ownerDocument.activeElement; if (focusedElement?.getAttribute('data-hw-overflow-hidden') === 'true' && bar.value?.contains(focusedElement)) disclosure.value?.querySelector('summary')?.focus();}, {deep: true, flush: 'post'});
     watch(active, close);
     onBeforeUnmount(() => {alive = false; observer?.destroy(); bar.value?.ownerDocument.removeEventListener('click', outside);});
-    return () => h('div', mergeProps(attrs, { class: 'hw-tabs' }), [
+    return () => h('div', mergeProps(withoutName(attrs), { class: 'hw-tabs' }), [
       h('div', {class: 'hw-tab-bar', ref: bar, 'data-hw-overflow': props.overflow, 'data-orientation': props.orientation}, [
-      h('div', { class: 'hw-tab-list', 'data-hw-overflow': props.overflow, role: 'tablist', 'aria-label': props.label, 'aria-orientation': props.orientation, 'aria-hidden': hidden.value.length === props.items.length || undefined }, props.items.map((item, index) => h('button', {
+      h('div', { class: 'hw-tab-list', 'data-hw-overflow': props.overflow, role: 'tablist', 'aria-label': rootLabel('Tabs', props.label, attrs), 'aria-labelledby': attrs['aria-labelledby'], 'aria-orientation': props.orientation, 'aria-hidden': hidden.value.length === props.items.length || undefined }, props.items.map((item, index) => h('button', {
         key: item.value, ref: (element: unknown) => { if (element) buttons.set(item.value, element as HTMLButtonElement); else buttons.delete(item.value); },
         class: 'hw-tab', type: 'button', role: 'tab', id: `${id}-tab-${index}`, 'aria-controls': `${id}-panel-${index}`, 'aria-selected': active.value === item.value,
         'data-hw-overflow-hidden': hidden.value.includes(index) ? 'true' : undefined, 'aria-hidden': hidden.value.includes(index) || undefined,
@@ -65,7 +65,7 @@ export const Tabs = defineComponent({
         },
       }, slots[`tab:${item.value}`]?.({ item }) ?? item.label))),
       h('details', {class: 'hw-tabs-overflow', ref: disclosure, hidden: !hidden.value.length, onKeydown: (event: KeyboardEvent) => {if (event.key === 'Escape' && disclosure.value?.open) {event.preventDefault(); close(); disclosure.value.querySelector('summary')?.focus();}}}, [
-        h('summary', {class: 'hw-tab-overflow-trigger', 'aria-label': props.overflowLabel, 'data-active': hidden.value.some(index => props.items[index]?.value === active.value) ? 'true' : undefined}, '…'),
+        h('summary', {class: 'hw-tab-overflow-trigger', 'aria-label': props.overflow === 'menu' ? needText('Tabs', 'overflowLabel', props.overflowLabel, "overflow is 'menu'") : optionalText(props.overflowLabel), 'data-active': hidden.value.some(index => props.items[index]?.value === active.value) ? 'true' : undefined}, '…'),
         h('div', {class: 'hw-tab-overflow-menu'}, hidden.value.map(index => {const item = props.items[index]; return item && h('button', {key: item.value, type: 'button', class: 'hw-tab-overflow-item', 'data-hw-overflow-value': item.value, disabled: item.disabled, 'aria-pressed': item.value === active.value, onClick: () => {if (item.disabled) return; model.set(item.value); close(); disclosure.value?.querySelector('summary')?.focus();}}, slots[`tab:${item.value}`]?.({item}) ?? item.label);})),
       ]),
       ]),
@@ -76,7 +76,7 @@ export const Tabs = defineComponent({
 
 export const Dialog = defineComponent({
   name: 'HwDialog', inheritAttrs: false,
-  props: { open: { type: Boolean, default: undefined }, defaultOpen: Boolean, title: { type: String, required: true }, description: String, closeLabel: { type: String, default: 'Close' }, closeOnBackdrop: { type: Boolean, default: true } },
+  props: { open: { type: Boolean, default: undefined }, defaultOpen: Boolean, title: { type: String, required: true }, description: String, closeLabel: { type: String, required: true }, closeOnBackdrop: { type: Boolean, default: true } },
   emits: { 'update:open': (_open: boolean) => true },
   setup(props, { attrs, slots, emit, expose }) {
     const id = `hw-${useId()}`;
@@ -114,7 +114,7 @@ export const Dialog = defineComponent({
         if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
       },
     }), [
-      h('header', { class: 'hw-dialog-header' }, [h('h2', { id: `${id}-title` }, props.title), h(Button, { variant: 'ghost', 'aria-label': props.closeLabel, onClick: close }, () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }))]),
+      h('header', { class: 'hw-dialog-header' }, [h('h2', { id: `${id}-title` }, props.title), h(Button, { variant: 'ghost', 'aria-label': needText('Dialog', 'closeLabel', props.closeLabel), onClick: close }, () => h('span', { class: 'hw-icon', 'data-icon': 'cancel-01', 'data-size': 'md', 'aria-hidden': 'true' }))]),
       h('div', { class: 'hw-dialog-body' }, [props.description && h('p', { id: `${id}-description` }, props.description), slots.default?.({ close })]),
       slots.footer && h('footer', { class: 'hw-dialog-footer' }, slots.footer({ close })),
     ])];
@@ -124,13 +124,18 @@ export const Dialog = defineComponent({
 export const Combobox = defineComponent({
   name: 'HwCombobox', inheritAttrs: false,
   props: { ...decorationProps, options: { type: Array as PropType<readonly Option[]>, required: true }, modelValue: String, defaultValue: { type: String, default: '' }, disabled: Boolean, readonly: Boolean,
-    emptyMessage: { type: String, default: 'No options found' }, resultsMessage: { type: Function as PropType<(count: number) => string>, default: (count: number) => `${count} results available` }, requiredMessage: { type: String, default: 'Choose an option from the list.' } },
+    /** Controlled popup state when not undefined (v-model:open); `defaultOpen` is the uncontrolled start. */
+    open: { type: Boolean, default: undefined }, defaultOpen: Boolean,
+    emptyMessage: { type: String, required: true }, getResultsMessage: { type: Function as PropType<(count: number) => string>, required: true }, requiredMessage: String },
   emits: { 'update:modelValue': (_value: string) => true, 'update:open': (_open: boolean) => true, 'update:query': (_query: string) => true },
   setup(props, { attrs, emit, expose }) {
     const field = useField(props, attrs);
+    const resultsText = (count: number) => { const get = needText('Combobox', 'getResultsMessage', props.getResultsMessage); return get ? optionalText(get(count)) : undefined; };
     const element = ref<HTMLInputElement>();
     const root = ref<HTMLElement>();
-    const state = ref(createComboboxState(props.options, props.modelValue ?? props.defaultValue));
+    const state = ref({ ...createComboboxState(props.options, props.modelValue ?? props.defaultValue), open: props.defaultOpen });
+    // A submission failed on the input (its invalid event); cleared once the validity is valid again or by a reset.
+    const failed = ref(false);
     const ancestorDisabled = ref(false);
     const blocked = () => props.disabled || props.readonly || !!(element.value && isDisabled(element.value));
     let disabledObserver: MutationObserver | undefined;
@@ -151,7 +156,7 @@ export const Combobox = defineComponent({
     });
     const effective = computed(() => ({ ...state.value, value: props.modelValue ?? state.value.value,
       query: props.modelValue !== undefined && props.modelValue !== state.value.value ? createComboboxState(props.options, props.modelValue).query : state.value.query,
-      open: !props.disabled && !ancestorDisabled.value && !props.readonly && state.value.open }));
+      open: !props.disabled && !ancestorDisabled.value && !props.readonly && (props.open ?? state.value.open) }));
     const results = computed(() => getComboboxOptions(effective.value, props.options));
     let lastEmitted: string | undefined;
     function dispatch(event: ComboboxEvent) {
@@ -170,12 +175,19 @@ export const Combobox = defineComponent({
     watch(() => props.options, options => {
       if (effective.value.value) state.value = { ...createComboboxState(options, effective.value.value), open: state.value.open };
     });
-    watchEffect(() => element.value?.setCustomValidity(field.controlAttrs.value.required && !effective.value.value ? props.requiredMessage : ''));
-    useFormReset(element, () => dispatch({ type: 'reset', value: props.defaultValue }));
+    watchEffect(() => {
+      element.value?.setCustomValidity(validity('Combobox', 'requiredMessage', Boolean(field.controlAttrs.value.required && !effective.value.value), props.requiredMessage, 'required is set'));
+      if (failed.value && element.value?.validity.valid) failed.value = false;
+    }, { flush: 'post' });
+    useFormReset(element, () => { failed.value = false; dispatch({ type: 'reset', value: props.defaultValue }); }, () => {
+      if (element.value) element.value.value = effective.value.query;
+    });
+    // The focus the component itself gives the input after a selection does not reopen the list.
+    let refocusing = false;
     const outside = (event: Event) => { if (!root.value?.contains(event.target as Node)) dispatch({ type: 'close' }); };
     onMounted(() => element.value?.ownerDocument.addEventListener('pointerdown', outside));
     onBeforeUnmount(() => element.value?.ownerDocument.removeEventListener('pointerdown', outside));
-    expose({ element, focus: () => element.value?.focus(), close: () => dispatch({ type: 'close' }) });
+    expose({ element, focus: () => element.value?.focus(), close: () => dispatch({ type: 'close' }), show: () => dispatch({ type: 'open' }) });
     return () => {
       const { name, form, ...inputAttrs } = attrs;
       const listId = `${field.id.value}-listbox`;
@@ -185,8 +197,9 @@ export const Combobox = defineComponent({
       return decorate(props, field.id.value, h('div', { ref: root, class: 'hw-combobox', onFocusout: (event: FocusEvent) => { if (!root.value?.contains(event.relatedTarget as Node | null)) dispatch({ type: 'close' }); } }, [
         h('input', mergeProps(inputAttrs, field.controlAttrs.value, { ref: element, form, disabled: props.disabled, readonly: props.readonly, class: 'hw-input', type: 'text', role: 'combobox', autocomplete: 'off', 'aria-autocomplete': 'list', 'aria-readonly': props.readonly || undefined, 'aria-expanded': open, 'aria-controls': listId,
           'aria-activedescendant': open && active && !active.disabled ? `${field.id.value}-option-${state.value.activeIndex}` : undefined, value: query,
+          'aria-invalid': failed.value ? true : field.controlAttrs.value['aria-invalid'], onInvalid: () => { failed.value = true; },
           onInput: (event: Event) => { const input = event.target as HTMLInputElement; if (blocked()) { input.value = query; return; } const nextQuery = input.value; dispatch({ type: 'input', query: nextQuery }); emit('update:query', nextQuery); },
-          onFocus: (event: FocusEvent) => { if (!event.defaultPrevented) dispatch({ type: 'open' }); },
+          onFocus: (event: FocusEvent) => { if (!event.defaultPrevented && !refocusing) dispatch({ type: 'open' }); },
           onClick: (event: MouseEvent) => { if (!event.defaultPrevented && !open) dispatch({ type: 'open' }); },
           onKeydown: (event: KeyboardEvent) => {
             if (event.defaultPrevented || event.isComposing || blocked()) return;
@@ -202,10 +215,10 @@ export const Combobox = defineComponent({
         h('ul', { id: listId, role: 'listbox', class: 'hw-listbox', 'aria-label': attrs['aria-label'], 'aria-labelledby': field.controlAttrs.value['aria-labelledby'], hidden: !open }, [
           ...results.value.map((option, index) => h('li', { key: option.value, id: `${field.id.value}-option-${index}`, role: 'option', class: 'hw-option', 'aria-selected': effective.value.value === option.value, 'aria-disabled': option.disabled || undefined,
             'data-active': state.value.activeIndex === index ? 'true' : undefined, 'data-state': state.value.activeIndex === index ? 'active' : undefined,
-            onPointerdown: (event: PointerEvent) => event.preventDefault(), onClick: () => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); element.value?.focus(); } },
-          }, option.label)), !results.value.length && h('li', { role: 'presentation', class: 'hw-hint' }, props.emptyMessage),
+            onPointerdown: (event: PointerEvent) => event.preventDefault(), onClick: () => { if (!option.disabled) { dispatch({ type: 'select', value: option.value }); refocusing = true; element.value?.focus(); refocusing = false; } },
+          }, option.label)), !results.value.length && h('li', { role: 'presentation', class: 'hw-hint' }, needText('Combobox', 'emptyMessage', props.emptyMessage)),
         ]),
-        h('span', { class: 'hw-sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, open ? props.resultsMessage(results.value.length) : ''),
+        h('span', { class: 'hw-sr-only', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, open ? resultsText(results.value.length) : ''),
       ]));
     };
   },

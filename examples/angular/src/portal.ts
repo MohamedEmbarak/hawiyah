@@ -4,7 +4,7 @@ import logo from '../../../brand/assets/hawiyah-wordmark.svg';
 
 @Component({selector: 'app-root', standalone: true, imports: [HwAccordionComponent, HwButtonDirective, HwMobileTopBarComponent, HwNavigationDrawerComponent, HwPortalLayoutComponent, HwSecondaryNavComponent, HwServiceCardComponent], template: `
   <hw-portal-layout brand="هوية" [lang]="english ? 'en' : 'ar'" [dir]="english ? 'ltr' : 'rtl'" [links]="links" [secondaryNavigation]="[links[0]]" mainId="portal-content"
-    [skipLabel]="t('انتقل إلى المحتوى', 'Skip to content')" [menuLabel]="t('القائمة', 'Menu')" [navigationLabel]="t('التنقل الرئيسي', 'Main navigation')" [secondaryLabel]="t('التنقل الثانوي', 'Secondary navigation')" [breadcrumbLabel]="t('مسار التنقل', 'Breadcrumb')" [footerLabel]="t('روابط التذييل', 'Footer links')"
+    [skipLabel]="t('انتقل إلى المحتوى', 'Skip to content')" [menuLabel]="t('القائمة', 'Menu')" [navigationLabel]="t('التنقل الرئيسي', 'Main navigation')" [secondaryLabel]="t('التنقل الثانوي', 'Secondary navigation')" [breadcrumbLabel]="t('مسار التنقل', 'Breadcrumb')" [footerLabel]="t('روابط التذييل', 'Footer links')" [externalLabel]="t('يفتح في نافذة جديدة', 'opens in a new window')"
     [breadcrumbs]="[{ label: t('الرئيسية', 'Home'), href: '/' }, { label: t('الخدمات', 'Services') }]" [footerLinks]="[{ label: t('الخصوصية', 'Privacy'), href: '#privacy' }]">
     <img hwBrand [src]="logo" alt="" width="96" height="40" />
     <button hwPortalActions hwButton variant="ghost" type="button" (click)="english = !english">{{ english ? 'العربية' : 'English' }}</button>
@@ -20,8 +20,8 @@ import logo from '../../../brand/assets/hawiyah-wordmark.svg';
       {label:t('الخدمات','Services'),href:'#services',icon:'search-01'},
       {label:t('المزيد','More'),href:'#contact',icon:'menu-01'}]" />
     <section data-testid="accordion-showcase"><h2>{{ t('أسئلة شائعة','Frequently asked questions') }}</h2><hw-accordion [exclusive]="true" [items]="[
-      {id:'one',title:t('كيف أبدأ؟','How do I start?'),content:t('اختر الخدمة وراجع المتطلبات ثم ابدأ الطلب.','Choose a service, review the requirements, then start your application.')},
-      {id:'two',title:t('هل يمكنني حفظ الطلب؟','Can I save my application?'),content:t('نعم، يدير التطبيق حفظ مسودة الطلب.','Yes, draft saving is managed by your application.')}]" /></section>
+      {value:'one',title:t('كيف أبدأ؟','How do I start?'),content:t('اختر الخدمة وراجع المتطلبات ثم ابدأ الطلب.','Choose a service, review the requirements, then start your application.')},
+      {value:'two',title:t('هل يمكنني حفظ الطلب؟','Can I save my application?'),content:t('نعم، يدير التطبيق حفظ مسودة الطلب.','Yes, draft saving is managed by your application.')}]" /></section>
     <p hwPortalFooter>{{ t('نموذج محلي لهيكل البوابة', 'Local portal shell example') }}</p>
   </hw-portal-layout>`})
 export class PortalExampleComponent {

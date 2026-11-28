@@ -1,0 +1,22 @@
+/* Layout of the test page only; package components are never restyled here. */
+body {
+  margin: 0;
+  background: #fff;
+  color: #161616;
+  font-family: system-ui, sans-serif;
+}
+#fixture {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+.fixture-heading {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+.fixture-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: start;
+}

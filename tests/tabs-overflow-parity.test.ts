@@ -98,6 +98,10 @@ for(const adapter of ['react','vue'])it(`${adapter}: rejected controlled overflo
   const outside=document.createElement('button');document.body.append(outside);outside.focus();m.state.value='b';await m.sync();expect(selected(m.root())).toBe('Tab b');expect(document.activeElement).toBe(outside);
 });
 it('React/Vue SSR keeps all original tabs available until layout measurement',async()=>{
-  const renders=[renderToStaticMarkup(r(ReactTabs,{items:items(),label:'Details'})),await renderToString(createSSRApp({render:()=>h(VueTabs,{items:items(),label:'Details'})}))];
+  const renders=[renderToStaticMarkup(r(ReactTabs,{items:items(),label:'Details',overflowLabel:'المزيد من التبويبات'})),await renderToString(createSSRApp({render:()=>h(VueTabs,{items:items(),label:'Details',overflowLabel:'المزيد من التبويبات'})}))];
   for(const html of renders){const host=document.createElement('div');host.innerHTML=html;expect(host.querySelectorAll('[role="tab"]')).toHaveLength(5);expect(host.querySelectorAll('[data-hw-overflow-hidden]')).toHaveLength(0);expect(host.querySelector('details')!.hidden).toBe(true);expect(host.querySelector('summary')!.getAttribute('aria-label')).toBe('المزيد من التبويبات');}
+  const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+  try{
+    for(const html of [renderToStaticMarkup(r(ReactTabs,{items:items(),label:'Details'} as Parameters<typeof ReactTabs>[0])),await renderToString(createSSRApp({render:()=>h(VueTabs,{items:items(),label:'Details'})}))]){const host=document.createElement('div');host.innerHTML=html;expect(host.querySelectorAll('[role="tab"]')).toHaveLength(5);expect(host.querySelector('summary')?.hasAttribute('aria-label')??false).toBe(false);expect(host.textContent).not.toMatch(/المزيد/u);}
+  }finally{warn.mockRestore();}
 });

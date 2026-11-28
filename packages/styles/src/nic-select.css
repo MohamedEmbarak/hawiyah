@@ -10,7 +10,9 @@
   --hw-profile-select-font: .875rem;
   --hw-profile-select-padding-ltr: 35px;
   --hw-profile-select-padding-rtl: 36px;
-  --hw-profile-helper-size: .625rem;
+  /* NIC declares 10px helper text, below the 12px floor of the documented type
+     scale (docs/nic-foundations.md); hints use that floor, as errors do. */
+  --hw-profile-helper-size: var(--hw-text-xs);
   --hw-profile-error-size: .75rem;
   --hw-profile-error-offset: -.25rem;
 }
