@@ -152,7 +152,10 @@ for(const lang of ['ar','en'] as const) for(const name of ['hw-portal-header-act
     expect((await page.locator('#actions').boundingBox())!.y).toBeGreaterThan((await page.locator('#brand').boundingBox())!.y+10);
     await page.locator('#brand').focus();
     for(const id of ['menu','search','language','mode']) {await page.keyboard.press('Tab');await expect(page.locator(`#${id}`)).toBeFocused();}
-    expect(await computed(page,'#actions',['display','flex-wrap','flex-shrink','min-width','justify-content'])).toEqual({display:'flex','flex-wrap':'wrap','flex-shrink':'1','min-width':'0px','justify-content':'flex-end'});
+    const actions=await computed(page,'#actions',['display','flex-wrap','flex-shrink','min-width','justify-content']);
+    // A newer Chromium serialises the computed flex-end as flow-end; the value set and the layout are the same.
+    expect(['flex-end','flow-end']).toContain(actions['justify-content']);
+    expect({...actions,'justify-content':'flex-end'}).toEqual({display:'flex','flex-wrap':'wrap','flex-shrink':'1','min-width':'0px','justify-content':'flex-end'});
   });
 test('an empty header actions container takes no space at any width',async({page})=>{
   await page.setViewportSize({width:1100,height:600});
