@@ -77,10 +77,10 @@ describe('keys of the three kinds', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it('reads guides and templates below --docs when it holds components/, else from the repository', () => {
+  it('reads guides and templates below --docs when it holds components/, else a fixture of component pages has none', () => {
     expect(kindDirs({ repoDir })).toEqual({ component: join(repoDir, 'docs', 'components'), guide: join(repoDir, 'docs', 'guides'), template: join(repoDir, 'docs', 'templates') });
     expect(kindDirs({ repoDir, docsDir: docs }).guide).toBe(join(docs, 'guides'));
-    expect(kindDirs({ repoDir, docsDir: join(docs, 'components') }).guide).toBe(join(repoDir, 'docs', 'guides'));
+    expect(kindDirs({ repoDir, docsDir: join(docs, 'components') }).guide).toBe(join(docs, 'components', 'guides'));
   });
 
   it('accepts guide:<id> and template:<id> in pending-translation.json', () => {

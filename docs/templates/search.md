@@ -198,7 +198,7 @@ export class LinksExample {
 
 When each result is a service, a service card shows its category, its title, a summary and its facts, and its action link carries a name that includes the service. The cards stand in a grid that has one column on a narrow viewport and three columns from the medium step.
 
-```html live example=cards static differences=container-vue-layout-attributes,stack-vue-layout-attributes,search-field-adapter-markup,pagination-adapter-markup,grid-vue-layout-attributes,service-card-angular-variant-icon frame
+```html live example=cards static differences=container-vue-layout-attributes,stack-vue-layout-attributes,search-field-adapter-markup,grid-vue-layout-attributes,service-card-angular-variant-icon frame
 <main>
   <div class="hw-container">
     <div class="hw-stack">
@@ -398,7 +398,7 @@ template: `<main>
 
 The empty state is a separate state of the page. The search field keeps the query that returned nothing, so that the reader can correct it, the count states that there are no results, and the empty state says what to do next. The list and the pagination are not rendered. The action of the empty state is shown without a handler; the application handles it or replaces it with a link to the list of services.
 
-```html live example=empty static differences=container-vue-layout-attributes,stack-vue-layout-attributes,search-field-adapter-markup,pagination-adapter-markup frame
+```html live example=empty static differences=container-vue-layout-attributes,stack-vue-layout-attributes,search-field-adapter-markup frame
 <main>
   <div class="hw-container">
     <div class="hw-stack">

@@ -395,8 +395,8 @@ milestone 5 (`scripts/build-scope.mjs`):
 - `--docs <dir>`: the component pages are read from `<dir>/components/`, or from
   `<dir>` when it has no such directory, instead of `docs/components/`; when `<dir>`
   holds `components/`, the guides and templates are read from `<dir>/guides/` and
-  `<dir>/templates/` (a missing one holds no page), otherwise from `docs/guides/` and
-  `docs/templates/`. A local gate, for example for a scale fixture. In a directory
+  `<dir>/templates/` (a missing one holds no page); otherwise `<dir>` is a fixture of
+  component pages and builds no guide or template. A local gate, for example for a scale fixture. In a directory
   outside the repository a relative link that is not a page of the copy resolves as
   it would in `docs/<kind>/`, where the page is written, so a copy of the pages
   builds as the repository does.

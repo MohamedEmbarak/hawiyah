@@ -205,7 +205,7 @@ export class LinksExample {
 
 عندما تكون كل نتيجة خدمة، تعرض بطاقة الخدمة تصنيفها وعنوانها وملخصًا لها ومعلوماتها، ويحمل رابط إجرائها اسمًا يذكر الخدمة. وتقع البطاقات في شبكة ذات عمود واحد في منفذ العرض الضيّق، وثلاثة أعمدة ابتداءً من الدرجة المتوسطة.
 
-```html live example=cards static differences=container-vue-layout-attributes,stack-vue-layout-attributes,search-field-adapter-markup,pagination-adapter-markup,grid-vue-layout-attributes,service-card-angular-variant-icon frame
+```html live example=cards static differences=container-vue-layout-attributes,stack-vue-layout-attributes,search-field-adapter-markup,grid-vue-layout-attributes,service-card-angular-variant-icon frame
 <main>
   <div class="hw-container">
     <div class="hw-stack">
@@ -405,7 +405,7 @@ template: `<main>
 
 الحالة الفارغة حالة مستقلة من حالات الصفحة. ويحتفظ حقل البحث بعبارة البحث التي لم تُعِد شيئًا، ليتمكّن القارئ من تصحيحها، ويذكر العدد أنه لا توجد نتائج، وتذكر الحالة الفارغة الخطوة التالية. ولا تُعرض القائمة ولا ترقيم الصفحات. ويُعرض إجراء الحالة الفارغة دون معالج؛ فيعالجه التطبيق أو يستبدل به رابطًا إلى قائمة الخدمات.
 
-```html live example=empty static differences=container-vue-layout-attributes,stack-vue-layout-attributes,search-field-adapter-markup,pagination-adapter-markup frame
+```html live example=empty static differences=container-vue-layout-attributes,stack-vue-layout-attributes,search-field-adapter-markup frame
 <main>
   <div class="hw-container">
     <div class="hw-stack">
