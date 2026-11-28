@@ -27,7 +27,7 @@ describe('parseMarkdown', () => {
     expect(codes('- [ ] task\n')).toEqual([['HWC-MD', 1, 'task list items are not allowed']]);
   });
 
-  it('accepts the key element <kbd>text</kbd> in a paragraph, list item and table cell, and no other form (5a.7)', () => {
+  it('accepts the key element <kbd>text</kbd> in a paragraph, list item and table cell, and no other form', () => {
     const one = parseMarkdown('Press <kbd>Enter</kbd> now.\n', 'x.md');
     expect(one.findings).toEqual([]);
     expect(one.tree.children[0].children.map((node) => node.type)).toEqual(['text', 'kbd', 'text']);
@@ -46,7 +46,7 @@ describe('parseMarkdown', () => {
     expect(rejected('## Keys <kbd>Tab</kbd>\n')).toHaveLength(2);
     expect(rejected('**<kbd>Tab</kbd>**\n')).toHaveLength(2);
     expect(rejected('<KBD>Tab</KBD>\n')).toHaveLength(2);
-    // A character reference in the key name (G16 of the 5a fix round): &#84;ab is not the plain text Tab.
+    // A character reference in the key name (&#84;ab) is not the plain text Tab.
     expect(rejected('Press <kbd>&#84;ab</kbd>.\n')).toEqual([expect.stringMatching(/^the key element holds "&#84;ab", which is not plain text; /)]);
     expect(rejected('Press <kbd>Page&nbsp;Up</kbd>.\n')).toHaveLength(1);
     // Other raw HTML still fails with its own message.

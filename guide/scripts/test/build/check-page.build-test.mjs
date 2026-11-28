@@ -1,12 +1,12 @@
-// check:page against a production build (5a.6 of milestone 5): run by
+// check:page against a production build: run by
 // `npm run test:check-page` after `HAWIYAH_BASE_PATH=/hawiyah/ npm run build`
 // (it fails without that build). Three copies of tabs.md, read with --docs, fail
 // with the code of their stage: a renamed prop in a table (HWC-APIX), a block that
 // does not compile (HWC-R1), one framework rendering another text (HWE-STRUCT),
-// the Home row removed from the keyboard table (HWE-KEYS, 5a.8; --draft leaves
+// the Home row removed from the keyboard table (HWE-KEYS; --draft leaves
 // that rule out).
 // Two concurrent runs pass and leave dist/browser/examples and src/generated as
-// they were (leadAmendments A8).
+// they were.
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -85,14 +85,14 @@ describe('check:page fails a wrong copy of tabs.md with the code of its stage', 
   }, 600_000);
 });
 
-describe('the keyboard table drives the checks (5a.8)', () => {
+describe('the keyboard table drives the checks', () => {
   it('the Home row removed from the keyboard table: HWE-KEYS, and --draft leaves the rule out', async () => {
     const docs = tabsCopy('no-home', (text) => text.replace('| <kbd>Home</kbd>, <kbd>End</kbd> | Moves focus to the first or the last enabled tab. |', '| <kbd>End</kbd> | Moves focus to the last enabled tab. |'));
     const result = await run(docs);
     expect(result.ok).toBe(false);
     // The copy has no Arabic sibling (HWC-FILE), as in the other cases; nothing else fails.
     const other = (findings) => findings.filter((line) => !line.startsWith('HWC-FILE'));
-    // tabs-activate presses Home too since G24 of the 5a fix round (manual activation).
+    // tabs-activate presses Home too (manual activation).
     expect(other(result.findings)).toEqual([
       expect.stringMatching(/^HWE-KEYS docs\/components\/tabs\.md:\d+: the step tabs-keyboard\/home, tabs-keyboard-vertical\/home, tabs-activate\/home presses Home, which the keyboard table does not document$/),
     ]);
@@ -102,7 +102,7 @@ describe('the keyboard table drives the checks (5a.8)', () => {
   }, 600_000);
 });
 
-describe('two concurrent runs (leadAmendments A8)', () => {
+describe('two concurrent runs', () => {
   it('both pass, one step 80 at a time, and the build output is unchanged', async () => {
     const before = { examples: hashTree(join(guideDir, 'dist', 'browser', 'examples')), generated: hashTree(join(guideDir, 'src', 'generated')) };
     const spawnRun = (id) => new Promise((done) => {

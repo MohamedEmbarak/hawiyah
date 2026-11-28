@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-// content:scaffold-ar: the Arabic page built from the English page (5a.4,
-// leadAmendments A10). Taken from fixed lists: the h1 (components.json labelAr),
+// content:scaffold-ar: the Arabic page built from the English page. Taken from fixed lists: the h1 (components.json labelAr),
 // the h2 headings, the captions and header rows of the four API tables, the
 // generated note of a table read from the stylesheet, the compliance sentence.
 // Copied: the API table bodies and every code listing. Copied with the reader
@@ -15,7 +14,7 @@
 //   npm run content:scaffold-ar -- <id> --placeholder --docs <dir> [--strings <map.json>] [--force]
 //
 // --placeholder writes a stand-in sibling for the prerender-level tests of an
-// English page before its translation (5a.6): every text left in English and every
+// English page before its translation: every text left in English and every
 // reader string the map does not translate becomes PLACEHOLDER. It writes only
 // into a directory outside the repository, which the build reads with --docs (not
 // deployable).
@@ -123,7 +122,7 @@ export function scaffoldArabic(englishText, { entry, declared, map, version, pla
     else if (node.type === 'paragraph' && source.slice(from, from + CAPTION_PREFIX.en.length) === CAPTION_PREFIX.en) {
       if (component && isApiTableCaption(item)) edits.push({ from, to, text: captionLine(item.h3, 'ar', declared, entry) });
       else if (component && isKeyboardCaption(source, item)) {
-        // The keyboard table (5a.8): its fixed Arabic caption and headers.
+        // The keyboard table: its fixed Arabic caption and headers.
         edits.push({ from, to, text: `${CAPTION_PREFIX.ar}${KEYBOARD_TABLE.ar.caption(entry)}` });
         const table = item.next.position.start.offset;
         edits.push({ from: table, to: source.indexOf('\n', table), text: `| ${KEYBOARD_TABLE.ar.headers.join(' | ')} |` });

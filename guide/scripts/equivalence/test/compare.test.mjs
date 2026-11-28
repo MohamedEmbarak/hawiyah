@@ -75,7 +75,7 @@ describe('compareStructure', () => {
   });
 });
 
-// G11 of the 5a fix round: the two narrow forms of a designed difference between the
+// The two narrow forms of a designed difference between the
 // adapters (the lists empty-elements.json and vanilla-hooks.json). Neither switches off
 // the structure comparison: a difference outside the listed element or attribute fails.
 describe('designed differences', () => {

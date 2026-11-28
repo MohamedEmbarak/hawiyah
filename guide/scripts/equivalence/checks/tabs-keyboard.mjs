@@ -1,4 +1,4 @@
-// Interaction check tabs-keyboard (5a.8): a horizontal tab list with automatic
+// Interaction check tabs-keyboard: a horizontal tab list with automatic
 // activation. Tab enters the list on the selected tab, the arrow keys move focus
 // and select (Right Arrow next in ltr, previous in rtl; Left Arrow the reverse;
 // both wrap and skip disabled tabs), End and Home go to the last and the first

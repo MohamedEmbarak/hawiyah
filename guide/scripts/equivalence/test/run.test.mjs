@@ -241,7 +241,7 @@ describe('known differences', () => {
   });
 });
 
-describe('a structure entry with ignore (self-test, leadAmendments A8)', () => {
+describe('a structure entry with ignore (self-test)', () => {
   const [orientation] = known;
   const bar = (attrs, tabs = 2) => ({
     tag: 'div',
@@ -440,7 +440,7 @@ describe('runner', () => {
   });
 
   it('names the steps of the Tabs checks', () => {
-    // G24 of the 5a fix round added the unhandled Down Arrow and Up Arrow of a horizontal list.
+    // The steps include the unhandled Down Arrow and Up Arrow of a horizontal list.
     expect(tabsKeyboard.steps.map((step) => step.name)).toEqual(['tab-into-list', 'right-arrow', 'down-arrow-unhandled', 'up-arrow-unhandled', 'left-arrow', 'left-arrow-again', 'end', 'right-arrow-again', 'home', 'tab-to-panel']);
     expect(tabsClick.steps.map((step) => step.name)).toEqual(['click-second-tab']);
   });
@@ -474,7 +474,7 @@ describe('runner', () => {
       expect(harnessUrl(served.origin, '/hawiyah/', group, '0.3.0')).toBe(
         `${served.origin}/hawiyah/__harness/?id=tabs&lang=ar&example=basic&pin=0.3.0&frameworks=vanilla%2Creact%2Cvue%2Cangular&width=720`,
       );
-      // A framed group (5a.9) is compared in frames 1280 px wide, and its second pass at 390 px.
+      // A framed group is compared in frames 1280 px wide, and its second pass at 390 px.
       expect(harnessUrl(served.origin, '/hawiyah/', { ...group, frame: true }, '0.3.0')).toMatch(/&width=1280$/);
       expect(harnessUrl(served.origin, '/hawiyah/', { ...group, frame: true }, '0.3.0', undefined, 390)).toMatch(/&width=390$/);
     } finally {
@@ -522,7 +522,7 @@ describe('runEquivalence before the browser', () => {
     await expect(runEquivalence(options)).rejects.toThrow('HWE-CHECK docs/components/tabs.ar.md:7: basic: tabs has a controller, so the group names at least one check (check=<name>[,<name>]) or declares itself static');
   });
 
-  // G19 of the 5a fix round: one definition of a component with a controller, a controller
+  // One definition of a component with a controller, a controller
   // factory of the installed @hawiyah/vanilla, also where components.json does not mark it interactive.
   it('HWE-CHECK: a group of a component whose page targets a controller factory, whatever its sourceType', async () => {
     const accordion = { id: 'accordion', langs: ['ar', 'en'], liveGroups: [{ example: 'basic' }] };

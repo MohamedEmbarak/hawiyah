@@ -89,7 +89,7 @@ describe('Content-Security-Policy', () => {
 });
 
 describe('modulesDocument', () => {
-  it('writes the frame title text in the page language into the document title (leadAmendments A10)', () => {
+  it('writes the frame title text in the page language into the document title', () => {
     expect(parse(modulesDocument({ ...base, imports })).title).toBe('النتيجة في React');
     expect(parse(bundledDocument({ ...base, lang: 'en', dir: 'ltr', title: frameTexts.en.frameTitle('Vue') })).title).toBe('Result in Vue');
     const hostile = modulesDocument({ ...base, imports, title: '</title><script>x</script>' });

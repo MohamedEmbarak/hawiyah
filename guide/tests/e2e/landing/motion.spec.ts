@@ -75,7 +75,7 @@ test.describe('motion allowed', () => {
     };
     await check(false);
     await ready(page);
-    // M1: both containers settled once on load.
+    // Both containers settled once on load.
     const starts = await page.evaluate(() => (window as unknown as { __starts: string[] }).__starts);
     expect(starts.filter((name) => name.includes('guide-pane-settle'))).toHaveLength(2);
     for (const change of changes) {

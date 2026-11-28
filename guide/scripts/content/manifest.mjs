@@ -36,7 +36,7 @@ export function loadersModule(keys, modelPath) {
 }
 
 /**
- * The navigation index (5a.2): one entry per built page with its category, names,
+ * The navigation index: one entry per built page with its category, names,
  * summaries and live groups, ordered by the categories of components.json (in the
  * order they first appear there) and inside a category in components.json order.
  * A live group under its own heading (h3) carries the text of that heading.

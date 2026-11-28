@@ -1,4 +1,4 @@
-// Interaction check tabs-activate (5a.8): a horizontal tab list with manual
+// Interaction check tabs-activate: a horizontal tab list with manual
 // activation. The arrow keys move focus without changing the selected tab or its
 // panel; Enter and Space select the focused tab; End and Home move focus only; Tab
 // from a tab that is not selected moves focus to the panel of the selected tab.

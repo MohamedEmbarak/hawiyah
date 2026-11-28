@@ -2,7 +2,7 @@
 // extensions) and the rejection of constructs the content model does not
 // carry: raw HTML, images, reference-style links and definitions, footnotes,
 // strikethrough and task list items (HWC-MD). The one raw HTML form accepted is
-// the key element <kbd>text</kbd> (5a.7): text only, no attribute, no nesting,
+// the key element <kbd>text</kbd>: text only, no attribute, no nesting,
 // directly in a paragraph (also of a list item or an alert) or a table cell. It
 // becomes an mdast node { type: 'kbd', value } and the content model's kbd inline.
 
@@ -84,7 +84,7 @@ function foldKeys(tree, file, findings, source = null) {
       if (child.type === 'html' && child.value === '<kbd>' && KBD_PARENTS.has(node.type)) {
         const text = children[i + 1];
         const close = children[i + 2];
-        // The key name stands in the source as plain text: a character reference (&#84;ab) is not a key name (G16 of the 5a fix round).
+        // The key name stands in the source as plain text: a character reference (&#84;ab) is not a key name.
         const raw = source && text?.position ? source.slice(text.position.start.offset, text.position.end.offset) : text?.value;
         if (text?.type === 'text' && close?.type === 'html' && close.value === '</kbd>' && raw !== text.value) {
           findings.push(finding('HWC-MD', file, child.position?.start.line ?? 1, `the key element holds "${raw}", which is not plain text; ${KBD_FORM}`));

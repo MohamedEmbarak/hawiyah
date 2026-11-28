@@ -1,4 +1,4 @@
-// The string map of an Arabic page (leadAmendments A10 of milestone 5): the
+// The string map of an Arabic page: the
 // Arabic text of each English reader string of the live blocks, once per string,
 // applied to the four frameworks of every group.
 //
@@ -57,7 +57,7 @@ export function textProps(declared) {
 }
 
 const scriptParser = jsBase.configure({ dialect: 'ts jsx' });
-/** Vue and Angular templates close any tag with "/>": the selfClosing dialect keeps </div> after <Stat ... /> a closing tag (G9 of the 5a fix round). */
+/** Vue and Angular templates close any tag with "/>": the selfClosing dialect keeps </div> after <Stat ... /> a closing tag. */
 const vueMarkup = htmlBase.configure({ dialect: 'selfClosing' });
 const BOUND = /^(?::|v-bind:|@|v-on:|v-|\[|\(|\*|#)/;
 
@@ -291,8 +291,8 @@ export function groupContexts(blocks, names = readerNames()) {
 }
 
 /**
- * Whether a candidate renders as reader text although the map does not replace it
- * (G9 of the 5a fix round): a string of two or more Latin words under a name that
+ * Whether a candidate renders as reader text although the map does not replace it:
+ * a string of two or more Latin words under a name that
  * is neither a reader name nor a token or value name (Stat trend, an accordion
  * item's content), as HWC-PAR8 reads it.
  */

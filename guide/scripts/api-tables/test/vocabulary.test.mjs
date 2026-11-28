@@ -1,5 +1,4 @@
-// The vocabulary pass of step 30 (HWC-VOCAB, 5a.5 of milestone 5, with
-// leadAmendments A5 and A9): the pilots pass without an exception, and each kind
+// The vocabulary pass of step 30 (HWC-VOCAB): the pilots pass without an exception, and each kind
 // of invented name fails with one finding. Fixtures are the pilot pages with
 // one code value changed.
 import { readFileSync } from 'node:fs';
@@ -107,7 +106,7 @@ describe('each kind of invented name fails with HWC-VOCAB', () => {
     ]);
   });
   it('an invented package path and a missing file', () => {
-    // The evidence panel replaced the hand-kept open items (5a.11): the file name stands in the opening paragraph of the section.
+    // The evidence panel replaced the hand-kept open items: the file name stands in the opening paragraph of the section.
     const input = fixture('tabs', (text) => once(once(text, '`enhance()` from `@hawiyah/vanilla`', '`enhance()` from `@hawiyah/vanilla/tabs`'), 'verification evidence that components.json records', 'verification evidence that `component-list.json` records'));
     expect(messages(run(input))).toEqual([
       'HWC-VOCAB docs/components/tabs.md: api/javascript: `@hawiyah/vanilla/tabs`: @hawiyah/vanilla/tabs is not an installed @hawiyah package or export path',
@@ -116,23 +115,23 @@ describe('each kind of invented name fails with HWC-VOCAB', () => {
   });
 });
 
-describe('framework scope (leadAmendments A9)', () => {
+describe('framework scope', () => {
   it('a member of another framework under a framework heading is a finding', () => {
     const input = fixture('tabs', (text) => once(text, 'A `TabItem` is `{ value, label, content, disabled? }`;', 'A `TabItem` is `{ value, label, content, disabled? }`; bind `modelValue`;'));
     expect(messages(run(input))).toEqual([
-      'HWC-VOCAB docs/components/tabs.md: api/react: `modelValue`: modelValue is a member of vue only, and the paragraph is scoped to react (leadAmendments A9: the check cannot decide)',
+      'HWC-VOCAB docs/components/tabs.md: api/react: `modelValue`: modelValue is a member of vue only, and the paragraph is scoped to react (the check cannot decide)',
     ]);
   });
   it('a paragraph that names a framework is scoped to it, outside a framework heading as well', () => {
     const input = fixture('tabs', (text) => once(text, '- Only one tab is in the tab order at a time;', '- In Angular, `defaultValue` sets the first tab. Only one tab is in the tab order at a time;'));
     expect(messages(run(input))).toEqual([
-      'HWC-VOCAB docs/components/tabs.md: accessibility: `defaultValue`: defaultValue is a member of react, vue only, and the paragraph is scoped to angular (leadAmendments A9: the check cannot decide)',
+      'HWC-VOCAB docs/components/tabs.md: accessibility: `defaultValue`: defaultValue is a member of react, vue only, and the paragraph is scoped to angular (the check cannot decide)',
     ]);
   });
   it('an export of another adapter under a framework heading is a finding', () => {
     const input = fixture('tabs', (text) => once(text, 'A `TabItem` is `{ value, label, content, disabled? }`;', 'A `TabItem` is `{ value, label, content, disabled? }`; see `HwTabsComponent`;'));
     expect(messages(run(input))).toEqual([
-      'HWC-VOCAB docs/components/tabs.md: api/react: `HwTabsComponent`: HwTabsComponent is an export of angular only, and the paragraph is scoped to react (leadAmendments A9: the check cannot decide)',
+      'HWC-VOCAB docs/components/tabs.md: api/react: `HwTabsComponent`: HwTabsComponent is an export of angular only, and the paragraph is scoped to react (the check cannot decide)',
     ]);
   });
   it('a member of a component the sentence links to is accepted', () => {
@@ -146,12 +145,12 @@ describe('framework scope (leadAmendments A9)', () => {
   });
 });
 
-// G4 of the fix round of 5a: the ways through that the verification of 07763ce found
-// (v1: caption, framework heading outside API, literal of another attribute, data-*
+// The ways through that an earlier verification found
+// (a caption, framework heading outside API, literal of another attribute, data-*
 // value and aria-* name of an html block, a name split across formatting, plain prose)
 // and the true statements the review found rejected (a row name of the page's own
 // Angular table, the type words).
-describe('G4: what the vocabulary pass reads and accepts', () => {
+describe('what the vocabulary pass reads and accepts', () => {
   const ACCESSIBILITY = '## Accessibility\n\n';
   const insert = (block) => fixture('tabs', (text) => once(text, ACCESSIBILITY, `${ACCESSIBILITY}${block}\n\n`));
   it('reads the caption of a table outside the API section', () => {
@@ -161,7 +160,7 @@ describe('G4: what the vocabulary pass reads and accepts', () => {
   });
   it('scopes a paragraph under a framework heading in any section', () => {
     expect(messages(run(insert('### Angular\n\nListen to `onValueChange` to follow the selection.')))).toEqual([
-      'HWC-VOCAB docs/components/tabs.md: accessibility/angular-1: `onValueChange`: onValueChange is a member of vanilla, react only, and the paragraph is scoped to angular (leadAmendments A9: the check cannot decide)',
+      'HWC-VOCAB docs/components/tabs.md: accessibility/angular-1: `onValueChange`: onValueChange is a member of vanilla, react only, and the paragraph is scoped to angular (the check cannot decide)',
     ]);
   });
   it('takes the value of name="value" from that attribute or member only', () => {
@@ -225,7 +224,7 @@ describe('names that the installed packages or the HTML Standard define', () => 
       'HWC-VOCAB docs/components/service-card.md: accessibility/angular-1: `hwCardButton`: hwCardButton is not a member of this component in any adapter, of a component the sentence links to, an export, a value of this component or a name of vocabulary-allow.json',
     ]);
     expect(messages(run(insert('### React\n\nThe action may be a `hwButton` element.', 'service-card')))).toEqual([
-      'HWC-VOCAB docs/components/service-card.md: accessibility/react-1: `hwButton`: hwButton is a selector of angular only, and the paragraph is scoped to react (leadAmendments A9: the check cannot decide)',
+      'HWC-VOCAB docs/components/service-card.md: accessibility/react-1: `hwButton`: hwButton is a selector of angular only, and the paragraph is scoped to react (the check cannot decide)',
     ]);
     expect(messages(run(insert('The action may be a `HwServiceButton`.', 'service-card')))).toEqual([
       'HWC-VOCAB docs/components/service-card.md: accessibility: `HwServiceButton`: HwServiceButton is not an export of an installed @hawiyah package',
@@ -387,7 +386,7 @@ describe('reading code values', () => {
   });
 });
 
-describe('the coverage report (leadAmendments A5)', () => {
+describe('the coverage report', () => {
   it('lists the enumerated values and boolean members that no group shows and Variants and states does not list', () => {
     const { pair } = fixture('tabs');
     const result = coverageOf({ id: 'tabs', page: pair.models.en, groups: pair.groupEntries.en, declared: declared('tabs') });

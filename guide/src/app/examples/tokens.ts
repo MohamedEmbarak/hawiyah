@@ -3,7 +3,7 @@ import type { ExampleFramework, ExampleLanguage } from './payload';
 
 /**
  * Frameworks whose result is rendered in a sandboxed frame instead of in the page;
- * Angular as well in a group with frame (5a.9).
+ * Angular as well in a group with frame.
  */
 export type FrameFramework = ExampleFramework;
 
@@ -27,7 +27,7 @@ export type ExampleFrameResultInputs = {
 
 /**
  * The component type that renders a vanilla, React or Vue result (FrameResult, from
- * src/app/examples/frame/ in stage 4b, provided by the frame-runtime feature). Without
+ * src/app/examples/frame/, provided by the frame-runtime feature). Without
  * a provider the page block keeps the native Angular result for every tab.
  */
 export const EXAMPLE_FRAME_RESULT = new InjectionToken<Type<unknown>>('EXAMPLE_FRAME_RESULT');

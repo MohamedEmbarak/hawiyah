@@ -27,7 +27,7 @@ describe('stylesheet contract', () => {
     const rows = parseContract('# x\n\n## Stable class and state API\n\n| Family | Classes and attributes |\n| --- | --- |\n| A | `hw-a`; `data-x="1|2"` |\n\n## Next\n');
     expect(rows).toEqual([{ family: 'A', tokens: ['hw-a', 'data-x="1|2"'] }]);
   });
-  // G5 of the fix round of 5a: a shared row gives an attribute or value to a class
+  // A shared row gives an attribute or value to a class
   // only where dist/styles.css selects it on that class or inside it.
   it('gives the attributes and values of a shared row only where the stylesheet selects them on the component', () => {
     const readers = testReaders();

@@ -72,7 +72,7 @@ describe('analysePage', () => {
     expect(codes(replace(validEn(), 'The state is announced *once*.', 'Table: Orphan caption'))).toContain('HWC-TAB1');
   });
 
-  // G20 of the 5a fix round: the section keeps no heading for what the evidence panel generates.
+  // The section keeps no heading for what the evidence panel generates.
   it('refuses a heading in Platforms Code reference that restates the evidence panel, in both languages', () => {
     const at = '## Platforms Code reference\n';
     const message = (text) => `the heading "${text}" restates the evidence panel, which the guide generates after the section; keep the sources of the mapping in this section and leave out the evidence and the open items`;

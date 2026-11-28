@@ -1,9 +1,9 @@
-// The evidence panel of a component page (5a.11, leadAmendments A13). Step 20
+// The evidence panel of a component page. Step 20
 // writes it into the page model from the component's entry in components.json
 // (built and verified adapters, each evidence entry, the notes) and from what is
 // open: every entry of "Known defects in <pin>" in CHANGELOG.md that names the
 // component, and every entry of scripts/equivalence/known-differences.json for
-// it (shown under the Known defects entry it cites, G23 of the 5a fix round), the
+// it (shown under the Known defects entry it cites), the
 // entry of scripts/equivalence/keyboard-exceptions.json that leaves its keyboard
 // outcomes unchecked, and the kinds of evidence that some built adapters have and
 // others do not. Pages do
@@ -90,7 +90,7 @@ export function citedText(source) {
 
 /**
  * The kinds of evidence that some built adapters of a component have and others do
- * not (G23 of the 5a fix round): [{ kind, adapters }] with the built adapters, in
+ * not: [{ kind, adapters }] with the built adapters, in
  * the order of `built`, that hold no entry of that kind, in the order the kinds
  * first occur. Only adapters that components.json records as built are counted.
  */
@@ -107,7 +107,7 @@ export function evidenceGaps(built, entries) {
  * The evidence data of a page: { name, built, verified, entries, gaps, notes, open,
  * version }. A documented difference whose source cites a Known defects entry of
  * the page is shown under that entry (its `differences`), not as an item of its
- * own (G23 of the 5a fix round). When an entry of keyboard-exceptions.json leaves
+ * own. When an entry of keyboard-exceptions.json leaves
  * the keyboard outcomes of the component unchecked, the last open item is
  * { kind: 'keyboard' }: the panel states, in the page's language, that the keyboard
  * behaviour of the table is documented from the packages and not yet verified by the

@@ -1,6 +1,6 @@
-// The Arabic glossary (docs/guides/glossary.md, leadAmendments A14): its tables and
+// The Arabic glossary (docs/guides/glossary.md): its tables and
 // the forms it excludes, each a JavaScript regular expression in code. Read by
-// scripts/content/test/glossary.test.mjs and by check:page (G8 of the 5a fix round).
+// scripts/content/test/glossary.test.mjs and by check:page.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { fromMarkdown } from 'mdast-util-from-markdown';

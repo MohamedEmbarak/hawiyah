@@ -1,4 +1,4 @@
-// Interaction check tabs-keyboard-vertical (5a.8): a vertical tab list with
+// Interaction check tabs-keyboard-vertical: a vertical tab list with
 // automatic activation. Down Arrow and Up Arrow move focus to the next and the
 // previous enabled tab in both directions and wrap; Right Arrow and Left Arrow
 // change nothing; the rest is tabs-keyboard.

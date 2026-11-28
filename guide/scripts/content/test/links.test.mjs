@@ -29,7 +29,7 @@ describe('resolveLink', () => {
     expect(resolveLink('#missing', ctx())).toEqual({ error: 'the link "#missing" names no heading of this page' });
   });
 
-  // G17 of the 5a fix round: a copy of the pages outside the repository (--docs) builds as the repository does.
+  // A copy of the pages outside the repository (--docs) builds as the repository does.
   it('resolves the links of a page read from a copy outside the repository as in docs/components', () => {
     const copy = join(mkdtempSync(join(tmpdir(), 'hawiyah-copy-')), 'components');
     mkdirSync(copy);

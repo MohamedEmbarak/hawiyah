@@ -19,7 +19,7 @@ export interface ExampleTexts {
   readonly failed: (framework: string, firstLine: string) => string;
   /** Appended to the status when a frame runs on the bundled runtime. */
   readonly bundledRuntime: string;
-  /** Shown without script in place of the result of a framed group (5a.9). */
+  /** Shown without script in place of the result of a framed group. */
   readonly framedNoScript: string;
 }
 

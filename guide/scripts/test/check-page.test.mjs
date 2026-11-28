@@ -1,6 +1,6 @@
-// check:page and the pages pending translation (5a.6 of milestone 5), without a
-// build: the content step of one page, the pending rule, the locks of
-// leadAmendments A8 and the arguments. The runs against a production build (the
+// check:page and the pages pending translation, without a
+// build: the content step of one page, the pending rule, the locks and
+// the arguments. The runs against a production build (the
 // three failing copies of tabs.md and two concurrent runs) are in
 // scripts/test/build/check-page.build.test.mjs (npm run test:check-page).
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -144,13 +144,13 @@ describe('pages pending translation', () => {
     expect(outsideRepository(docs)).toBe(false);
     expect(PLACEHOLDER).toMatch(/^[\u0600-\u06ff ]+\.$/);
   });
-  it('the list of the repository is empty at the end of the milestone and well formed now', () => {
+  it('the list of the repository is a well formed list of pages', () => {
     const data = JSON.parse(readFileSync(join(guideDir, 'scripts', 'content', 'pending-translation.json'), 'utf8'));
     expect(Array.isArray(data.pages)).toBe(true);
   });
 });
 
-describe('concurrency (leadAmendments A8)', () => {
+describe('concurrency', () => {
   it('step 80 of check:page takes an exclusive lock; a second taker waits until it is released', async () => {
     const dir = join(locks, 'equivalence');
     const first = await takeEquivalenceLock({ dir });

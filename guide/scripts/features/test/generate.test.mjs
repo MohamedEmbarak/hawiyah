@@ -85,7 +85,7 @@ describe("generateFeatures", () => {
     expect(JSON.parse(readFileSync(join(dir, "pages.json"), "utf8"))).toEqual(pages);
   });
 
-  // G14 of the 5a fix round: an English page without its Arabic sibling (pending translation) is in no generated file.
+  // An English page without its Arabic sibling (pending translation) is in no generated file.
   it("leaves out a page whose Arabic sibling does not exist (accordion.md alone)", () => {
     const dir = temp();
     const { pages } = run("basic", dir);

@@ -1,5 +1,5 @@
 import { sameDocument } from './kinds.mjs';
-// Cheap gates on the text of a page (fix round of stage 5a, items G2 and G3).
+// Cheap gates on the text of a page.
 // They prove that a page is not hollow, not a placeholder, not a page of another
 // component and free of a small set of words; they do not prove that a sentence is
 // true (that is the reviewer's reading, docs/components/README.md).
@@ -37,7 +37,7 @@ export function normaliseArabic(text) {
 }
 
 /**
- * Claims a page may not make (G2). English is matched without case; Arabic after
+ * Claims a page may not make. English is matched without case; Arabic after
  * normaliseArabic(). Each pattern names a status Hawiyah does not have.
  */
 export const CLAIM_PATTERNS = {
@@ -68,11 +68,11 @@ export const CLAIM_PATTERNS = {
   ],
 };
 
-/** Placeholder text (G3): never in a page of docs/components. */
+/** Placeholder text: never in a page of docs/components. */
 const PLACEHOLDER = [/\bTODO\b/, /\bTBD\b/, /\bFIXME\b/, /\blorem\s+ipsum\b/i, /قيد الكتابة/];
 /** The placeholder sentence of content:scaffold-ar --placeholder (any wording that starts «نص مؤقت»). */
 const SCAFFOLD_PLACEHOLDER = /نص مؤقت/;
-/** An install command or a pinned package address in running text (G3). */
+/** An install command or a pinned package address in running text. */
 const INSTALL_IN_TEXT = /\b(?:npm\s+(?:install|i|ci|add)|pnpm\s+(?:add|install|i)|yarn\s+add|bun\s+add|npx\s+jsr\s+add)\s|@hawiyah\/[a-z-]+@\S/;
 
 /** The lead's lists of this module, each entry with approvedBy and a reason. */
@@ -226,7 +226,7 @@ export function angularSelectors(nodeModules) {
 }
 
 /**
- * The names by which a live block shows component `id` (G3): vanilla classes and
+ * The names by which a live block shows component `id`: vanilla classes and
  * data-hw hook, React and Vue exports, Angular selectors and classes.
  */
 export function componentNames(id, entry, nodeModules) {

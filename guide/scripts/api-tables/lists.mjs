@@ -1,10 +1,9 @@
-// The exception and override lists that are the lead's (leadAmendments A4 of
-// milestone 5): exclusions.json and defaults.json of step 30, TARGET_OVERRIDES,
+// The exception and override lists that are the lead's: exclusions.json and defaults.json of step 30, TARGET_OVERRIDES,
 // VUE_SLOT_PATTERNS and UNOWNED_EXPORTS of targets.mjs (an unowned export has
 // no page and counts for none), vocabulary-exceptions.json of step 30 (HWC-VOCAB),
 // scripts/content/arabic-exceptions.json
 // (HWC-PAR8), scripts/page-guards/latin-allowlist.json (HWP-LATIN),
-// scripts/equivalence/keyboard-exceptions.json (HWE-KEYS, 5a.8),
+// scripts/equivalence/keyboard-exceptions.json (HWE-KEYS),
 // scripts/content/claim-exceptions.json (HWC-CLAIM),
 // scripts/content/live-component-exceptions.json (HWC-LIVE7) and
 // scripts/content/marketing-terms.json (HWC-TONE, a list of terms that belongs to

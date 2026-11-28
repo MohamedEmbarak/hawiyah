@@ -27,7 +27,7 @@ export class BriefPage {
   protected readonly data = signal<ComponentPageData | null>(null);
   protected readonly t = computed(() => pick(componentPageTexts, this.data()?.page.lang ?? 'en'));
   protected readonly example = computed(() => this.data()?.page.sections.find((section) => section.id === 'example') ?? null);
-  /** The keyboard table of the Accessibility section (5a.8), shown under the example from the same model. */
+  /** The keyboard table of the Accessibility section, shown under the example from the same model. */
   protected readonly keyboard = computed<readonly Block[]>(() => {
     const accessibility = this.data()?.page.sections.find((section) => section.id === 'accessibility');
     const table = accessibility?.blocks.find((block) => block.type === 'table' && block.keyboard);

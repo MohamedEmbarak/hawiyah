@@ -1,4 +1,4 @@
-// Self-tests of the readers against the installed 0.3.0 files (5a.3): the
+// Self-tests of the readers against the installed 0.3.0 files: the
 // default readers find the component of every target in the published
 // JavaScript, read known defaults, and the slot and stylesheet readers find what
 // the published files hold. A changed package build fails here loudly.
@@ -40,7 +40,7 @@ describe('every component of components.json', () => {
     expect(slots.length).toBeGreaterThanOrEqual(84); // 93 on 0.3.0
     expect(slots).toEqual(expect.arrayContaining(['button:default', 'tabs:<value>', 'tabs:tab:<value>', 'portal-layout:footer']));
   });
-  it('26 components without a vanilla controller have no row in the styles contract (A11, PG-M5-2)', () => {
+  it('26 components without a vanilla controller have no row in the styles contract', () => {
     const generated = all.filter((item) => item.vanilla.source === 'stylesheet' && item.vanilla.generatedNote).map((item) => item.id).sort();
     expect(generated).toHaveLength(26);
     expect(generated).toEqual(['app-shell', 'aspect-ratio', 'avatar-group', 'button-group', 'center', 'collapsible', 'columns', 'description-list', 'grid',

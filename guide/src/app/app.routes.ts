@@ -4,7 +4,7 @@ import { langSegment, localeResolver } from './core/locale';
 import { NotFoundPage } from './pages/not-found-page';
 import { RootPage } from './pages/root-page';
 
-/** Whether a feature (the landing, from stage 4b) claims '' under ':lang'. */
+/** Whether a feature (the landing) claims '' under ':lang'. */
 export const languageRootClaimed = features.some((feature) => feature.routes.some((route) => route.path === ''));
 
 export const routes: Routes = [

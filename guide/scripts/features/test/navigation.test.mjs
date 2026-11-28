@@ -1,4 +1,4 @@
-// The navigation index and the categories (5a.2): every category id of components.json
+// The navigation index and the categories: every category id of components.json
 // has a label in Arabic and English in the guide's text sources; the index orders the
 // built pages by category and components.json; no browser output of the build has the
 // content manifest among its inputs.

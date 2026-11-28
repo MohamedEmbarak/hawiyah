@@ -1,4 +1,4 @@
-// vocabulary-allow.json (lead decision L15 of milestone 5, stage 5a): a list of the
+// vocabulary-allow.json is a list of the
 // guide, not a lead list, of the names that HTML, ARIA, the DOM, CSS and the Vue and
 // Angular template syntax define. Every entry names its specification; the file fails
 // to load, and this test fails, on an entry without one.

@@ -111,7 +111,7 @@ describe('merge of the shard reports', () => {
     expect(mergeReports([], manifest).problems).toEqual(['HWE-MERGE: no shard report given']);
   });
 
-  // G16 of the 5a fix round (verification of 07763ce): the shards are tied to one build.
+  // The shards are tied to one build.
   it('fails on a shard of another content manifest and on a build record of another one', () => {
     const tagged = (hash) => reports(4).map((item) => ({ ...item, report: { ...item.report, contentManifest: hash } }));
     expect(mergeReports(tagged('aaaa'), manifest, { manifest: 'aaaa', record: 'aaaa', recordFile: 'dist/build-info.json' }).problems).toEqual([]);
@@ -137,7 +137,7 @@ describe('merge of the shard reports', () => {
     expect(mergeReports(none(true), manifest).problems).toEqual([]);
   });
 
-  it('fails on a shard that ran with --draft (the keyboard rule left out, 5a.8)', () => {
+  it('fails on a shard that ran with --draft (the keyboard rule left out)', () => {
     const list = reports(4);
     list[0] = { file: 'shard-1.json', report: { ...list[0].report, scope: { ...list[0].report.scope, draft: true } } };
     expect(mergeReports(list, manifest).problems).toEqual(['HWE-MERGE shard-1.json: the shard ran with --draft (HWE-KEYS left out); a merge needs the keyboard rule']);

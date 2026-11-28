@@ -79,7 +79,7 @@ test('the page with a frame result has no axe violations, frame content included
   expect(result.passes.some((rule) => rule.nodes.some((node) => node.target.length > 1))).toBe(true);
 });
 
-// leadAmendments A10: the frame document's own <title> carries the frame title, so
+// The frame document's own <title> carries the frame title, so
 // axe run inside the frame document alone (not from the page) passes document-title.
 const require = createRequire(import.meta.url);
 const axeSource = readFileSync(require.resolve('axe-core/axe.min.js', { paths: [require.resolve('@axe-core/playwright')] }), 'utf8');

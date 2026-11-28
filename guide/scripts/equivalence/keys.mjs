@@ -1,4 +1,4 @@
-// The keyboard rule of step 80 (5a.8, leadAmendments A1 and A2; HWE-KEYS).
+// The keyboard rule of step 80 (HWE-KEYS).
 //
 // Scope: every component whose page targets a controller factory of the
 // installed @hawiyah/vanilla (targets.mjs). For each page and language in scope, the
@@ -9,7 +9,7 @@
 // leaves a component out of that binding (its outcomes are not checked): its page
 // keeps its keyboard table, its groups name no check, and step 80 prints one line for
 // it (uncheckedLine). Every step has an expect function
-// (the chained oracle of G6 of the 5a fix round); a step that declares keys has a
+// (the chained oracle); a step that declares keys has a
 // one-line outcome and the reference it is taken from; the harness requires each
 // step to press exactly the keys it declares, counted from the trusted keydown
 // events of the frame.
@@ -37,7 +37,7 @@ const KEY_ENTRY = ['approvedBy', 'component', 'key', 'reason'];
 const COMPONENT_ENTRY = ['approvedBy', 'component', 'reason', 'reference'];
 
 /**
- * The errors of the form of keyboard-exceptions.json (the lead's list, A4). An entry
+ * The errors of the form of keyboard-exceptions.json (the lead's list). An entry
  * is one of two forms, with non-empty string values:
  *   { component, key, reason, approvedBy }        accepts one documented key without
  *                                                 a step (a key a sandboxed frame cannot press);
@@ -99,8 +99,7 @@ export async function keyboardScope({ guideDir, componentsFile }) {
 }
 
 /**
- * HWE-KEYS lines for a check that is not of the form of README.md (G6 of the 5a fix
- * round): a check without read and assert, or without its negative control
+ * HWE-KEYS lines for a check that is not of the form of README.md: a check without read and assert, or without its negative control
  * ({ fixture, wrong }); a step without expect (every step returns the state the
  * oracle expects after it, so that the next step is chained to it); a step that
  * declares keys without an outcome or a reference, or with a key outside KEY_NAMES.
@@ -191,7 +190,7 @@ export function keyboardRule({ pages, checks, scope, exceptions, knownPages = nu
       });
     }
   }
-  // An entry that matches nothing fails (G16 of the 5a fix round): an entry for a key that a
+  // An entry that matches nothing fails: an entry for a key that a
   // table of the page documents and no step presses, or for a component in the rule's scope.
   const existing = new Set(knownPages ?? pages.map((page) => page.id));
   exceptions.forEach((entry, index) => {

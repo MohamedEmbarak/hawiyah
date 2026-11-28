@@ -1,5 +1,4 @@
-// Which page documents each component of the four installed adapters (lead
-// decision L3 of milestone 5, stage 5a). An export counts when it is
+// Which page documents each component of the four installed adapters. An export counts when it is
 //   vanilla  a function create<Name> (a controller factory; enhance() is not one);
 //   react    a value whose type is callable and whose name starts with an
 //            upper-case letter (a function or exotic component);

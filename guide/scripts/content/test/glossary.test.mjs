@@ -1,6 +1,6 @@
 // Forms the Arabic glossary (docs/guides/glossary.md) excludes, searched in the
 // guide's Arabic text sources and the Arabic component pages. The forms are read
-// from the table "Forms the glossary excludes" of that file (leadAmendments A14),
+// from the table "Forms the glossary excludes" of that file,
 // each a JavaScript regular expression in code; the file also holds the frozen API
 // terms, the category labels of categories.json and the proper-noun exception.
 
@@ -95,7 +95,7 @@ describe('Arabic glossary', () => {
     expect(excludedForms('يعرض الزر بالفئات المرئية لهوية.')).toHaveLength(1);
     expect(excludedForms('بموجب رخصة Apache 2.0.')).toHaveLength(1);
     expect(excludedForms('تتبع التبويبات نمط التبويبات في ممارسات التأليف الخاصة بـWAI-ARIA، وتمنح ورقة الأنماط العنصر شكله بالصنف `hw-tab`.')).toEqual([]);
-    // G21: نمط names any WAI-ARIA pattern when the reference follows in the same sentence; never a colour mode.
+    // نمط names any WAI-ARIA pattern when the reference follows in the same sentence; never a colour mode.
     expect(excludedForms('يتبع المكوّن نمط الأكورديون في ممارسات التأليف الخاصة بـWAI-ARIA.')).toEqual([]);
     expect(excludedForms('يتبع المكوّن نمط الأقسام القابلة للطي في ممارسات التأليف الخاصة بـWAI-ARIA.')).toEqual([]);
     expect(excludedForms('يتبع المكوّن نمط الأكورديون.')).toHaveLength(1);

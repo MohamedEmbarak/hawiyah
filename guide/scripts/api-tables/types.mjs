@@ -1,4 +1,4 @@
-// The one type printer of step 30 (milestone 5, 5a.3). It defines the written
+// The one type printer of step 30. It defines the written
 // form of the Type column of the API tables, and the scaffold writes the same
 // form (scripts/content/api-tables.mjs):
 //

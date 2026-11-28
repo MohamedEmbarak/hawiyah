@@ -50,7 +50,7 @@
 }
 
 /*
- * M1 settle once on load; M2 cross-fade when the reader changes this container
+ * The pane settles once on load and cross-fades when the reader changes this container
  * (data-rev increments; even and odd values use two keyframes so that each change
  * restarts the animation). Declared only when the reader allows motion.
  */

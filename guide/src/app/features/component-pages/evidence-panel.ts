@@ -8,7 +8,7 @@ import { evidenceTexts } from './i18n';
 export const EVIDENCE_IDS = { evidence: 'evidence-recorded', open: 'evidence-open' } as const;
 
 /**
- * The evidence panel at the end of the section Platforms Code reference (5a.11):
+ * The evidence panel at the end of the section Platforms Code reference:
  * generated from the component's entry in components.json (built and verified
  * adapters, each evidence entry, the notes) and from what is open (the entries of
  * Known defects in the pinned version of CHANGELOG.md that name the component, and
@@ -17,7 +17,7 @@ export const EVIDENCE_IDS = { evidence: 'evidence-recorded', open: 'evidence-ope
  * keyboard outcomes of the component unchecked, one item in the page's language that
  * says so). Each evidence entry is a description list, one field per line,
  * readable at 390 px; the kinds of evidence that some built adapters have and others
- * do not are said in one generated line (G22 and G23 of the 5a fix round). The labels
+ * do not are said in one generated line. The labels
  * are guide text; the evidence is English and carries lang="en" and dir="ltr" on an
  * Arabic page. A source is a repository path shown as code, not a link. It states
  * what is recorded and what is open, and claims nothing else.

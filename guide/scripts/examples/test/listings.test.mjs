@@ -1,4 +1,4 @@
-// Build-time listings of the page block (leadAmendments A4): step 25 writes
+// Build-time listings of the page block: step 25 writes
 // src/generated/examples/<id>/<lang>/listings.json and loaders.ts exposes it.
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';

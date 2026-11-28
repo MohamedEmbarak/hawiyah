@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // content:scaffold: the English skeleton of a component page, written from the
-// installed packages (5a.4): the h1 (components.json name), the fixed h2
+// installed packages: the h1 (components.json name), the fixed h2
 // sections, the four API tables with their captions filled by
 // scripts/api-tables/write.mjs (and the generated note of a table read from the
 // stylesheet alone), and the compliance sentence that opens the section

@@ -1,7 +1,7 @@
 import headings from '../../i18n/evidence-headings.json';
 import { Texts } from '../../i18n/text';
 
-/** Texts of the evidence panel (5a.11). The evidence itself is English text of components.json and CHANGELOG.md. */
+/** Texts of the evidence panel. The evidence itself is English text of components.json and CHANGELOG.md. */
 export interface EvidenceTexts {
   /** The two headings; also read by build step 20 (src/app/i18n/evidence-headings.json). */
   readonly evidence: string;
@@ -14,9 +14,9 @@ export interface EvidenceTexts {
   readonly noneVerified: string;
   readonly entriesIntro: string;
   readonly noEvidence: (name: string) => string;
-  /** The labels of the fields of an evidence entry, one field per line (G22 of the 5a fix round). */
+  /** The labels of the fields of an evidence entry, one field per line. */
   readonly fields: Readonly<Record<'adapter' | 'kind' | 'scope' | 'tests' | 'result' | 'date' | 'command' | 'source', string>>;
-  /** The line of the kinds of evidence that some built adapters have and others do not (G23). */
+  /** The line of the kinds of evidence that some built adapters have and others do not. */
   readonly gapsIntro: string;
   /** Between two items of a line: a semicolon in the page's language. */
   readonly separator: string;
@@ -60,7 +60,7 @@ export const evidenceTexts: Texts<EvidenceTexts> = {
   ar: {
     ...headings.ar,
     adapters: ADAPTERS,
-    // Arabic repeats و before each further name (G22 of the 5a fix round).
+    // Arabic repeats و before each further name.
     list: (items) => [items[0] ?? '', ...items.slice(1).map((item) => ` و${item}`)].join(''),
     built: (adapters) => `المكوّن مبني في المحوّلات: ${adapters}.`,
     verified: (adapters) => `المحوّلات المسجّلة بوصفها متحقَّقًا منها في components.json: ${adapters}.`,

@@ -17,7 +17,7 @@ export const FRAMEWORK_STORAGE_KEY = 'hawiyah-guide-framework';
 /** The framework selected on the server and on the first client render. */
 export const DEFAULT_FRAMEWORK: ExampleFramework = 'angular';
 
-/** Whether the build includes the editor feature (stage 4c). */
+/** Whether the build includes the editor feature. */
 export const EDITOR_AVAILABLE = (featureList as readonly { id: string }[]).some((feature) => feature.id === 'editor');
 
 export function isFramework(value: unknown): value is ExampleFramework {
@@ -46,7 +46,7 @@ export function editorHref(lang: string, id: string, example: string, framework:
 export class ExampleBlock {
   readonly example = input.required<string>();
   /**
-   * frame on the group (5a.9): the Angular result is rendered in the sandboxed frame
+   * frame on the group: the Angular result is rendered in the sandboxed frame
    * like the other three, never in the guide page, so a page-level component's main
    * landmark, skip link and h1 stay out of the guide's outline. Without script the
    * block shows its Angular listing and one sentence.

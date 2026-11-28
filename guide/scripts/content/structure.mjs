@@ -14,7 +14,7 @@ import { TEMPLATE_H2 } from './kinds.mjs';
 import { groupLive, isLive } from './live.mjs';
 import { plainText } from './parse.mjs';
 
-/** Headings of the Platforms Code reference that restate the evidence panel (G20): its two headings in both languages, and Evidence, Open items, Known defects and their Arabic forms. */
+/** Headings of the Platforms Code reference that restate the evidence panel: its two headings in both languages, and Evidence, Open items, Known defects and their Arabic forms. */
 const EVIDENCE_HEADING_TEXT = new RegExp(`^(?:${[
   ...Object.values(EVIDENCE_HEADINGS).flatMap((texts) => [texts.evidence, texts.open]),
   'Evidence', 'Verification', 'Open items', 'Known defects', 'Known issues', 'الأدلة', 'التحقق', 'البنود المفتوحة', 'العيوب المعروفة',
@@ -297,7 +297,7 @@ export function analysePage(page) {
   };
   tableWalk({ children: body }, null);
 
-  // Key elements and the keyboard table (5a.7, 5a.8).
+  // Key elements and the keyboard table.
   findings.push(...keyNameFindings(body, lang, file));
   const keyboard = kind === 'component' ? keyboardTable(tables, lang, entry, file) : { table: null, findings: [] };
   findings.push(...keyboard.findings);
@@ -336,7 +336,7 @@ export function analysePage(page) {
     const key = h3 ?? section.node;
     placement.set(key, [...(placement.get(key) ?? []), group]);
   }
-  // Size and reproducibility of the examples (pageContractChanges of milestone 5).
+  // Size and reproducibility of the examples.
   if (live.groups.length > MAX_LIVE_GROUPS) push('HWC-LIVE2', live.groups[MAX_LIVE_GROUPS].line, `a page has at most ${MAX_LIVE_GROUPS} live groups (found ${live.groups.length}); move an example into the prose or propose another page`);
   for (const group of live.groups) {
     for (const block of Object.values(group.blocks)) {
@@ -389,7 +389,7 @@ export function analysePage(page) {
   const headings = body.filter((node) => node.type === 'heading').map((node) => ({ level: node.depth, text: plainText(node).trim(), node, section: sectionOf.get(node)?.id ?? null }));
 
   // The guide generates the evidence and the open items after the section Platforms Code
-  // reference; the section keeps no heading of its own for them (G20 of the 5a fix round).
+  // reference; the section keeps no heading of its own for them.
   for (const heading of headings) {
     if (kind === 'component' && heading.section === 'platforms-code-reference' && EVIDENCE_HEADING_TEXT.test(heading.text)) {
       push('HWC-H2', lineOf(heading.node), `the heading "${heading.text}" restates the evidence panel, which the guide generates after the section; keep the sources of the mapping in this section and leave out the evidence and the open items`);

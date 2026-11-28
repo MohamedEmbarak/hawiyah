@@ -1,4 +1,4 @@
-// Attribute selectors of the published stylesheet on component classes (5a.3).
+// Attribute selectors of the published stylesheet on component classes.
 // A component without a vanilla controller is compared with the union of its
 // rows in the styles README contract and the attributes that a selector of the
 // installed @hawiyah/styles dist/styles.css puts in the same compound as one of

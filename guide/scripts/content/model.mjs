@@ -51,7 +51,7 @@ export function codeBlock(node) {
  * @param {any} outline Result of analysePage().
  * @param {{ id: string, fileName: string, filePath: string, repoDir: string, componentsDir: string,
  *           sourcePath: string, built: Set<string>, englishIds?: string[], englishLevels?: number[], entry?: any }} ctx
- *   entry: the components.json entry; with it the page gets its evidence panel (5a.11).
+ *   entry: the components.json entry; with it the page gets its evidence panel.
  * @returns {{ page: any, findings: any[], ids: string[] }}
  */
 export function buildModel(outline, ctx) {
@@ -74,7 +74,7 @@ export function buildModel(outline, ctx) {
         case 'emphasis': out.push({ type: 'emphasis', children: inlines(node.children) }); break;
         case 'strong': out.push({ type: 'strong', children: inlines(node.children) }); break;
         case 'inlineCode': out.push({ type: 'inlineCode', value: node.value }); break;
-        // A key element (5a.7): a Latin key name is written left to right and not translated.
+        // A key element: a Latin key name is written left to right and not translated.
         case 'kbd': out.push({ type: 'kbd', value: node.value, latin: !/\p{Script=Arabic}/u.test(node.value) }); break;
         case 'break': out.push({ type: 'break' }); break;
         case 'link': {
@@ -188,7 +188,7 @@ export function buildModel(outline, ctx) {
     sourcePath: ctx.sourcePath,
     githubUrl: `${GITHUB_BLOB}${ctx.sourcePath}`,
   };
-  // The evidence panel (5a.11): generated after the section Platforms Code reference, with its two headings.
+  // The evidence panel: generated after the section Platforms Code reference, with its two headings.
   if (ctx.entry) {
     for (const [index, id] of ids.entries()) {
       if (Object.values(EVIDENCE_IDS).includes(id)) findings.push(finding('HWC-H2', outline.file, lineOf(outline.headings[index].node), `the heading id ${id} is the evidence panel's; give the heading another text`));

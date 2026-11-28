@@ -1,5 +1,5 @@
 // The rules of one page that the build checks outside step 20, run by check:page on
-// the page's own sources (G8 of the 5a fix round):
+// the page's own sources:
 //   HWT-GLOSSARY    no form that docs/guides/glossary.md excludes in the Arabic page
 //                   (scripts/content/test/glossary.test.mjs over every page);
 //   HWT-COMPLIANCE  the section Platforms Code reference opens with the compliance

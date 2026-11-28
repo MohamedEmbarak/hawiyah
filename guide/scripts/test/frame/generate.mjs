@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The frame fixture (5a.9, leadAmendments A12): the pages of docs/components/
+// The frame fixture: the pages of docs/components/
 // and one generated page of a page-level component whose live group carries
 // frame and width=390, so that the framed Angular result, its two equivalence
 // widths and the evidence panel of a component without recorded evidence are

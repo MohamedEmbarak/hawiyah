@@ -1,5 +1,4 @@
-// The Tabs oracle of the keyboard checks (5a.8, leadAmendments A1; the chained form
-// of G6 of the 5a fix round). Each step presses its keys and returns the state the
+// The Tabs oracle of the keyboard checks, in its chained form. Each step presses its keys and returns the state the
 // oracle expects after it, computed from the state it expected before the step, the
 // frame's direction and the orientation and activation that the check is written
 // for, never from what an adapter does or what the frame shows; the harness asserts
@@ -17,9 +16,9 @@
 //   UNAVAILABLE  CONTRACT.md, Unavailable controls and focus: "The disabled
 //             attribute remains for unavailability the reader did not cause on
 //             that control."
-// The expectations of G24 of the 5a fix round (Home, End and Tab with manual
-// activation; unhandled arrow keys; four tabs with the second disabled) were
-// written from these references before they ran.
+// The expectations for Home, End and Tab with manual activation, for unhandled
+// arrow keys and for four tabs with the second disabled were written from these
+// references before they ran.
 // This directory holds no check: a group cannot name lib/... (check names match
 // ^[a-z][a-z0-9-]*$).
 
@@ -108,7 +107,7 @@ export function assertFocus(snapshot, index) {
 }
 
 /**
- * The state the oracle starts from (G6 of the 5a fix round): the tab list as the
+ * The state the oracle starts from: the tab list as the
  * frame shows it at rest, read once before the first step. Every later state is
  * computed by the steps from the one before.
  */
@@ -158,8 +157,7 @@ export function wrongTabs(expected) {
 }
 
 /**
- * The vanilla markup of the negative control of a Tabs check (G6 of the 5a fix
- * round): three tabs (or `count`), the first selected, as the Tabs page writes them, rendered by
+ * The vanilla markup of the negative control of a Tabs check: three tabs (or `count`), the first selected, as the Tabs page writes them, rendered by
  * the installed @hawiyah/vanilla in scripts/equivalence/test/negative.test.mjs.
  */
 export function tabsFixture({ orientation = 'horizontal', activation = 'automatic', disabled = -1, count = 3 } = {}) {

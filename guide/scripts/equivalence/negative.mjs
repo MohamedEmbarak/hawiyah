@@ -1,4 +1,4 @@
-// The negative control of an interaction check (G6 of the 5a fix round). Every
+// The negative control of an interaction check. Every
 // check module of checks/ ships negative: { fixture, wrong }: the vanilla markup of
 // the component the check is written for, and a deliberately wrong oracle.
 // scripts/equivalence/test/negative.test.mjs renders the fixture with the installed

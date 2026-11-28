@@ -145,7 +145,7 @@ describe('BlocksContent', () => {
     expect(table?.querySelector('td .align-end')?.textContent).toBe('Activates');
   });
 
-  it('renders a key element as kbd with exactly the package class hw-kbd, a Latin key name left to right and untranslated (5a.7)', () => {
+  it('renders a key element as kbd with exactly the package class hw-kbd, a Latin key name left to right and untranslated', () => {
     const keys = Array.from(root.querySelectorAll('kbd'));
     expect(keys.map((kbd) => kbd.textContent)).toEqual(['Shift', 'Tab', 'السهم الأيسر']);
     expect(keys.map((kbd) => kbd.className)).toEqual(['hw-kbd', 'hw-kbd', 'hw-kbd']);

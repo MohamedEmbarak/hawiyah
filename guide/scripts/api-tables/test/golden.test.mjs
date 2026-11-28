@@ -1,4 +1,4 @@
-// Golden members (leadAmendments A6 of milestone 5): fixtures/golden.md is a
+// Golden members: fixtures/golden.md is a
 // table written by hand from the installed declarations and published
 // JavaScript before the printer ran on them. The printer and the default readers
 // must give exactly its cells (the written form, not only an equal one), and the

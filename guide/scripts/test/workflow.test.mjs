@@ -1,6 +1,6 @@
-// The shape of .github/workflows/guide.yml (5a.1): one build without scope options,
-// the single-page check tests after it (lead decision L12 of 5a), step 80 in four
-// shards and the browser tests in eight (L11) on that build, and a final job that needs
+// The shape of .github/workflows/guide.yml: one build without scope options,
+// the single-page check tests after it, step 80 in four
+// shards and the browser tests in eight on that build, and a final job that needs
 // every shard job and fails unless the build is deployable and the union of the shard
 // reports covers every live group and every test. The sparse checkout and the path
 // filters are compared with build-inputs.json in build-inputs.test.mjs.
@@ -79,7 +79,7 @@ describe('guide.yml', () => {
     expect(commands).toContain('node scripts/e2e/merge.mjs --list .cache/e2e/list.json');
   });
 
-  // Verification 1 of 07763ce (G7 of the 5a fix round): a continue-on-error passed the shape test.
+  // A continue-on-error once passed the shape test, so none is allowed.
   it('lets no job or step continue on an error, and runs every step of the final job', () => {
     const found = [];
     for (const [name, job] of Object.entries(workflow.jobs)) {

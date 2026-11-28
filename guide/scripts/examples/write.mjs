@@ -3,7 +3,7 @@
 //   <framesDir>/<id>/<lang>/<example>/<framework>.json   one payload per framework
 //   <generatedDir>/<id>/<lang>/<example>.ts             native Angular example components
 //   <generatedDir>/<id>/<lang>/index.ts                 { examples: { [example]: Class } }
-//   <generatedDir>/<id>/<lang>/listings.json            highlighted listings of every group (leadAmendments A4)
+//   <generatedDir>/<id>/<lang>/listings.json            highlighted listings of every group
 //   <generatedDir>/loaders.ts                           { '<id>/<lang>': () => import('./<id>/<lang>/index') }
 //                                                       and the listings loaders
 // Both directories are recreated, so no output of a removed group stays behind.

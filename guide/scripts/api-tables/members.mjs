@@ -72,8 +72,7 @@ export function readDefaults(file) {
 }
 
 /**
- * The entries of defaults.json whose quoted text does not contain the default literal
- * (G16 of the 5a fix round): the value without its quotes ('primary' -> primary) must
+ * The entries of defaults.json whose quoted text does not contain the default literal: the value without its quotes ('primary' -> primary) must
  * stand in the quoted line, so that the line states the value and not only the name.
  */
 export function defaultsWithoutLiteral(entries) {

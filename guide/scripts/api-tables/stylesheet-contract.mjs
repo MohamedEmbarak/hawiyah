@@ -1,5 +1,5 @@
 // The documented stylesheet contract of a component without a vanilla
-// controller (leadAmendments A6). @hawiyah/styles documents its stable classes
+// controller. @hawiyah/styles documents its stable classes
 // and attributes in the table under '## Stable class and state API' of its
 // README.md; the row (or rows) naming one of the component's classes from
 // components.json give the classes and the data-* and aria-* attributes of the
@@ -58,7 +58,7 @@ export function parseContract(text) {
  * hw-icon-background) gives an attribute, and each of its values, to
  * the component only where dist/styles.css selects that attribute, with that value,
  * on one of the component's classes (`selectors`, stylesheet-selectors.mjs): the row
- * does not say which of its classes an attribute belongs to (fix round of 5a, G5).
+ * does not say which of its classes an attribute belongs to.
  * Without `selectors` every attribute of a row is given, as before.
  * @param {{ byClass: Map<string, Map<string, Set<string>>> } | null} [selectors]
  * @param {Set<string>} [allClasses] The classes of every component of components.json (without it, every hw- class of the row counts).

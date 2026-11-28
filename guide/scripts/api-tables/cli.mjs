@@ -99,7 +99,7 @@ export function checkPages(input) {
       }
       if (h3 === 'javascript') {
         // The note stands only directly after the JavaScript table of a component whose classes have no
-        // row in the styles contract; anywhere else in the API section it is refused (G16 of the 5a fix round).
+        // row in the styles contract; anywhere else in the API section it is refused.
         const note = generatedNote(lang, version);
         const needed = decl.source === 'stylesheet' && decl.generatedNote;
         // The block directly after the table is judged above (the note it needs, or the note it must not have).

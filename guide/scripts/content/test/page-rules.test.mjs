@@ -1,7 +1,5 @@
-// The rules of one page that check:page runs besides the steps of the build (G8 of
-// the 5a fix round): the glossary and compliance assertions of the script tests and
-// the Latin-script guard of step 72 on the page's own Markdown. The cases are those
-// of the verification of 07763ce (r17, r18, r19), which passed check:page there.
+// The rules of one page that check:page runs besides the steps of the build: the glossary and compliance assertions of the script tests and
+// the Latin-script guard of step 72 on the page's own Markdown.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -26,7 +24,7 @@ describe('the page rules of check:page', () => {
     expect(lines(pageOf(id))).toEqual([]);
   });
 
-  it('fails a reworded compliance sentence (r17)', () => {
+  it('fails a reworded compliance sentence', () => {
     const page = pageOf('tabs', {
       en: swap('Hawiyah is a UI component library built to comply with the DGA Platforms Code. It is not an official DGA product and holds no certification.', 'Hawiyah is a UI component library that complies with the DGA Platforms Code.'),
       ar: swap('هوية مكتبة مكوّنات واجهات مبنية للامتثال لكود المنصات الصادر عن هيئة الحكومة الرقمية، وليست منتجًا رسميًا للهيئة، ولا تحمل أي شهادة اعتماد.', 'هوية مكتبة مكوّنات واجهات ممتثلة لكود المنصات.'),
@@ -36,7 +34,7 @@ describe('the page rules of check:page', () => {
     ]);
   });
 
-  it('fails a run of Latin-script words in Arabic prose (r18) and a form the glossary excludes (r19)', () => {
+  it('fails a run of Latin-script words in Arabic prose and a form the glossary excludes', () => {
     const latin = pageOf('tabs', { ar: swap('- قيم التبويبات معرّفات لا نصوص، وتبقى نفسها في كل لغة.', '- قيم التبويبات معرّفات identifiers not texts and they stay the same.') });
     expect(lines(latin)).toEqual([expect.stringMatching(/^HWP-LATIN docs\/components\/tabs\.ar\.md:\d+: the Latin-script run "identifiers not texts and they stay the same" /)]);
     const glossary = pageOf('tabs', { ar: swap('- قيم التبويبات معرّفات لا نصوص، وتبقى نفسها في كل لغة.', '- قيم التبويبات معرّفات لا نصوص، وتبقى نفسها في كل لغة، كما في الكود.') });

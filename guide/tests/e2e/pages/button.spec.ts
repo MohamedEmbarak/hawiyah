@@ -123,7 +123,7 @@ for (const lang of ['ar', 'en'] as const) {
           await expect(result.getByRole('button', { name: t.label })).toBeVisible();
           await expect(block.locator('p.status')).toHaveText(t.status);
         } else {
-          // The frame provider of stage 4b shows the other frameworks in a sandboxed frame.
+          // The frame provider shows the other frameworks in a sandboxed frame.
           await expect(result.locator('guide-frame-result iframe')).toBeVisible();
           await expect(block.locator('p.status')).toHaveText(t.status.replace('@hawiyah/angular', `@hawiyah/${PACKAGES[index]}`), { timeout: 30_000 });
           await expect(result.frameLocator('guide-frame-result iframe').getByRole('button', { name: t.label })).toBeVisible();

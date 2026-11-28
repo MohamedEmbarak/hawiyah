@@ -43,7 +43,7 @@ describe('compileVue', () => {
     expect(failed.diagnostics[0].line - bad.lineOffset).toBe(1);
   });
 
-  // G10 of the 5a fix round: what vue-tsc accepts at its default settings in a consumer of
+  // What vue-tsc accepts at its default settings in a consumer of
   // @hawiyah/vue 0.3.0, step 25 accepts (strictTemplates rejected the packaged icon span).
   it('accepts a data-* attribute on a native element and an attribute that falls through to a component, as vue-tsc does by default', async () => {
     const sources = {

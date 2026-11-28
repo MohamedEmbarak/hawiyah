@@ -1,8 +1,8 @@
-// The text gates of step 20 from the fix round of stage 5a (prose.mjs): claims
+// The text gates of step 20 (prose.mjs): claims
 // (HWC-CLAIM), hollow sections and API prose (HWC-EMPTY), placeholders (HWC-TODO),
 // marketing terms (HWC-TONE), install text in running text (HWC-MD) and the page's
-// component in every live group (HWC-LIVE7). The sentences of the attacks are those
-// of the adversarial review of 07763ce (09a to 09d, 06b, 10, 22b, 22e, 23a to 23d, 25c).
+// component in every live group (HWC-LIVE7). The sentences are those of an
+// adversarial review of the gates.
 
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -117,7 +117,7 @@ describe('HWC-TONE, HWC-TODO and install text', () => {
     expect(found(inDocs, 'HWC-TODO').map((item) => item.message)).toEqual([expect.stringMatching(/^the text is the placeholder of content:scaffold-ar --placeholder/)]);
   });
 
-  it('fails on an install command or a pinned address in running text, as code or plain (22b, 22e)', () => {
+  it('fails on an install command or a pinned address in running text, as code or plain', () => {
     const md = (sides) => found(runPair(sides), 'HWC-MD').map((item) => item.message.split('"')[1]);
     expect(md({ en: withEn('Install it with `npm install @hawiyah/react@0.2.0`.') })).toEqual(['npm install']);
     expect(md({ en: withEn('Install it with npm install @hawiyah/react@0.2.0 --force.') })).toEqual(['npm install']);
@@ -127,7 +127,7 @@ describe('HWC-TONE, HWC-TODO and install text', () => {
 });
 
 describe('HWC-EMPTY: a required section beyond its fixed text, and prose after each API table', () => {
-  it('fails on an empty required section, a section of fixed text only, and an API table without prose (23a, 23b, 23d)', () => {
+  it('fails on an empty required section, a section of fixed text only, and an API table without prose', () => {
     const empty = (en) => found(runPair({ en }), 'HWC-EMPTY').map((item) => item.message);
     expect(empty(swap(validEn(), 'The layout uses logical properties only. Read the [Platforms Code](https://www.dga.gov.sa/) and the [component list](../components.json).\n\n---\n\n- Text follows the page direction.\n- Numbers keep their own direction.\n', ''))).toEqual([
       'the section "RTL and localisation" has no paragraph or list of its own beyond the fixed text (captions, the generated note, the compliance sentence); write it',
@@ -162,7 +162,7 @@ describe('HWC-LIVE7: every live group contains the page\'s component', () => {
     expect(blockShows('react', '<TabsList />', tabs)).toBe(false);
   });
 
-  it('fails on a group of another component (25c), unless the lead list names the group', () => {
+  it('fails on a group of another component, unless the lead list names the group', () => {
     const foreign = swap(validEn(), '```tsx live example=primary\n<Button variant="primary">Continue</Button>', '```tsx live example=primary\n<Link href="#api">Continue</Link>');
     expect(found(runPair({ en: foreign }), 'HWC-LIVE7').map((item) => item.message)).toEqual([expect.stringMatching(/^the live group "primary" does not show the page's component in react: /)]);
     const file = 'guide/scripts/content/test/fixtures/docs/components/fixture-a.md';

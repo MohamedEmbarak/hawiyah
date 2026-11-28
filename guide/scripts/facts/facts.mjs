@@ -1,4 +1,4 @@
-// The fact sheet of a component (5a.4): what the installed packages declare and
+// The fact sheet of a component: what the installed packages declare and
 // publish for it, read with the same readers as step 30 (api-tables/members.mjs),
 // so a sheet and the check cannot disagree. A sheet is generated output for page
 // writers: content:facts writes it to .cache/facts/ (ignored by Git), and nothing
@@ -111,8 +111,7 @@ function controllerApi(context, name) {
 const NOT_DOCUMENTED = new Set(['Array', 'ReadonlyArray', 'Record', 'Partial', 'Readonly', 'Promise', 'Set', 'Map', 'Date', 'HTMLElement', 'Element', 'Event', 'KeyboardEvent', 'MouseEvent', 'ReactNode', 'ReactElement', 'TemplateRef', 'EventEmitter', 'VNode', 'VNodeChild', 'CSSProperties', 'Responsive']);
 
 /**
- * The fields of the named object types that the members of a framework use (G12 of
- * the 5a fix round): { <type>: [{ name, type, optional }] }, read from the installed
+ * The fields of the named object types that the members of a framework use: { <type>: [{ name, type, optional }] }, read from the installed
  * adapter (or @hawiyah/core when the adapter does not export it), so a writer sees
  * the fields of AccordionItem in React and of HwAccordionItem in Angular.
  */
@@ -217,7 +216,7 @@ export function factSheet(readers, id, sources) {
       note: declared.vanilla.generatedNote ? generatedNote('en', sources.version) : null,
     };
   }
-  // The vanilla markup (G12 of the 5a fix round): the classes of its parts, and the
+  // The vanilla markup: the classes of its parts, and the
   // README section of @hawiyah/vanilla that documents it.
   const vanillaReadme = sources.vanillaReadme ?? readFileSync(join(readers.nodeModules, '@hawiyah', 'vanilla', 'README.md'), 'utf8');
   frameworks.vanilla.markup = {

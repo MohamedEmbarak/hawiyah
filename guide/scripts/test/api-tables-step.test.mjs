@@ -1,8 +1,8 @@
-// The success line of build step 30 states exactly what the step compares
-// (5a.3): names, kinds, required flags, types and defaults, where types and
+// The success line of build step 30 states exactly what the step compares:
+// names, kinds, required flags, types and defaults, where types and
 // defaults come from, the rows compared against the stylesheet and by name only,
 // the counts of the lead's lists, the parity data it writes, and the counts of
-// the vocabulary pass (5a.5).
+// the vocabulary pass.
 import { describe, expect, it, vi } from 'vitest';
 
 const stats = {

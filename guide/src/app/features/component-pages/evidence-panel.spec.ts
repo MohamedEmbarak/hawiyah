@@ -47,7 +47,7 @@ async function render(evidence: PageEvidence, lang: ContentLang, name: string): 
   return fixture.nativeElement.querySelector('guide-evidence-panel') as HTMLElement;
 }
 
-describe('EvidencePanel (5a.11)', () => {
+describe('EvidencePanel', () => {
   it('lists each evidence entry as a description list with its source as code, never as a link, the kinds of evidence missing in some adapters, and what is open', async () => {
     const panel = await render(TABS, 'en', 'Tabs');
     expect(Array.from(panel.querySelectorAll('h3')).map((h3) => [h3.id, h3.textContent, h3.getAttribute('tabindex')])).toEqual([
@@ -57,7 +57,7 @@ describe('EvidencePanel (5a.11)', () => {
     expect(panel.querySelector('p')?.textContent).toBe('Built in JavaScript, React, Vue and Angular. Recorded as verified in components.json: JavaScript and React.');
     const [entries, notes, open] = Array.from(panel.querySelectorAll(':scope > ul'));
     expect(entries?.querySelectorAll(':scope > li')).toHaveLength(1);
-    // One field per line (G22 of the 5a fix round).
+    // One field per line.
     const fields = Array.from(entries?.querySelectorAll('li > dl > dt') ?? []).map((dt) => [dt.textContent, dt.nextElementSibling?.localName === 'dd' ? dt.nextElementSibling.textContent : null]);
     expect(fields).toEqual([
       ['Adapter', 'React'], ['Kind', 'behavior'], ['Scope', 'RTL navigation.'], ['Tests', 'follows RTL arrow direction'],
@@ -65,10 +65,10 @@ describe('EvidencePanel (5a.11)', () => {
     ]);
     expect(Array.from(entries?.querySelectorAll('code') ?? []).map((code) => code.className)).toEqual(['hw-code', 'hw-code', 'hw-code', 'hw-code']);
     expect(panel.querySelectorAll('a')).toHaveLength(0);
-    // The kinds of evidence that some built adapters have and others do not (G23).
+    // The kinds of evidence that some built adapters have and others do not.
     expect(Array.from(panel.querySelectorAll(':scope > p')).map((p) => p.textContent)).toContain('Kinds of evidence that components.json records for some adapters and not for others, with the adapters that have none: behavior: JavaScript, Vue and Angular.');
     expect(notes?.textContent).toBe('Horizontal key behavior follows direction.');
-    // A documented difference stands under the Known defects entry it cites, not as a second item (G23).
+    // A documented difference stands under the Known defects entry it cites, not as a second item.
     expect(Array.from(open?.querySelectorAll(':scope > li') ?? []).map((li) => li.textContent)).toEqual([
       'The bar lacks the attribute. (CHANGELOG.md, Known defects in 0.3.0)Documented difference of the equivalence check tabs-bar-orientation: The bar lacks data-orientation.',
       'Tabs (Vue) declares no slot types. (CHANGELOG.md, Known defects in 0.3.0)',

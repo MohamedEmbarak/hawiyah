@@ -37,7 +37,7 @@ export function mergeReports(reports, manifest, identity = null) {
   const problems = [];
   if (reports.length === 0) return { problems: ['HWE-MERGE: no shard report given'], summary: null, keys: [] };
   const first = reports[0].report;
-  // The shards belong to one build (G16 of the 5a fix round): each report carries the hash of the
+  // The shards belong to one build: each report carries the hash of the
   // content manifest it compared, equal to that of the manifest given and of the build record.
   if (identity) {
     for (const { file, report } of reports) {

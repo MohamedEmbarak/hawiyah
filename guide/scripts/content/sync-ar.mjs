@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // content:sync-ar: brings an existing Arabic page up to date with its English
-// page in place (leadAmendments A10), keeping the translated prose:
+// page in place, keeping the translated prose:
 //   - every live block is rewritten from the English block of the same group and
 //     framework, with the reader strings replaced from the string map that the
 //     existing pair gives (scripts/content/string-map.mjs deriveStringMap);
@@ -84,7 +84,7 @@ export function syncArabic(englishText, arabicText, { entry, declared, version, 
     }
     const group = contexts.get(block.example);
     const result = applyStringMap(source.lang, source.code, derived.map, names, { group });
-    // Never an Arabic string replaced by an English one (G9 of the 5a fix round): where the
+    // Never an Arabic string replaced by an English one: where the
     // rewritten block and the current Arabic block align string for string, a position that
     // the map leaves in English keeps the Arabic string the page has (a hand translation of
     // a string the map does not replace, such as Stat trend).

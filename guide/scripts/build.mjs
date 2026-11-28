@@ -88,7 +88,7 @@ export function parseArgs(argv) {
     throw new Error(`${options.pages !== null ? "--pages" : "--defer-equivalence"} concerns step 80, which runs in the full production build only`);
   }
   // --docs with --defer-equivalence builds the scale fixture (scripts/test/scale) as guide.yml builds the
-  // deployable output, for the measurement of lead decision L10 of 5a; --docs keeps it not deployable.
+  // deployable output, to measure the build at scale; --docs keeps it not deployable.
   if (options.deferEquivalence && (options.pages !== null || options.preview !== null)) {
     throw new Error("--defer-equivalence is for the build of guide.yml and of the scale fixture: not with --pages or --preview");
   }

@@ -1,5 +1,4 @@
-// Fixed tables of the content pipeline (contentPipeline in the milestone 4
-// specification): languages, the h2 set, API table headers, alert kinds,
+// Fixed tables of the content pipeline: languages, the h2 set, API table headers, alert kinds,
 // caption prefixes, live info-string keys and code listing titles.
 
 import { readFileSync } from 'node:fs';
@@ -104,7 +103,7 @@ export const LANGUAGE_NAMES = {
 };
 
 /**
- * Key names of the key element <kbd>...</kbd> (5a.7), by the key id that the
+ * Key names of the key element <kbd>...</kbd>, by the key id that the
  * keyboard checks press (Playwright key names; a chord joins ids with '+'). A
  * key is written as printed on it, the same in both languages; the four arrow
  * keys carry no word and are named in each language (the Arabic glossary,
@@ -139,7 +138,7 @@ export function keyId(text, lang) {
 export const ARROW_KEYS = new Set(['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown']);
 
 /**
- * The keyboard table (5a.8): one table in the Accessibility section with this
+ * The keyboard table: one table in the Accessibility section with this
  * caption (the component name of components.json after a fixed prefix) and
  * these headers; each Key cell holds only key elements, a chord joined by '+',
  * alternatives separated by a comma (English) or an Arabic comma (Arabic).
@@ -150,7 +149,7 @@ export const KEYBOARD_TABLE = {
 };
 
 /**
- * Components whose groups may carry frame (5a.9, leadAmendments A12): the
+ * Components whose groups may carry frame: the
  * page-level components, which render a main landmark, a skip link or an h1 of
  * their own. Their Angular result is rendered in the sandboxed frame instead of
  * in the guide page. Template groups (docs/templates) carry it as well: their outline

@@ -30,7 +30,7 @@
 // HWE-SHOT (a comparison failed), HWE-CHECK (unknown interaction check, a step
 // that could not run or pressed other keys than it declares, or a group of a
 // component with a controller that names no check and is not static), HWE-EXPECT
-// (a step's documented outcome failed in a frame, 5a.8), HWE-KEYS (the keys of a
+// (a step's documented outcome failed in a frame), HWE-KEYS (the keys of a
 // page's keyboard table differ from the keys its checks press, keys.mjs), HWE-AXE
 // (axe found a WCAG 2.2 AA violation in a frame document at rest), HWE-KD
 // (known-differences.json, empty-elements.json, vanilla-hooks.json or angular-hosts.json
@@ -38,7 +38,7 @@
 // matches nothing in the groups of its component), HWE-SCOPE (no group, an --only key
 // that names none, or groups that differ from the content manifest).
 //
-// A framed group (frame on its html block, 5a.9) is compared in frames 1280 px
+// A framed group (frame on its html block) is compared in frames 1280 px
 // wide, and at rest a second time at 390 px when its html block names width=390.
 import { createServer } from 'node:http';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -62,7 +62,7 @@ export const VIEWPORT = { width: 1280, height: 900 };
 export const ASPECTS = ['structure', 'aria', 'screenshot'];
 const ASPECT_CODES = { structure: 'HWE-STRUCT', aria: 'HWE-ARIA', screenshot: 'HWE-SHOT' };
 
-/** Width of the result frames: 720 px, 1280 px for a framed group (5a.9), and 390 px for its second pass. */
+/** Width of the result frames: 720 px, 1280 px for a framed group, and 390 px for its second pass. */
 export const FRAME_WIDTH = 720;
 export const FRAMED_WIDTH = 1280;
 
@@ -127,7 +127,7 @@ const KD_FIELDS = ['id', 'component', 'aspect', 'description', 'source', 'approv
 const KD_OPTIONAL = ['ignore'];
 const IGNORE_FIELDS = ['class', 'attribute'];
 
-/** Errors of the optional ignore list of an entry (leadAmendments A8). */
+/** Errors of the optional ignore list of an entry. */
 function ignoreErrors(entry, at) {
   if (!('ignore' in entry)) return [];
   const errors = [];
@@ -704,13 +704,13 @@ export async function capture(page, frameworks = FRAMEWORKS, before = null, { ke
  * included). difference is the known-differences entry of the group, the list of
  * the entries it names, or null: an entry without ignore skips its aspect; a
  * structure entry with ignore leaves only the listed attributes out of the
- * structure comparison (leadAmendments A8), and the ignore lists of several such
+ * structure comparison, and the ignore lists of several such
  * entries are joined. A structure entry without ignore skips the structure
  * comparison, whatever the other entries ignore.
  */
 export function compareCapture(captured, difference = null, designed = null) {
   const rows = [];
-  // The designed differences of the component (G11 of the 5a fix round) change the structure trees only.
+  // The designed differences of the component change the structure trees only.
   if (designed && (designed.emptyClasses.length || designed.vanillaAttributes.length)) {
     captured = { ...captured, trees: Object.fromEntries(Object.entries(captured.trees).map(([framework, tree]) => [framework, withoutDesigned(tree, designed, framework)])) };
   }
@@ -757,15 +757,15 @@ export const groupKey = (group) => `${group.id}/${group.lang}/${group.example}`;
 /** The file name stem of a group's diff images (a guide or template key in its path form, guide.<id>). */
 const stem = (group, state) => [group.id.replace(':', '.'), group.lang, group.example, ...(state === 'rest' ? [] : state.split('/'))].join('-');
 
-/** How long the harness waits for the documented outcome of a step (ms, lead decision L16 of 5a). */
+/** How long the harness waits for the documented outcome of a step (ms). */
 export const OUTCOME_TIMEOUT = 5_000;
-/** How long the harness waits after the last step of a check before it reads every frame once more (ms, G6 of the 5a fix round). */
+/** How long the harness waits after the last step of a check before it reads every frame once more (ms). */
 export const FINAL_SETTLE = 500;
 
 const firstLine = (error) => (error instanceof Error ? error.message.split('\n')[0] : String(error));
 
 /**
- * The verdict on a step's outcome (lead decision L16 of 5a). An adapter may show the
+ * The verdict on a step's outcome. An adapter may show the
  * outcome of an event in a later task than the event: @hawiyah/angular renders
  * after zoneless change detection, which Angular schedules in the first animation
  * frame or 0 ms timer after the event, while the vanilla controller writes the state
@@ -802,7 +802,7 @@ export async function awaitOutcome(expect, settle, { timeout = OUTCOME_TIMEOUT, 
 }
 
 /**
- * Key recorder of a frame (G6 of the 5a fix round): a capture listener on the frame's
+ * Key recorder of a frame: a capture listener on the frame's
  * window that records every trusted keydown as a key id of KEY_NAMES (a chord as
  * 'Shift+Tab'; ' ' is Space; a lone modifier is not recorded). The harness reads and
  * clears it around each step, so a key counts whatever API pressed it.
@@ -824,8 +824,7 @@ async function recordKeys(frame) {
 const recordedKeys = (frame) => frame.evaluate(() => [.../** @type {any} */ (window).__hawiyahKeys]);
 
 /**
- * Runs the checks of a group in the open harness page (5a.8; the oracle of G6 of the
- * 5a fix round). A check is { name, read, assert, start?, negative, steps }; a step is
+ * Runs the checks of a group in the open harness page (the chained oracle). A check is { name, read, assert, start?, negative, steps }; a step is
  * { name, run, expect, keys?, outcome, reference, keepPointer? } (README.md, Build
  * steps). In each frame:
  *   - before the first step, read(mount) reads the frame at rest once, and start (or
@@ -1106,7 +1105,7 @@ export async function runEquivalence(options) {
   const keyPages = (manifest.pages ?? []).filter((page) => selectedIds.has(page.id));
   const checks = await loadChecks([...new Set([...groups.flatMap(checkNames), ...keyPages.flatMap((page) => (page.liveGroups ?? []).flatMap(checkNames))])]);
   // A component with a controller: its page targets a controller factory of the installed
-  // @hawiyah/vanilla (keys.mjs). One definition for HWE-CHECK and HWE-KEYS (G19 of the 5a fix round).
+  // @hawiyah/vanilla (keys.mjs). One definition for HWE-CHECK and HWE-KEYS.
   const controllerScope = options.keyboardScope ?? await keyboardScope({ guideDir, componentsFile });
   // An entry of keyboard-exceptions.json that leaves a component unchecked must match a
   // page: one of the content manifest or an English page of docs/components/ (a page
@@ -1221,7 +1220,7 @@ export async function runEquivalence(options) {
   }));
   const report = {
     pin,
-    // The content manifest this run compared (G16 of the 5a fix round); merge.mjs compares it with the build record.
+    // The content manifest this run compared; merge.mjs compares it with the build record.
     contentManifest: contentManifestHash(manifestFile),
     scope: { pages: options.pages ?? null, only: options.only ?? null, shard, ...(options.keys === false ? { draft: true } : {}) },
     // The keys this run was to compare (before the shard split) and the keys it compared,

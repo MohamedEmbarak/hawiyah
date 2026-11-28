@@ -1,5 +1,4 @@
-// Every interaction check of checks/ ships a negative control (G6 of the 5a fix
-// round): rendered with the installed @hawiyah/vanilla, its documented oracle holds
+// Every interaction check of checks/ ships a negative control: rendered with the installed @hawiyah/vanilla, its documented oracle holds
 // in both directions, and with its deliberately wrong oracle every step that
 // declares keys fails. A check without one fails here (and in step 80, stepErrors).
 import { readdirSync } from 'node:fs';

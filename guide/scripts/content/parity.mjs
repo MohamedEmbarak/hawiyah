@@ -49,10 +49,10 @@ export function tokensMatch(en, ar) {
 
 /**
  * Exceptions to HWC-PAR8: [{ file, text, reason, approvedBy }] (an empty list is the goal). The list is the
- * lead's (leadAmendments A4 of milestone 5; scripts/api-tables/lists.mjs caps the entries per page).
+ * lead's (scripts/api-tables/lists.mjs caps the entries per page).
  */
 export const ARABIC_EXCEPTIONS_FILE = new URL('./arabic-exceptions.json', import.meta.url);
-/** The shortest text an entry of arabic-exceptions.json or latin-allowlist.json may name (G13 of the 5a fix round). */
+/** The shortest text an entry of arabic-exceptions.json or latin-allowlist.json may name. */
 export const MIN_EXCEPTION_TEXT = 12;
 
 export function readArabicExceptions(file = ARABIC_EXCEPTIONS_FILE) {
@@ -357,7 +357,7 @@ export function checkParity(en, ar, sources) {
 
   // HWC-PAR8 Arabic script in the reader text of the Arabic page.
   const exceptions = sources.exceptions ?? [];
-  // An entry names the whole text of a paragraph, item, cell or string (G13 of the 5a fix round), never a part of it.
+  // An entry names the whole text of a paragraph, item, cell or string, never a part of it.
   const excepted = (text) => exceptions.some((entry) => sameDocument(entry.file, ar.file) && text === entry.text.replace(/\s+/g, ' ').trim());
   const requireArabic = (node, text, where, keyCell = false) => {
     const value = text.replace(/\s+/g, ' ').trim();
@@ -437,7 +437,7 @@ export function checkParity(en, ar, sources) {
     }
   }
 
-  // HWC-KEYS the same keys in the same order (5a.7).
+  // HWC-KEYS the same keys in the same order.
   findings.push(...keyParityFindings(en, ar));
 
   // HWC-PAR6 alerts.

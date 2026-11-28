@@ -26,7 +26,7 @@ export const VUE_TSCONFIG = {
     isolatedModules: true,
     forceConsistentCasingInFileNames: true,
   },
-  // vue-tsc at its default settings (G10 of the 5a fix round): what it accepts in a
+  // vue-tsc at its default settings: what it accepts in a
   // consumer of @hawiyah/vue 0.3.0, step 25 accepts, such as a data-* attribute on a
   // native element and an attribute that falls through to a component. strictTemplates
   // rejected both, so the packaged icon could not be written the way a reader writes it;

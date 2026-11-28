@@ -31,7 +31,7 @@ describe('test coverage of the shards', () => {
     expect(reportTests(report(LIST))[0]).toEqual({ key: 'a.spec.ts-one prod', title: 'a.spec.ts › one [prod]', status: 'not run' });
   });
 
-  it('joins the eight shards of guide.yml (lead decision L11 of 5a), and misses a test of a lost shard', () => {
+  it('joins the eight shards of guide.yml, and misses a test of a lost shard', () => {
     const list = Array.from({ length: 20 }, (_, n) => [`p${n % 5}.spec.ts`, `test ${n}`]);
     // playwright test --shard=i/8 gives each shard a contiguous part of the tests.
     const shards = Array.from({ length: 8 }, (_, i) => ({ file: `s${i + 1}.json`, report: ran(list.filter((_, n) => Math.floor((n * 8) / list.length) === i)) }));

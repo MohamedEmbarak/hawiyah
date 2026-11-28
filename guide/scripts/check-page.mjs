@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-// check:page: the proof of one component page for its writer (5a.6 of
-// milestone 5), run after one production build of the guide:
+// check:page: the proof of one component page for its writer, run after one production build of the guide:
 //
 //   npm run check:page -- <id> [--lang en] [--draft] [--docs <dir>] [--workers <n>]
 //
@@ -9,7 +8,7 @@
 // API tables and the vocabulary pass of step 30, the glossary and compliance
 // assertions of the script tests and the Latin-script guard of step 72 on the
 // page's own Markdown (content/page-rules.mjs), the coverage report
-// (leadAmendments A5, a report only) and step 80 for its groups in the languages
+// (a report only) and step 80 for its groups in the languages
 // that exist. It does not run the browser tests (npm run test:page) nor the parts
 // of step 72 that need a prerendered document (icons, svg, emoji, and the Latin
 // guard over the examples and the generated text: a --pages build). A finding in
@@ -19,7 +18,7 @@
 // step 80 serves the built dist/browser with the payloads of .cache/page-<id>/
 // in place of dist/browser/examples/. So several writers can run it at once:
 // step 80 takes a lock, so one check:page compares its groups at a time and the
-// others wait (leadAmendments A8), and a second run for the same page waits until
+// others wait, and a second run for the same page waits until
 // the first has ended.
 //
 // --lang en checks the English page alone (while its Arabic page is behind). An
@@ -27,7 +26,7 @@
 // while scripts/content/pending-translation.json lists it: the writer of the
 // English page adds its id there, and the writer of the Arabic page removes it;
 // without the entry the run names the file to add it to. --draft leaves out
-// HWE-KEYS (5a.8: the keys of the keyboard table equal the keys the steps of the
+// HWE-KEYS (the keys of the keyboard table equal the keys the steps of the
 // page's checks press), since a check is written after the page; the steps that
 // exist still assert their outcomes. check:page is a
 // writer's tool: it never replaces the full build of a stage gate.
@@ -81,7 +80,7 @@ export function parseArgs(argv) {
 }
 
 // ---------------------------------------------------------------------------
-// Concurrency (leadAmendments A8): one lock file per run.
+// Concurrency: one lock file per run.
 
 const alive = (pid) => {
   try {
@@ -303,7 +302,7 @@ export async function checkPage(options) {
     stage(log, 'content', started, contentLines, ` ${content.langs.join(' and ')}${content.pending ? ', Arabic page pending translation' : ''}`);
     if (contentLines.length && !content.groups.length && !content.models.en) return finish();
 
-    // 1b. The rules of the page that the build checks outside step 20 (G8 of the 5a fix round):
+    // 1b. The rules of the page that the build checks outside step 20:
     // the glossary and compliance assertions of the script tests and the Latin-script guard of step 72.
     started = Date.now();
     const source = (lang) => {
@@ -343,7 +342,7 @@ export async function checkPage(options) {
     timings.api = Date.now() - started;
     stage(log, 'api-tables and vocabulary', started, apiLines, ` ${api.tables} tables, ${api.rows} rows, ${vocabulary.stats.codes} code values, ${vocabulary.stats.markup} markup names`);
 
-    // 4. Coverage report (leadAmendments A5): a report, never a failure; a component page only.
+    // 4. Coverage report: a report, never a failure; a component page only.
     if (content.models.en && content.kind === 'component') {
       const groupsEn = content.groups.filter((group) => group.lang === 'en');
       for (const line of coverageLines(coverageOf({ id, page: content.models.en, groups: groupsEn, declared: declared(id) }))) log(line);
@@ -356,7 +355,7 @@ export async function checkPage(options) {
     } else if (!content.groups.length) {
       log('check:page: equivalence not run: the page has no live group');
     } else {
-      // One step 80 at a time (leadAmendments A8): a run waits while another check:page compares its groups.
+      // One step 80 at a time: a run waits while another check:page compares its groups.
       const releaseEquivalence = await takeEquivalenceLock({ dir: options.lockDir ?? LOCK_DIR, log });
       const waited = Date.now() - started;
       started = Date.now();

@@ -20,7 +20,7 @@ const htmlParser = htmlBase.configure({
     { tag: 'style', parser: cssParser },
   ]),
 });
-/** Vue templates close any tag with '/>' (<Stat label="a" />): the selfClosing dialect reads them so (G9 of the 5a fix round). */
+/** Vue templates close any tag with '/>' (<Stat label="a" />): the selfClosing dialect reads them so, and a closing tag after one stays a closing tag. */
 const vueParser = htmlParser.configure({ dialect: 'selfClosing' });
 
 const common = [

@@ -29,14 +29,14 @@
   gap: var(--hw-space-2);
 }
 
-/* The sentence of a framed group (5a.9): its result needs script, so it is shown only without it. */
+/* The sentence of a framed group: its result needs script, so it is shown only without it. */
 .framed-note {
   display: none;
   margin-block: 0;
 }
 
 /* Without script a framed group shows no status: its frame never loads, so a
-   loading status would never resolve (G23 of the 5a fix round). The guide's slot
+   loading status would never resolve. The guide's slot
    around the status line is hidden, not the package's status line itself. */
 @media (scripting: none) {
   .framed-note {

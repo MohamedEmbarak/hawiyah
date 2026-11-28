@@ -18,7 +18,7 @@ export function isLive(node) {
 /**
  * Parses the info string of a live block.
  * @param {{ id?: string, kind?: 'component' | 'template' }} [page] The page: frame is allowed only for
- *   the components of FRAMED_COMPONENTS and for templates (5a.9, leadAmendments A12).
+ *   the components of FRAMED_COMPONENTS and for templates.
  * @returns {{ lang: string, framework: string | null, example: string | null, check?: string, checks?: string[], static?: true, differences?: string, frame?: true, width?: string, errors: string[] }}
  */
 export function parseInfo(node, page = {}) {
@@ -32,7 +32,7 @@ export function parseInfo(node, page = {}) {
   for (const word of words.slice(words[0] === 'live' ? 1 : 0)) {
     if (word === 'live') continue;
     if (word === 'frame') {
-      // The Angular result of the group is rendered in the sandboxed frame (5a.9).
+      // The Angular result of the group is rendered in the sandboxed frame.
       if (framed) errors.push('the word "frame" is repeated');
       framed = true;
       continue;

@@ -1,4 +1,4 @@
-// The lead's lists are pinned (G13 of the 5a fix round): each list file, and each
+// The lead's lists are pinned: each list file, and each
 // list constant of targets.mjs, has the hash of its content here, so a changed list
 // fails this test until the pin is renewed with it. The process is the real control:
 // the lead takes only page files and check modules from a writer, adds an entry a
@@ -38,16 +38,16 @@ function leadListContents() {
 
 /** The pins: renewed by the lead with every change of a list (the first 16 hex characters of its sha256). */
 const PINS = {
-  'scripts/api-tables/exclusions.json': 'a2a67b44c9e03c68',
-  'scripts/api-tables/defaults.json': '4c0348e881e6873f',
-  'scripts/api-tables/vocabulary-exceptions.json': 'f32a3b77cefdd105',
-  'scripts/api-tables/targets.mjs TARGET_OVERRIDES': 'ed7cbbb124b96cbd',
-  'scripts/api-tables/targets.mjs VUE_SLOT_PATTERNS': '5f504e63bf85f6b2',
+  'scripts/api-tables/exclusions.json': 'b90c2dabf88c6668',
+  'scripts/api-tables/defaults.json': '3b28cdd0835770a5',
+  'scripts/api-tables/vocabulary-exceptions.json': 'df3489e2983ada44',
+  'scripts/api-tables/targets.mjs TARGET_OVERRIDES': '3234c5ebc700689a',
+  'scripts/api-tables/targets.mjs VUE_SLOT_PATTERNS': '1a3e723ebc631429',
   'scripts/api-tables/targets.mjs UNOWNED_EXPORTS': '4f53cda18c2baa0c',
   'scripts/content/arabic-exceptions.json': '39231a34951b2255',
   'scripts/content/claim-exceptions.json': '37517e5f3dc66819',
   'scripts/content/live-component-exceptions.json': '9924a5b8b5e71573',
-  'scripts/content/marketing-terms.json': '9376a99a82e48201',
+  'scripts/content/marketing-terms.json': '9c68b16ef9d5c5c8',
   'scripts/page-guards/latin-allowlist.json': '37517e5f3dc66819',
   'scripts/equivalence/keyboard-exceptions.json': 'e2cd8a4267419155',
   'scripts/equivalence/known-differences.json': 'd30afd4679b1e691',

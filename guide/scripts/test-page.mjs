@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// test:page: the browser tests of one component page (5a.6 of milestone 5),
+// test:page: the browser tests of one component page,
 // against a production build that contains it:
 //
 //   npm run test:page -- <id> [<playwright option> ...]

@@ -1,4 +1,4 @@
-// Key elements and the keyboard table of a page (5a.7, 5a.8; HWC-KEYS).
+// Key elements and the keyboard table of a page (HWC-KEYS).
 //
 // A key element <kbd>...</kbd> names one key of KEY_NAMES (config.mjs) in the
 // language of its page: a key name as printed on the key, an arrow key by its
@@ -7,20 +7,20 @@
 // elements only: a chord joins keys with '+', alternatives are separated by the
 // comma of the page's language (an Arabic comma in Arabic); an Action cell is one
 // sentence, and in a cell of arrow keys the key that moves forward in reading order
-// comes first (G20 of the 5a fix round). Parity: the same keys in
-// the same order in both languages, paragraph by paragraph and cell by cell; a
-// cell made only of arrow keys may order them per language (leadAmendments A3).
+// comes first. Parity: the same keys in the same order in both
+// languages, paragraph by paragraph and cell by cell; a cell made only of arrow
+// keys may order them per language.
 
 import { ARROW_KEYS, KEYBOARD_TABLE, KEY_NAMES, finding, keyId } from './config.mjs';
 import { plainText } from './parse.mjs';
 
 const lineOf = (node) => node?.position?.start.line ?? 1;
 const OTHER = { en: 'ar', ar: 'en' };
-/** The separator of alternatives in a Key cell: the comma of the page's language (G20 of the 5a fix round). */
+/** The separator of alternatives in a Key cell: the comma of the page's language. */
 const SEPARATOR = { en: ',', ar: '،' };
 /** A sentence ends with . ! ? or ؟ followed by a space or the end of the text (the rule of the summary). */
 const SENTENCE_END = /[.!?؟](?=\s|$)/g;
-/** The key that moves forward in reading order, before its counterpart in an arrow cell (leadAmendments A3; G20). */
+/** The key that moves forward in reading order, before its counterpart in an arrow cell. */
 const FORWARD = { en: [['ArrowRight', 'ArrowLeft'], ['ArrowDown', 'ArrowUp']], ar: [['ArrowLeft', 'ArrowRight'], ['ArrowDown', 'ArrowUp']] };
 
 /** Every key element of a tree, in document order. */
@@ -109,7 +109,7 @@ export function keyboardTable(tables, lang, entry, file) {
     if (keys.error) push(row, keys.error);
     else if (keys.keys.some((chord) => chord.split('+').some((key) => !KEY_NAMES[key]))) continue; // named by keyNameFindings
     if (!action) push(row, 'the Action cell of the keyboard table is empty');
-    // G20 of the 5a fix round: the mechanical rules of a row.
+    // The mechanical rules of a row.
     const sentences = action.match(SENTENCE_END)?.length ?? 0;
     if (action && (sentences !== 1 || !/[.!?؟]$/.test(action))) push(row, `the Action cell "${action}" is ${sentences === 0 ? 'not a sentence that ends with a full stop' : `${sentences} sentences`}; it states the outcome in one sentence`);
     if (!keys.error) {

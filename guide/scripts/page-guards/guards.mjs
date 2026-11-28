@@ -26,7 +26,7 @@ export const EMOJI = /\p{Emoji_Presentation}|\p{Extended_Pictographic}️/u;
 const ICON_FONT_CLASS = /^(?:fa|fas|far|fab|fal|fad|fa-[\w-]+|material-icons(?:-[\w-]+)?|material-symbols(?:-[\w-]+)?|bi|bi-[\w-]+|glyphicon(?:-[\w-]+)?|icon-[\w-]+|ion-[\w-]+|ionicons|mdi|mdi-[\w-]+|codicon(?:-[\w-]+)?|ti|ti-[\w-]+|feather(?:-[\w-]+)?)$/;
 /**
  * Four or more Latin-script words in a row, separated by spaces or light
- * punctuation (G15 of the 5a fix round). A hyphen joins the parts of one word only
+ * punctuation. A hyphen joins the parts of one word only
  * when the hyphenated word is a name: an hw- name (hw-mobile-top-bar, the element of
  * a generated API table caption) or a hyphenated name of vocabulary-allow.json
  * (aria-label, v-model). Any other hyphenated word counts as its parts
@@ -99,7 +99,7 @@ function lineOf(node) {
   return node.sourceCodeLocation?.startLine ?? 1;
 }
 
-/** Whether `run` on `page` is covered by an allow-list entry: the entry names the whole run (G13 of the 5a fix round). */
+/** Whether `run` on `page` is covered by an allow-list entry: the entry names the whole run. */
 function allowed(allowlist, page, run) {
   return allowlist.some((entry) => run === entry.text && (!entry.pages || entry.pages.includes(page)));
 }
@@ -186,7 +186,7 @@ export function checkSources(guideDir) {
 
 /**
  * Reads latin-allowlist.json and validates it: [{ text, reason, approvedBy, pages? }]. The list is the
- * lead's (leadAmendments A4 of milestone 5; scripts/api-tables/lists.mjs caps the entries per page).
+ * lead's (scripts/api-tables/lists.mjs caps the entries per page).
  */
 export function readAllowlist(file) {
   const list = JSON.parse(readFileSync(file, 'utf8'));

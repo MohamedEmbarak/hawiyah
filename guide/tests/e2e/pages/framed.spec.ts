@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test, expect, axe, hydrated } from '../support/fixtures';
 
-// Framed groups (5a.9, leadAmendments A12): a group with frame on its html block
+// Framed groups: a group with frame on its html block
 // renders its Angular result in the sandboxed frame like the other three, never in
 // the guide page, so the main landmark, the skip link and the h1 of a page-level
 // component stay out of the guide's outline. On every page with a framed group, in
@@ -63,7 +63,7 @@ for (const entry of framedPages) {
         await expect(block.locator('.framed-note')).toHaveText(NOTE[lang]);
         await expect(block.locator('.framed-note')).toBeVisible();
         await expect(block.locator('guide-native-result, iframe')).toHaveCount(0);
-        // No status that never resolves: the frame does not load without script (G23 of the 5a fix round).
+        // No status that never resolves: the frame does not load without script.
         await expect(block.locator('.status')).toBeHidden();
         // The Angular tab is selected on the server: its listing is the one shown.
         const shown = block.locator('pre').filter({ visible: true });

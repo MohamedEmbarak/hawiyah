@@ -38,7 +38,7 @@ export interface FrameSource {
   readonly lang: ExampleLanguage;
   readonly dir: ExampleDirection;
   readonly compiled: Pick<CompiledExample, 'host' | 'entry' | 'modules' | 'classic'>;
-  /** Edited Angular code compiled in the frame (JIT, stage 4c). */
+  /** Edited Angular code compiled in the frame (JIT). */
   readonly jit?: boolean;
 }
 

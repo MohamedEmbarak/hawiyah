@@ -2,8 +2,7 @@
 
 Written by hand from the declarations (`dist/**/*.d.ts`, `dist/types/*.d.ts`)
 and the published JavaScript of the installed `@hawiyah/*` 0.3.0 packages,
-before the type printer and the default readers were run on them
-(leadAmendments A6 of milestone 5). Each row is one real member in the written
+before the type printer and the default readers were run on them. Each row is one real member in the written
 form of `docs/components/README.md`: single quotes, a literal-union alias
 expanded, an object or interface alias by name, no `| undefined` on an optional
 member, an Angular output as its payload type, a Vue event as its handler
@@ -15,8 +14,8 @@ disagreed with the hand-written text, the declarations decided (two rows, both
 corrected here: the required flag of the Angular Pagination input getPageLabel,
 which its ɵcmp declares required, and the Calendar output focusEvents, whose
 template name is its alias focused). The defaults of three vanilla rows (Tabs activationMode, Button
-data-variant and data-size) follow the `defaults.json` entries the lead approved
-in 5a (decision L2); before them these cells were em dashes. 0.3.0 declares no Angular signal input
+data-variant and data-size) follow the `defaults.json` entries the lead approved;
+before them these cells were em dashes. 0.3.0 declares no Angular signal input
 or output, so no row covers one; `types.test.mjs` covers them with a declaration
 written for the test.
 

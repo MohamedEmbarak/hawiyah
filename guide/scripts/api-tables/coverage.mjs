@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Coverage report of a component page (leadAmendments A5 of milestone 5): the
+// Coverage report of a component page: the
 // enumerated values and the boolean members of the page's API that no live
 // group of the page shows and that the section Variants and states does not
 // list. It is a report, never a failure: check:page prints it as a section, and

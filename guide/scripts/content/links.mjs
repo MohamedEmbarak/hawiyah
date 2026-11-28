@@ -60,7 +60,7 @@ export function resolveLink(url, ctx) {
     if (!ctx.headingIds.has(id)) return { error: `the link "${url}" names no heading of this page` };
     return { href: `${pageHref(kind, ctx.lang, ctx.id)}${fragment}`, internal: true, external: false };
   }
-  // A page read from a copy outside the repository (--docs <dir>, G17 of the 5a fix round) is
+  // A page read from a copy outside the repository (--docs <dir>) is
   // written for docs/<kind>: a relative link resolves as it would there, so the copy builds as
   // the repository does; a page of the copy is linked when the copy holds it.
   const outside = (dir) => toPosix(relative(ctx.repoDir, resolve(dir))).startsWith('..');

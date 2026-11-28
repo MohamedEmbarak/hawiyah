@@ -1,4 +1,4 @@
-// The data of the evidence panel (5a.11, leadAmendments A13): components.json, the
+// The data of the evidence panel: components.json, the
 // Known defects of the pinned version in CHANGELOG.md that name the component, and
 // its documented differences.
 import { readFileSync } from 'node:fs';
@@ -46,7 +46,7 @@ describe('the evidence of a page', () => {
     expect(none).toMatchObject({ entries: [], gaps: [], notes: [], open: [], built: [], verified: [] });
   });
 
-  // G23 of the 5a fix round: a documented difference stands under the Known defects entry it cites.
+  // A documented difference stands under the Known defects entry it cites.
   it('shows a documented difference under the Known defects entry its source cites, and as an item of its own otherwise', () => {
     expect(citedText('CHANGELOG.md, 0.4.0, Known defects in 0.4.0: The vanilla Tabs controller (`createTabs`) creates the tab bar')).toBe('The vanilla Tabs controller (`createTabs`) creates the tab bar');
     expect(citedText('elsewhere')).toBe(null);
@@ -76,7 +76,7 @@ describe('the evidence of a page', () => {
     expect(evidenceOf({ id: 'tabs', entry: { name: 'Tabs' }, version: '0.4.0', changelog: '', differences: [] }).open).toEqual([]);
   });
 
-  // G23 of the 5a fix round: the kinds of evidence some built adapters have and others do not.
+  // The kinds of evidence some built adapters have and others do not.
   it('finds the kinds of evidence that some built adapters have and others do not', () => {
     const entries = [{ adapter: 'vanilla', kind: 'behavior' }, { adapter: 'react', kind: 'behavior' }, { adapter: 'react', kind: 'hydration' }, { adapter: 'vue', kind: 'hydration' }, { adapter: 'svelte', kind: 'behavior' }];
     expect(evidenceGaps(['vanilla', 'react', 'vue', 'angular'], entries)).toEqual([{ kind: 'behavior', adapters: ['vue', 'angular'] }, { kind: 'hydration', adapters: ['vanilla', 'angular'] }]);
@@ -92,10 +92,10 @@ describe('the evidence of a page', () => {
     const tabs = evidenceOf({ id: 'tabs', entry: catalogue.find((item) => item.id === 'tabs'), repoDir });
     expect(tabs.entries).toHaveLength(7);
     expect(tabs.open.filter((item) => item.kind === 'defect')).toHaveLength(4);
-    // The documented difference cites the first defect and stands under it (G23).
+    // The documented difference cites the first defect and stands under it.
     expect(tabs.open.filter((item) => item.kind === 'difference')).toEqual([]);
     expect(tabs.open[0].differences.map((item) => item.id)).toEqual(['tabs-bar-orientation']);
-    // The Angular hydration statement, generated (G23): React and Vue record hydration evidence, JavaScript and Angular do not.
+    // The Angular hydration statement, generated: React and Vue record hydration evidence, JavaScript and Angular do not.
     expect(tabs.gaps).toContainEqual({ kind: 'hydration', adapters: ['vanilla', 'angular'] });
     const button = evidenceOf({ id: 'button', entry: catalogue.find((item) => item.id === 'button'), repoDir });
     expect(button.open.map((item) => item.text.map((node) => node.value).join(''))).toEqual(['@hawiyah/vue does not export the types ButtonVariant and Orientation that its Button and Tabs props use.']);

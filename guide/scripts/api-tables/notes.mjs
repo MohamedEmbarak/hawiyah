@@ -1,5 +1,5 @@
 // The generated note of a JavaScript table that step 30 reads from the
-// published stylesheet alone (leadAmendments A11 of milestone 5): the classes
+// published stylesheet alone: the classes
 // of 26 components without a vanilla controller have no row in the stable class
 // and state API of the @hawiyah/styles README. content:api-tables and the
 // scaffold write the note as a NOTE alert directly after the table; step 30

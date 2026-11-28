@@ -1,5 +1,5 @@
 {
-  "$comment": "Defaults of vanilla options and stylesheet attributes (5a.3). @hawiyah/vanilla and @hawiyah/styles 0.3.0 publish no machine-readable default for them (package gap PG-M5-4), so their Default cell is an em dash unless an entry here quotes the published line that sets it: { id, framework: 'vanilla', name, default, evidence: { file, text }, approvedBy, reason }, where file is a path below guide/node_modules (for example '@hawiyah/styles/README.md') and text occurs in that installed file; step 30 reports an entry whose text it does not find. The list is the lead's (leadAmendments A4); writers propose entries in their result files.",
+  "$comment": "Defaults of vanilla options and stylesheet attributes. @hawiyah/vanilla and @hawiyah/styles 0.3.0 publish no machine-readable default for them (a package gap), so their Default cell is an em dash unless an entry here quotes the published line that sets it: { id, framework: 'vanilla', name, default, evidence: { file, text }, approvedBy, reason }, where file is a path below guide/node_modules (for example '@hawiyah/styles/README.md') and text occurs in that installed file; step 30 reports an entry whose text it does not find. The list is the lead's; writers propose entries in their result files.",
   "entries": [
     {
       "id": "button",
@@ -10,7 +10,7 @@
         "file": "@hawiyah/styles/README.md",
         "text": "Defaults are primary/medium buttons"
       },
-      "approvedBy": "lead, 5a (L2)",
+      "approvedBy": "lead",
       "reason": "The styles README states the default family of an hw-button without data-variant."
     },
     {
@@ -22,7 +22,7 @@
         "file": "@hawiyah/styles/README.md",
         "text": "Defaults are primary/medium buttons"
       },
-      "approvedBy": "lead, 5a (L2)",
+      "approvedBy": "lead",
       "reason": "The styles README states the default size of an hw-button without data-size."
     },
     {
@@ -34,7 +34,7 @@
         "file": "@hawiyah/vanilla/dist/tabs.js",
         "text": "const manual = (options.activationMode ?? root.dataset.hwActivation) === 'manual';"
       },
-      "approvedBy": "lead, 5a (L2)",
+      "approvedBy": "lead",
       "reason": "createTabs activates a tab on focus unless the option or data-hw-activation is 'manual'."
     },
     {
@@ -46,7 +46,7 @@
         "file": "@hawiyah/vanilla/dist/tabs.js",
         "text": "=== 'scroll' ? 'scroll' : 'menu'"
       },
-      "approvedBy": "lead, 5a (L2)",
+      "approvedBy": "lead",
       "reason": "createTabs uses the overflow menu unless the option or data-hw-overflow is 'scroll'."
     }
   ]

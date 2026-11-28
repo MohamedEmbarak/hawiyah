@@ -1,4 +1,4 @@
-// The content manifest stays out of the browser (5a.2): no output of the browser build
+// The content manifest stays out of the browser: no output of the browser build
 // may have src/generated/content/manifest.json among its inputs. The catalogue, the
 // side navigation, the drawer and the editor read the navigation index
 // (navigation.json) from lazy chunks, the route matcher the ids of routes.json.

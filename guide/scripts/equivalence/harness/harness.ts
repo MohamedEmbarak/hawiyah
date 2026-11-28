@@ -6,7 +6,7 @@
 // It loads the compiled payloads that step 45 wrote, builds each frame document
 // with the guide's own modulesDocument() (light mode, the page language and
 // direction) and runs the four results side by side in sandboxed frames 720 CSS
-// px wide (width= sets another width: 1280 and 390 for a framed group, 5a.9). The state of every frame is published on window.__harness for the
+// px wide (width= sets another width: 1280 and 390 for a framed group). The state of every frame is published on window.__harness for the
 // runner: loading, ready (after the frame's ready message) or failed.
 import { FRAME_REFERRER_POLICY, FRAME_SANDBOX, modulesDocument } from '../../../src/app/examples/frame/document';
 import { FRAME_FRAMEWORK_NAMES, frameTexts } from '../../../src/app/examples/frame/i18n';

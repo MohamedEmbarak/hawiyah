@@ -134,7 +134,7 @@ export default {
     await new Promise((done) => log.end(done));
     ctx.log(line.trim());
     if (code !== 0) throw new Error(`ng build exited with ${code}; log in ${ctx.logDir}/build-${ctx.configuration}.log`);
-    // The content manifest is a build-time file: no browser output may import it (5a.2).
+    // The content manifest is a build-time file: no browser output may import it.
     const stats = checkBrowserStats(join(ctx.guideDir, ctx.outDir, "browser-stats.json"));
     ctx.log(`40-angular: none of the ${stats.outputs} browser outputs has src/generated/content/manifest.json among its inputs`);
   },

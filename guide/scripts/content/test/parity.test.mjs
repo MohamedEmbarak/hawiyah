@@ -79,7 +79,7 @@ describe('checkParity', () => {
     expect(codes({ ar: english })).toEqual(['HWC-PAR8']);
     const file = 'guide/scripts/content/test/fixtures/docs/components/fixture-a.ar.md';
     expect(codes({ ar: english, exceptions: [{ file, text: 'The example shows one primary action.', reason: 'test' }] })).toEqual([]);
-    // An entry names the whole text, never a part of it (G13 of the 5a fix round).
+    // An entry names the whole text, never a part of it.
     expect(codes({ ar: english, exceptions: [{ file, text: 'one primary action', reason: 'test' }] })).toEqual(['HWC-PAR8']);
     const live = runPair({ ar: validAr().replace('<button class="hw-button" type="button" data-variant="primary">متابعة</button>', '<button class="hw-button" type="button" data-variant="primary" aria-label="Continue the request">Continue</button>') }).findings;
     expect(live.filter((item) => item.code === 'HWC-PAR8').map((item) => item.message.split(' has no')[0])).toEqual([
@@ -247,7 +247,7 @@ describe('checkParity', () => {
     expect(with_('data-overflow-label="المزيد من التبويبات"')).toEqual([]);
   });
 
-  describe('key elements and the keyboard table (5a.7, 5a.8, HWC-KEYS)', () => {
+  describe('key elements and the keyboard table (HWC-KEYS)', () => {
     const EN_TABLE = 'Table: Keyboard\n\n| Key | Action |\n| :-- | --: |\n| Enter | Activates the control. |\n| Space | Activates the control. |';
     const AR_TABLE = 'جدول: لوحة المفاتيح\n\n| المفتاح | الإجراء |\n| :-- | --: |\n| Enter | يفعّل عنصر التحكم. |\n| Space | يفعّل عنصر التحكم. |';
     const table = (caption, header, rows) => `${caption}\n\n${header}\n| :-- | --: |\n${rows.map(([key, action]) => `| ${key} | ${action} |`).join('\n')}`;
@@ -256,7 +256,7 @@ describe('checkParity', () => {
     const keyFindings = (replace) => runPair(replace).findings.filter((item) => item.code !== 'HWC-STALE');
     const EN_ROWS = [['<kbd>Right Arrow</kbd>, <kbd>Left Arrow</kbd>', 'Moves to the next or the previous item in reading order.'], ['<kbd>Shift</kbd> + <kbd>Tab</kbd>', 'Leaves the control.']];
 
-    it('accepts a keyboard table with key elements and Arabic arrow names in another order in an arrow row (A3)', () => {
+    it('accepts a keyboard table with key elements and Arabic arrow names in another order in an arrow row', () => {
       const result = runPair({ en: en(EN_ROWS), ar: ar([['<kbd>السهم الأيسر</kbd>، <kbd>السهم الأيمن</kbd>', 'ينقل إلى العنصر التالي أو السابق في ترتيب القراءة.'], ['<kbd>Shift</kbd> + <kbd>Tab</kbd>', 'يغادر عنصر التحكم.']]) });
       expect(result.findings.filter((item) => item.code !== 'HWC-STALE')).toEqual([]);
       expect(result.manifestPage.keyboard).toEqual({
@@ -291,7 +291,7 @@ describe('checkParity', () => {
       expect(messages(swap(en(EN_ROWS), '| Key | Action |', '| Keys | Action |'))).toEqual(['the keyboard table header is "| Keys | Action |"; write "| Key | Action |"']);
     });
 
-    // G20 of the 5a fix round: the mechanical rules of a row, which the contract stated before a check held them.
+    // The mechanical rules of a row, which the contract stated before a check held them.
     it('reports the comma of the other language or "or" between keys, an arrow cell whose forward key is not first, and an Action cell that is not one sentence', () => {
       const enMessages = (rows) => runPair({ en: en(rows) }).findings.filter((item) => item.code === 'HWC-KEYS' && !item.file.endsWith('.ar.md')).map((item) => item.message);
       const arMessages = (rows) => keyFindings({ en: en(EN_ROWS), ar: ar(rows) }).filter((item) => item.code === 'HWC-KEYS').map((item) => item.message);

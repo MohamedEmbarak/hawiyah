@@ -1,4 +1,4 @@
-// The keyboard rule of step 80 (5a.8): the binding of the keyboard table to the
+// The keyboard rule of step 80: the binding of the keyboard table to the
 // steps of the checks (HWE-KEYS), the Tabs oracle, and on a stand-in page in
 // Chromium the outcome assertions (HWE-EXPECT), the keys a step presses
 // (HWE-CHECK) and axe in each frame document (HWE-AXE).
@@ -40,9 +40,9 @@ describe('the binding of the keyboard table to the checks (HWE-KEYS)', () => {
     expect(lines[0]).toBe('keyboard: tabs/en "Keyboard interaction of Tabs"');
     expect(lines[1]).toBe('  Tab | Moves focus into the list.');
     expect(lines[2]).toMatch(/^ {4}tabs-keyboard\/tab-into-list presses Tab: Tab from before the tab list moves focus to the selected tab\. \[WAI-ARIA Authoring Practices, Tabs pattern/);
-    // G24: an arrow key the orientation does not handle is pressed and keeps focus and selection.
+    // An arrow key the orientation does not handle is pressed and keeps focus and selection.
     expect(report[0].rows[2].steps.map((step) => `${step.check}/${step.step} ${step.key}`)).toEqual(['tabs-keyboard/down-arrow-unhandled ArrowDown', 'tabs-keyboard/up-arrow-unhandled ArrowUp']);
-    // G22: the keys of a row of an Arabic table are joined by the Arabic comma.
+    // The keys of a row of an Arabic table are joined by the Arabic comma.
     const ar = { id: 'tabs', langs: ['ar'], liveGroups: [{ example: 'basic', check: 'tabs-keyboard' }], keyboard: { ar: { caption: 'x', line: 7, rows: ROWS } } };
     expect(keyboardReportLines(keyboardRule({ pages: [ar], checks, scope, exceptions: [] }).report)).toContain('  السهم الأيمن، السهم الأيسر | Moves focus.');
   });
@@ -75,7 +75,7 @@ describe('the binding of the keyboard table to the checks (HWE-KEYS)', () => {
     expect(result.report[0]).toMatchObject({ page: 'button', bound: false, reason: 'no controller of @hawiyah/vanilla' });
   });
 
-  // G16 of the 5a fix round (verification of 07763ce): an entry that matched nothing was not reported.
+  // An entry that matches nothing is reported.
   it('fails on an entry of keyboard-exceptions.json that matches nothing, and accepts one that excuses a documented key', () => {
     const rows = [...ROWS, { keys: ['F10'], action: 'Opens the menu.' }];
     const entry = { component: 'tabs', key: 'F10', reason: 'r', approvedBy: 'lead' };
@@ -186,11 +186,11 @@ describe('the binding of the keyboard table to the checks (HWE-KEYS)', () => {
     for (const check of checks.values()) expect(stepErrors(check), check.name).toEqual([]);
   });
 
-  it('reads the scope from the controller factories of the installed @hawiyah/vanilla (leadAmendments A2)', async () => {
+  it('reads the scope from the controller factories of the installed @hawiyah/vanilla', async () => {
     const found = await keyboardScope({ guideDir, componentsFile });
     expect(found.get('tabs')).toEqual(['createTabs']);
     expect(found.has('button')).toBe(false);
-    // The 33 components of the inventory, and app-shell, whose page documents createSkipLink (lead decision L3).
+    // The 33 components of the inventory, and app-shell, whose page documents createSkipLink.
     expect(found.size).toBe(34);
     expect(found.get('app-shell')).toEqual(['createSkipLink']);
     expect(found.get('file-upload')).toEqual(['createFileUploadList']);
@@ -234,13 +234,13 @@ describe('the Tabs oracle (written from the WAI-ARIA Authoring Practices and CON
 // all four, so the comparison of the four results passes and only the outcome
 // assertions can fail; "right" frames hold a minimal roving tab list that follows
 // the documented behaviour (the oracle must not fail a correct widget). The
-// behaviours of lead decision L16 move focus in the key's task, as every adapter
+// behaviours late, late-wrong, flicker and slow move focus in the key's task, as every adapter
 // does, and write the selection later, in the first animation frame or 0 ms timer
 // after the key, as zoneless change detection of @hawiyah/angular does: "late"
 // writes the documented tab, "late-wrong" the tab after it, and "flicker" writes the
 // documented tab at once and the tab after it in that later task. "slow" writes the
 // documented tab 150 ms after the key: a render that comes after the harness has read
-// the frame, as on a loaded runner (before L16 the harness failed it).
+// the frame, as on a loaded runner (the harness waits for it within a bound).
 const FRAMEWORK_NAMES = ['vanilla', 'react', 'vue', 'angular'];
 function frameDocument(framework, { dir, behaviour, unnamed = false }) {
   const mount = framework === 'angular' ? 'guide-example' : 'div id="app"';
@@ -320,7 +320,7 @@ describe('outcome assertions, pressed keys and axe on a stand-in page (Chromium)
     expect(asserted).toBeLessThan(tabsKeyboard.steps.length);
   }, 120_000);
 
-  // Lead decision L16 of 5a: the expect waits, within a bound, for the documented
+  // The expect waits, within a bound, for the documented
   // outcome and then checks that it holds; it never accepts another outcome.
   for (const [dir, behaviour] of [['ltr', 'late'], ['rtl', 'late'], ['ltr', 'slow'], ['rtl', 'slow']]) {
     it(`passes a tab list that writes the documented selection ${behaviour === 'slow' ? '150 ms' : 'in the task'} after the key, in ${dir} frames`, async () => {
@@ -376,13 +376,13 @@ describe('outcome assertions, pressed keys and axe on a stand-in page (Chromium)
     const sloppy = { name: 'x-sloppy', ...tabsCheck, steps: [{ name: 'press-end', keys: ['Home'], outcome: 'o', reference: 'r', async run({ mount, press }) { await press(mount.getByRole('tab').first(), 'End'); }, expect: (state) => state }] };
     const { failures } = await runChecks({ page, group: group('en'), checks: [sloppy] });
     expect(failures).toEqual(['HWE-CHECK docs/components/tabs.md:19: x-sloppy step press-end pressed End in vanilla (trusted keydown events of the frame), and declares Home; a step presses exactly the keys it declares']);
-    // Verification 2 of 07763ce: a raw Playwright press escaped the rule, which counted only context.press.
+    // A raw Playwright press counts too: the rule counts trusted keydown events, not only context.press.
     await standIn(page, { dir: 'ltr', behaviour: 'right' });
     const raw = { name: 'x-raw', ...tabsCheck, steps: [{ name: 'raw-escape', outcome: 'o', reference: 'r', async run({ mount }) { await mount.getByRole('tab').first().press('Escape'); }, expect: (state) => state }] };
     expect((await runChecks({ page, group: group('en'), checks: [raw] })).failures).toEqual(['HWE-CHECK docs/components/tabs.md:19: x-raw step raw-escape pressed Escape in vanilla (trusted keydown events of the frame), and declares no key; a step presses exactly the keys it declares']);
   }, 120_000);
 
-  // Verification 1 of 07763ce (G6 of the 5a fix round): an outcome that is shown and
+  // An outcome that is shown and
   // changes after the read, and an oracle that took the state before a step from the frame.
   for (const behaviour of ['right-then-wrong-300', 'right-then-wrong-1000', 'aria-wrong-300']) {
     it(`fails a tab list that shows the documented outcome and changes it later (${behaviour}) (HWE-EXPECT)`, async () => {

@@ -27,7 +27,7 @@ type PageListings = Readonly<Record<string, Partial<Record<ExampleFramework, rea
 
 /**
  * Loads the listings of live groups, highlighted at build time by step 25
- * (src/generated/examples/<id>/<lang>/listings.json, leadAmendments A4). The server
+ * (src/generated/examples/<id>/<lang>/listings.json). The server
  * render leaves the result in the transfer state, so the hydrating browser reuses it
  * without loading the listings chunk; a client-side navigation loads it on demand.
  */

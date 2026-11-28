@@ -1,5 +1,5 @@
 // Table comparison: the pilot fixtures pass, and each kind of mismatch fails
-// with exactly one HWC-APIX finding in the specified wording (5a.3 negative
+// with exactly one HWC-APIX finding in the specified wording (negative
 // fixtures: a wrong type, a wrong default, an invented name, a missing member,
 // an invented slot and a defaults.json entry whose evidence text is absent).
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -65,7 +65,7 @@ describe('one finding per mismatch (negative fixtures)', () => {
     expect(messages(check([pageModel('tabs', tables)]))).toEqual([
       "HWC-APIX docs/components/tabs.md: JavaScript table gives overflowLabel the default 'More'; the installed packages give —",
     ]);
-    // Without its defaults.json entry (L2), the default of activationMode is an em dash again.
+    // Without its defaults.json entry, the default of activationMode is an em dash again.
     const stated = variant(TABS, 'javascript', (rows) => rows);
     expect(messages(check([pageModel('tabs', stated)], testReaders({ defaults: [] })))).toEqual([
       "HWC-APIX docs/components/tabs.md: JavaScript table gives activationMode the default 'automatic'; the installed packages give —",
@@ -84,7 +84,7 @@ describe('one finding per mismatch (negative fixtures)', () => {
       'HWC-APIX docs/components/tabs.md: JavaScript table lists no onValueChange; the declarations have onValueChange (option, required false)',
     ]);
   });
-  // Restored (G16 of the 5a fix round; removed at e5a740d): a missing Angular content selector row
+  // A missing Angular content selector row
   // and a missing input that HwTabsComponent declares, in the five-column form of the comparison.
   it('an Angular content selector missing and an inherited input missing', () => {
     const tables = variant(TABS, 'angular', (rows) => rows.filter((row) => row[0] !== '*' && row[0] !== 'aria-describedby'));
@@ -212,7 +212,7 @@ describe('components without a vanilla controller', () => {
       'exclusions.json button.vanilla.nativeAttributes names data-variant, which the styles contract documents',
     ]);
   });
-  it('a component without a contract row needs the generated note after its JavaScript table (A11)', () => {
+  it('a component without a contract row needs the generated note after its JavaScript table', () => {
     const declared = stylesheetMembers(readers, 'stat');
     expect(declared.generatedNote).toBe(true);
     const rows = declared.members.map((m) => [m.name, m.kind, m.type, m.required, m.default]);
@@ -227,7 +227,7 @@ describe('components without a vanilla controller', () => {
     expect(messages(check([pageModel('button', BUTTON, { after: { javascript: note('en') } })]))).toEqual([
       'HWC-APIX docs/components/button.md: the JavaScript table of button is followed by the note of a table read from the stylesheet, but the styles contract documents hw-button; remove the note',
     ]);
-    // G16 of the 5a fix round (verification of 07763ce): the note after the prose of the table, or anywhere else in the API section.
+    // The note after the prose of the table, or anywhere else in the API section.
     const elsewhere = (id, tables) => {
       const model = pageModel(id, tables);
       model.sections[0].blocks.splice(3, 0, note('en'));

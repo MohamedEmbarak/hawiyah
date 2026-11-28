@@ -1,6 +1,6 @@
 // Every component, directive and controller factory of the four installed
 // adapters is documented by exactly one page, or is an entry of the lead's list
-// UNOWNED_EXPORTS (lead decision L3 of milestone 5, stage 5a).
+// UNOWNED_EXPORTS.
 import { describe, expect, it } from 'vitest';
 import { checkOwnership } from '../ownership.mjs';
 import { UNOWNED_EXPORTS } from '../targets.mjs';

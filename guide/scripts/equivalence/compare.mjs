@@ -116,8 +116,8 @@ export function withoutIgnored(tree, ignore = []) {
 }
 
 /**
- * A copy of a normalised tree without the designed differences of its component (G11
- * of the 5a fix round; the lists empty-elements.json and vanilla-hooks.json):
+ * A copy of a normalised tree without the designed differences of its component
+ * (the lists empty-elements.json and vanilla-hooks.json):
  * every element whose class list has a class of `emptyClasses` and that has no child
  * and no text is left out, in every framework's tree, so an adapter that always
  * renders the empty region compares equal with one that renders it only with
@@ -155,7 +155,7 @@ function carries(tree, rule) {
 
 /**
  * Structure: every framework's normalised tree must deep-equal vanilla's.
- * `ignore` documents attributes the reference does not write (leadAmendments A8):
+ * `ignore` documents attributes the reference does not write:
  * they are left out of the other frameworks' trees only, so
  * - a reference that does write one fails as a stale entry, and
  * - the other frameworks are also compared with each other in full, so a wrong

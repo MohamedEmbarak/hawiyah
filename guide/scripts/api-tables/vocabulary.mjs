@@ -1,4 +1,4 @@
-// The vocabulary pass of step 30 (HWC-VOCAB, 5a.5 of milestone 5): every
+// The vocabulary pass of step 30 (HWC-VOCAB): every
 // code-formatted name in the prose of a page (paragraphs, list items, headings,
 // alerts and the cells of tables other than the API tables) and every class,
 // data-hw hook and data attribute of its html live blocks must exist in the
@@ -37,7 +37,7 @@
 //                       a published module compares a data-* attribute with
 //                       (data-hw-multiple="true"); the value of data-hw is a hook
 //                       that enhance() registers, the value of role an ARIA role.
-// Framework scope (leadAmendments A9): a paragraph under a heading (h3 or h4, in any
+// Framework scope: a paragraph under a heading (h3 or h4, in any
 // section) whose text is a framework name (JavaScript, React, Vue, Angular), or whose text names a framework, is scoped to
 // those frameworks: a member or export must belong to one of them. A name that
 // belongs only to another framework is a case the check cannot decide, so it is a
@@ -176,7 +176,7 @@ function guideDependencies(nodeModules) {
 const ALLOW_FIELDS = ['kind', 'specification', 'names', 'values'];
 
 /**
- * Problems of the data of vocabulary-allow.json (lead decision L15 of 5a): a list of
+ * Problems of the data of vocabulary-allow.json: a list of
  * the guide, not a lead list, in which every entry (a group of names of one kind)
  * names its specification as an https address. Each group has a kind, a
  * specification, a non-empty list of names and optionally the values of some of
@@ -743,7 +743,7 @@ export function judge(vocab, term, where) {
     if (attribute === 'data-hw') return vocab.hooks.has(value) ? null : `"${value}" is not a hook that enhance() of @hawiyah/vanilla registers`;
     const listed = allow.values(['aria-attribute', 'aria-role', 'html-attribute'], attribute);
     if (listed?.includes(value)) return null;
-    // name="value": only the values of that attribute or member count (G4 of the 5a fix round).
+    // name="value": only the values of that attribute or member count.
     if (attribute && enumeratedSets(vocab, where.vocabulary, attribute).some((set) => set.has(value))) return null;
     // A value that a published module compares the data-* attribute with (dataset.hwMultiple === 'true').
     if (attribute?.startsWith('data-') && comparedValues(vocab, attribute).has(value)) return null;
@@ -753,7 +753,7 @@ export function judge(vocab, term, where) {
   const scoped = (name, owners, what) => {
     const inScope = owners.filter((framework) => frameworks.includes(framework) || framework === 'core');
     if (inScope.length) return null;
-    if (owners.length) return `${name} is ${what} of ${owners.join(', ')} only, and the paragraph is scoped to ${frameworks.join(', ')} (leadAmendments A9: the check cannot decide)`;
+    if (owners.length) return `${name} is ${what} of ${owners.join(', ')} only, and the paragraph is scoped to ${frameworks.join(', ')} (the check cannot decide)`;
     return undefined;
   };
   switch (term.kind) {

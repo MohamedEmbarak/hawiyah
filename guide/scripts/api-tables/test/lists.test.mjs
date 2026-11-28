@@ -1,4 +1,4 @@
-// The lead's exception and override lists (leadAmendments A4): every entry has
+// The lead's exception and override lists: every entry has
 // approvedBy and a reason, and one page has at most MAX_ENTRIES_PER_PAGE entries
 // over all lists together.
 import { describe, expect, it } from 'vitest';
@@ -18,12 +18,12 @@ describe('the lists of the guide', () => {
   });
 });
 
-// G16 of the 5a fix round (verification of 07763ce): the quoted line of a defaults.json entry
-// states the default literal. Two entries the lead approved in L2 quote a line in other words
+// The quoted line of a defaults.json entry
+// states the default literal. Two entries the lead approved quote a line in other words
 // ('medium' for 'md'; "=== 'manual'" for 'automatic'): no installed 0.3.0 file states them as
 // literals. They stay named here for the lead's decision; any other entry without its literal fails.
 describe('defaults.json entries quote the default literal', () => {
-  it('every entry but the two of L2 that the lead decides on', () => {
+  it('every entry but the two that the lead decides on', () => {
     const entries = readDefaults(DEFAULT_DEFAULTS);
     expect(defaultsWithoutLiteral(entries).map((entry) => `${entry.id}.${entry.name} ${entry.default}`)).toEqual(['button.data-size \'md\'', 'tabs.activationMode \'automatic\'']);
     expect(defaultsWithoutLiteral([{ id: 'x', name: 'n', default: "'scroll'", evidence: { file: 'f', text: 'export' } }])).toHaveLength(1);

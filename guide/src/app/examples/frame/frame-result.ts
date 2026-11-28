@@ -19,7 +19,7 @@ import { frameTexts } from './i18n';
 import type { FrameRunStatus, PreviewFrame } from './preview-frame';
 
 /**
- * FrameResult: the EXAMPLE_FRAME_RESULT component of the page block (stage 4b).
+ * FrameResult: the EXAMPLE_FRAME_RESULT component of the page block.
  * It renders the vanilla, React or Vue result of a live group in a sandboxed
  * frame. Kept small because the frame-runtime feature provides it eagerly: the
  * frame component, the document builder and the in-frame scripts are loaded in a

@@ -44,7 +44,7 @@ describe('Latin-script runs on Arabic pages', () => {
     expect(codes(checkPage('ar/index.html', page('ar', '<p>نص well-known - open source - library code</p>'), { icons }))).toEqual(['HWP-LATIN:1']);
   });
 
-  // G15 of the 5a fix round (verification of 07763ce): hyphen-joined prose passed as one word.
+  // Hyphen-joined prose counts as its parts, not as one word.
   it('counts the parts of a hyphenated word that is not an hw- name or a name of vocabulary-allow.json', () => {
     for (const text of ['نص the-request-is-approved-by-the-reviewer today', 'نص select-the-tab-you-need and continue', 'نص well-known open-source tab-list', 'نص the–request–is–approved']) {
       expect(codes(checkPage('ar/index.html', page('ar', `<p>${text}</p>`), { icons })), text).toEqual(['HWP-LATIN:1']);
@@ -67,7 +67,7 @@ describe('Latin-script runs on Arabic pages', () => {
     expect(checkPage('ar/index.html', page('ar', body), { icons, allowlist, used })).toEqual([]);
     expect([...used]).toEqual(['Digital Government Authority Platforms Code']);
     expect(codes(checkPage('ar/other.html', page('ar', body), { icons, allowlist }))).toEqual(['HWP-LATIN:1']);
-    // An entry names the whole run, never a part of it (G13 of the 5a fix round).
+    // An entry names the whole run, never a part of it.
     expect(codes(checkPage('ar/index.html', page('ar', body), { icons, allowlist: [{ text: 'Government Authority', reason: 'part', pages: ['ar/index.html'] }] }))).toEqual(['HWP-LATIN:1']);
   });
 

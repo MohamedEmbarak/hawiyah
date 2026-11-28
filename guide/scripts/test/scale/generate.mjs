@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-// The scale fixture of the guide build (leadAmendments A7 and lead decision L10
-// of milestone 5, stage 5a): component pages for every id of components.json in
+// The scale fixture of the guide build: component pages for every id of components.json in
 // English and Arabic, written in one process from the scaffold functions of
 // content:scaffold and content:scaffold-ar. Nothing of what it writes is
 // committed, and it is built only through the documented scope option --docs,

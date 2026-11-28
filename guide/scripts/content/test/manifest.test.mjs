@@ -57,7 +57,7 @@ describe('runContent on the fixtures', () => {
     const en = read('pages/fixture-a.en.json');
     const ar = read('pages/fixture-a.ar.json');
     expect(Object.keys(en)).toEqual(['id', 'lang', 'dir', 'title', 'summary', 'headings', 'sections', 'liveGroups', 'sourcePath', 'githubUrl', 'evidence']);
-    // The evidence panel (5a.11) adds its two headings after the last heading of the page, the same ids in both languages.
+    // The evidence panel adds its two headings after the last heading of the page, the same ids in both languages.
     expect(en.headings.slice(-2)).toEqual([{ id: 'evidence-recorded', level: 3, text: 'Verification evidence' }, { id: 'evidence-open', level: 3, text: 'Open items' }]);
     expect(ar.headings.slice(-2).map((heading) => heading.id)).toEqual(['evidence-recorded', 'evidence-open']);
     expect([en.dir, ar.dir]).toEqual(['ltr', 'rtl']);

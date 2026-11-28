@@ -64,7 +64,7 @@ export function readRecord(outDir) {
 }
 
 /**
- * The hash of the content manifest of a build (G16 of the 5a fix round): the first 16
+ * The hash of the content manifest of a build: the first 16
  * hex characters of the sha256 of src/generated/content/manifest.json, or null when the
  * file does not exist. The build record and every report of step 80 carry it, and the
  * merge of the shard reports compares them, so the shards are tied to one build.

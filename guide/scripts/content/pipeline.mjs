@@ -49,7 +49,7 @@ export function readComponents(componentsFile) {
   return new Map(list.map((entry) => [entry.id, entry]));
 }
 
-/** The default list of English pages whose Arabic sibling is still being written (5a.6). */
+/** The default list of English pages whose Arabic sibling is still being written. */
 export const PENDING_FILE = join(dirname(fileURLToPath(import.meta.url)), 'pending-translation.json');
 
 /** The line of step 20 that counts the English pages pending translation (printed by every build, deployable or not). */
@@ -169,7 +169,7 @@ export function listSources(names, known, dirLabel, pending = new Set()) {
 }
 
 /**
- * The keyboard table of each language for the manifest (5a.8): { <lang>: { caption,
+ * The keyboard table of each language for the manifest: { <lang>: { caption,
  * rows: [{ keys, action }] } | null }. Step 80 binds its keys to the keyboard checks
  * (HWE-KEYS).
  * @param {Record<string, any>} outlines analysePage() results by language
@@ -223,8 +223,7 @@ export function compositionFindings({ outline, file, known, nodeModules, names =
 }
 
 /**
- * The text gates of prose.mjs on one page in one language (G2 and G3 of the 5a fix
- * round): claims, hollow sections, placeholders, marketing terms, install text and,
+ * The text gates of prose.mjs on one page in one language: claims, hollow sections, placeholders, marketing terms, install text and,
  * on a component page, the page's component in each live group (HWC-LIVE7); on a
  * template, its Composition (HWC-COMP). `pair` carries the lists a test passes
  * instead of the lead's files (claimExceptions, marketing, liveExceptions).
@@ -284,7 +283,7 @@ export function processPair(pair) {
   const label = (path) => (path === enPath && pair.enLabel) || (path === arPath && pair.arLabel) || toPosix(relative(repoDir, path));
   const findings = [];
   const outlines = {};
-  // The text gates of the fix round of 5a (prose.mjs): claims, hollow sections,
+  // The text gates of prose.mjs: claims, hollow sections,
   // placeholders, marketing terms, install text and the page's component in each group.
   const used = pair.used ?? new Set();
   const nodeModules = join(repoDir, 'guide', 'node_modules');

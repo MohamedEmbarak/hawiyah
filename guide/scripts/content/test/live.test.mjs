@@ -52,7 +52,7 @@ describe('parseInfo', () => {
     expect(parseInfo(node('tsx', 'live example=basic differences=d1,d2')).errors).toEqual(['differences= is allowed only on the html block, the first of the group']);
   });
 
-  it('reads frame and width=390 on the html block of a page-level component or a template, and rejects every other use (5a.9, HWC-LIVE1)', () => {
+  it('reads frame and width=390 on the html block of a page-level component or a template, and rejects every other use (HWC-LIVE1)', () => {
     const header = { id: 'portal-header', kind: 'component' };
     expect(parseInfo(node('html', 'live example=page frame width=390 static'), header)).toMatchObject({ frame: true, width: '390', static: true, errors: [] });
     expect(parseInfo(node('html', 'live example=page frame'), { id: 'request', kind: 'template' })).toMatchObject({ frame: true, errors: [] });

@@ -1,6 +1,6 @@
-// The page tools of 5a.4: content:scaffold (round trip over all components),
+// The page tools: content:scaffold (round trip over all components),
 // content:scaffold-ar (reproduction of the two pilots), content:sync-ar, the
-// string map (leadAmendments A10) and the fact sheet schema.
+// string map and the fact sheet schema.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -62,7 +62,7 @@ describe('content:scaffold round trip over every component of components.json', 
       expect(result.tables).toBe(8);
       pages += 1;
     }
-    // Every id scaffolds since the lead added the six VUE_SLOT_PATTERNS entries (decision L1 of 5a).
+    // Every id scaffolds since the lead added the six VUE_SLOT_PATTERNS entries.
     expect(gaps).toEqual([]);
     expect(pages).toBe(85);
   });
@@ -219,7 +219,7 @@ describe('content:scaffold-ar and content:sync-ar replace and report what HWC-PA
   });
 });
 
-describe('content:scaffold-ar and the keyboard table (5a.7, 5a.8)', () => {
+describe('content:scaffold-ar and the keyboard table', () => {
   it('writes the fixed Arabic caption and headers and the Arabic names of the arrow keys; other keys stay as printed', () => {
     const english = page('tabs.md');
     const result = scaffoldArabic(english, { entry: readers.components.get('tabs'), declared: declaredMembers(readers, 'tabs'), map: {}, version, placeholder: true });
@@ -233,7 +233,7 @@ describe('content:scaffold-ar and the keyboard table (5a.7, 5a.8)', () => {
   });
 });
 
-describe('the string map (A10)', () => {
+describe('the string map', () => {
   const map = { Overview: 'نظرة عامة', 'Request details': 'تفاصيل الطلب' };
   it('replaces text and reader attributes, never value, id, name, slot or option values', () => {
     const html = '<select name="Overview" aria-label="Request details"><option value="Overview">Overview</option></select><div id="Overview" slot="Overview" title="Overview"></div>';
@@ -248,7 +248,7 @@ describe('the string map (A10)', () => {
   it('lists the reader strings it cannot translate', () => {
     expect(applyStringMap('html', '<button class="hw-button" type="button">Save draft</button>', map).missing).toEqual(['Save draft']);
   });
-  // G9 of the 5a fix round (review of 07763ce): a string that renders as text under a name
+  // A string that renders as text under a name
   // the map does not replace was left in English without a word, and a Vue or Angular
   // wrapper of self-closing components gave the text "/div>".
   it('lists every other string left in English that renders as reader text', () => {
@@ -336,7 +336,7 @@ describe('content:facts', () => {
       expect(Boolean(sheet.frameworks.vanilla.controller) !== Boolean(sheet.frameworks.vanilla.stylesheet), id).toBe(true);
     }
   });
-  // G12 of the 5a fix round: the vanilla markup of a component and the fields of its item types.
+  // The vanilla markup of a component and the fields of its item types.
   it('names the vanilla markup and the fields of the item types of each adapter', () => {
     const sources = readSources(guideDir, repoDir, version);
     const stat = factSheet(readers, 'stat', sources);

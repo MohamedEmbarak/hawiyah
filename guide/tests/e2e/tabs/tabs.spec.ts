@@ -7,14 +7,14 @@ import { pageModel } from '../support/routes';
 // group, its id references, and its keyboard behaviour in both directions.
 //
 // These specs test the native Angular result and the page structure only. The
-// sandboxed frames of the JavaScript, React and Vue results (4b.1) and their
-// equivalence with the Angular result are covered by 4b.2:
+// sandboxed frames of the JavaScript, React and Vue results and their
+// equivalence with the Angular result are compared by the equivalence runner, scripts/equivalence/run.mjs:
 //   - each group renders in the vanilla, React and Vue frames in ar and en;
 //   - the normalised DOM, the aria snapshot and the screenshot of the four results
 //     are equal at rest and after each step of the checks declared on the html
 //     blocks (tabs-keyboard, tabs-keyboard-vertical, tabs-activate, tabs-click,
 //     tabs-disabled), and each step asserts its documented outcome in every frame
-//     (5a.8: the keys of the keyboard table equal the keys the steps press);
+//     (the keys of the keyboard table equal the keys the steps press);
 //   - tests/e2e/equivalence/native-vs-frame.spec.ts: the native Angular result and
 //     the Angular frame of each group have equal aria snapshots.
 // What every component page shares (outline, content navigation, framework tabs and
@@ -187,7 +187,7 @@ for (const lang of ['ar', 'en'] as const) {
       }
       // Generated ids are unique across the results of the page.
       const ids = await page.locator('guide-example-block [role="group"] [role="tab"]').evaluateAll((nodes) => nodes.map((node) => node.id));
-      // The disabled group has four tabs (G24 of the 5a fix round), the others three.
+      // The disabled group has four tabs, the others three.
       expect(ids.length).toBe(groups.reduce((sum, [, group]) => sum + group.tabs.length, 0));
       expect(new Set(ids).size).toBe(ids.length);
 

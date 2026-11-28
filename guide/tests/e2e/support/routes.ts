@@ -63,7 +63,7 @@ export interface ModelInline {
 export interface ModelTable {
   readonly type: 'table';
   readonly caption: string;
-  /** The keyboard table of the Accessibility section (5a.8). */
+  /** The keyboard table of the Accessibility section. */
   readonly keyboard?: true;
   readonly columns: { key: string; label: ModelInline[] }[];
   readonly rows: Record<string, ModelInline[]>[];
@@ -77,7 +77,7 @@ export interface PageModel {
   readonly headings: { id: string; level: number; text: string }[];
   readonly liveGroups: string[];
   readonly tables: ModelTable[];
-  /** The evidence panel (5a.11). */
+  /** The evidence panel. */
   readonly evidence?: {
     readonly name: string;
     readonly built: string[];

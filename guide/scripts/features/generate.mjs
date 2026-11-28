@@ -175,8 +175,7 @@ export function featuresModule(features) {
 /**
  * Lists docs/components/<id>.md (not <id>.<lang>.md) whose id is in components.json
  * and whose Arabic sibling <id>.ar.md exists: the pages the build gives a route. A
- * page pending translation (English only) is in no generated file (G14 of the 5a fix
- * round).
+ * page pending translation (English only) is in no generated file.
  */
 export function listPages({ docsDir, components, kindDirs = {} }) {
   const known = new Map(components.map((c) => [c.id, c]));

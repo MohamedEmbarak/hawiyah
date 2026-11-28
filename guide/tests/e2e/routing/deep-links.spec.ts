@@ -1,7 +1,7 @@
 import { test, expect, hydrated } from '../support/fixtures';
 import { available, languagePages } from '../support/routes';
 
-// The language root shows the landing page when the landing feature is built (stage 4b),
+// The language root shows the landing page when the landing feature is built,
 // and leads to the component catalogue otherwise.
 const languageRoot = (lang: 'ar' | 'en'): RegExp =>
   new RegExp(available.landing ? `/hawiyah/${lang}/?$` : `/hawiyah/${lang}/components/?$`);

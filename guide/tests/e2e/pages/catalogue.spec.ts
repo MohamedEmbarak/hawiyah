@@ -4,8 +4,8 @@ import type { Locator } from '@playwright/test';
 import { test, expect, axe, hydrated, presetMode } from '../support/fixtures';
 import { navigation, type Lang } from '../support/routes';
 
-// The catalogue and the side navigation grouped by the categories of components.json
-// (5a.2): one catalogue section per category with a card per built page (its name,
+// The catalogue and the side navigation grouped by the categories of components.json:
+// one catalogue section per category with a card per built page (its name,
 // a link to the page, and the Markdown summary), and one group per category in the side navigation and the drawer,
 // the group of the current page open; labels from src/app/i18n/categories.json. In
 // Arabic and English, in both colour modes, axe clean and without overflow at 320 px.

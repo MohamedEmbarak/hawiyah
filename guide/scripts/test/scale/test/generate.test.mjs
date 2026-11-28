@@ -1,4 +1,4 @@
-// The scale fixture (leadAmendments A7, lead decision L10 of 5a) stays valid as
+// The scale fixture stays valid as
 // the tools change: its 85 pages pass step 20 and step 30 (API tables and
 // vocabulary) in both languages. The build of the fixture itself is measured by
 // hand (README.md, Scale); this test does not run it.

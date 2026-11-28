@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs';
 import { test, expect, axe, hydrated } from '../support/fixtures';
 import { navigation, pageModel } from '../support/routes';
 
-// The evidence panel at the end of the section Platforms Code reference (5a.11), on
+// The evidence panel at the end of the section Platforms Code reference, on
 // every component page of the build in both languages. The expectation is read here
-// from the sources themselves, not from the page model that the same build wrote
-// (G23 of the 5a fix round): components.json (built and verified adapters, each
+// from the sources themselves, not from the page model that the same build wrote:
+// components.json (built and verified adapters, each
 // evidence entry with its fields, the notes), the Known defects of the pinned version
 // in CHANGELOG.md that name the component, its entries of known-differences.json, and
 // the entry of keyboard-exceptions.json that leaves its keyboard outcomes unchecked.

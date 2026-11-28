@@ -5,7 +5,7 @@ import { inlineText, navigation, pageModel, type Lang } from '../support/routes'
 // Every component page of the build, in both languages, checked from the navigation
 // index and the page model (src/generated/content/): the outline, the framework tabs and
 // editor links of every live group, and every table, the keyboard table included (also
-// under the example of the brief view, 5a.8). What is
+// under the example of the brief view). What is
 // specific to one page stays in its own spec (pages/button.spec.ts, tabs/tabs.spec.ts).
 
 const TEXT = {
@@ -55,7 +55,7 @@ for (const entry of navigation.pages) {
         await expect(blocks.locator('section.example')).toHaveAttribute('aria-labelledby', first?.section ?? '');
         await expect(blocks.getByRole('group', { name: t.result })).toHaveCount(1);
         await expectFrameworkTabs(blocks, lang, entry.id, first?.example ?? '');
-        // The keyboard table of the Accessibility section, under the example, from the same model (5a.8).
+        // The keyboard table of the Accessibility section, under the example, from the same model.
         const keyboard = model.tables.find((table) => table.keyboard);
         const marker = lang === 'en' ? /^Keyboard interaction of / : /^التفاعل من لوحة المفاتيح مع المكوّن: /;
         await expect(article.locator(':scope > guide-blocks table caption').filter({ hasText: marker })).toHaveCount(keyboard ? 1 : 0);

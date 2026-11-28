@@ -102,7 +102,7 @@ export class EditorPage {
   protected readonly preview = buildInfo.preview !== null;
   // One entry keyed by the revision, so a new revision re-creates the file tabs. Tracked
   // by a property, not by identity: identity tracking makes Angular log NG0956 in
-  // development builds (4c.3).
+  // development builds.
   protected readonly revisions = computed(() => [{ id: this.store.revision() }]);
   protected readonly frameSource = signal<FrameSource | null>(null);
 

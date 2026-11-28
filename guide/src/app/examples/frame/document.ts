@@ -21,7 +21,7 @@ export interface FrameDocumentInput {
   readonly lang: ExampleLanguage;
   readonly dir: ExampleDirection;
   readonly mode: 'light' | 'dark';
-  /** The frame title text in the page language, also written into the document <title> (leadAmendments A10). */
+  /** The frame title text in the page language, also written into the document <title>. */
   readonly title: string;
   readonly compiled: Pick<CompiledExample, 'host' | 'entry' | 'modules' | 'classic'>;
   /** <origin><base>runtime/, ending in '/'. */

@@ -182,7 +182,7 @@ export const INHERITED_ALLOWED: ListedDeclaration[] = [
     property: 'animation-name',
     value: 'animation: guide-pane-settle var(--hw-duration-slow) var(--hw-ease-standard) backwards',
     condition: '@media (prefers-reduced-motion: no-preference)',
-    reason: 'the landing pane settles once on load (decision M1), only when the reader allows motion; the keyframes move and fade the guide stage, and at rest the animation has ended',
+    reason: 'the landing pane settles once on load, only when the reader allows motion; the keyframes move and fade the guide stage, and at rest the animation has ended',
   },
   {
     sheet: 'guide-landing-pane',
@@ -190,7 +190,7 @@ export const INHERITED_ALLOWED: ListedDeclaration[] = [
     property: 'animation-name',
     value: 'animation: guide-pane-change-odd var(--hw-duration-slow) var(--hw-ease-standard)',
     condition: '@media (prefers-reduced-motion: no-preference)',
-    reason: 'the cross-fade of a landing pane after the reader changed it (decision M2), only when the reader allows motion; the keyframes move and fade the guide stage',
+    reason: 'the cross-fade of a landing pane after the reader changed it, only when the reader allows motion; the keyframes move and fade the guide stage',
   },
   {
     sheet: 'guide-landing-pane',
@@ -198,7 +198,7 @@ export const INHERITED_ALLOWED: ListedDeclaration[] = [
     property: 'animation-name',
     value: 'animation: guide-pane-change-even var(--hw-duration-slow) var(--hw-ease-standard)',
     condition: '@media (prefers-reduced-motion: no-preference)',
-    reason: 'the cross-fade of a landing pane after the reader changed it again (decision M2): the second name restarts the animation; only when the reader allows motion',
+    reason: 'the cross-fade of a landing pane after the reader changed it again: the second name restarts the animation; only when the reader allows motion',
   },
   {
     sheet: 'guide-landing-command',

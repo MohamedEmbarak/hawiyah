@@ -83,7 +83,7 @@ for (const lang of ['ar', 'en'] as const) {
       await expect(card.locator('guide-native-result').getByRole('button', { name: t.resultButton })).toBeVisible();
       await expect(card.locator('code')).toHaveText('@hawiyah/angular 0.3.0');
       await expect(steps.nth(3).getByRole('link', { name: t.toComponents })).toHaveAttribute('href', `${lang}/components/`);
-      // Stage 4c builds the editor feature: step 4 also links to the editor with the chosen framework.
+      // With the editor feature built, step 4 also links to the editor with the chosen framework.
       await expect(steps.nth(3).getByRole('link')).toHaveCount(2);
       await expect(steps.nth(3).getByRole('link').nth(1)).toHaveAttribute('href', `${lang}/editor/?example=button%2Fprimary&framework=angular`);
     });

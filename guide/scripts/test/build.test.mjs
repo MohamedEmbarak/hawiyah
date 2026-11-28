@@ -56,7 +56,7 @@ describe('build plan', () => {
   });
 });
 
-describe('scope options for local gates (5a.1)', () => {
+describe('scope options for local gates', () => {
   const ran = (options) => resolvePlan(stepFiles, options);
 
   it('--pages and --docs make the build not deployable and leave out step 90; the final line says so', () => {
@@ -147,7 +147,7 @@ describe('scope options for local gates (5a.1)', () => {
   });
 });
 
-describe('step 40 heap (5a.1)', () => {
+describe('step 40 heap', () => {
   it('gives ng build a heap of 8192 MB unless the caller set one', () => {
     expect(ngNodeOptions(undefined)).toBe('--max-old-space-size=8192');
     expect(ngNodeOptions('--enable-source-maps')).toBe('--enable-source-maps --max-old-space-size=8192');

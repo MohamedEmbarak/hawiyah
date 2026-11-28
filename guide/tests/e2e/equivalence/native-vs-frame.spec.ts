@@ -80,7 +80,7 @@ test('the harness page is not part of the deployed guide', async ({ page }) => {
   expect(script.status()).toBe(404);
 });
 
-// 5a.9: on every reference page of the build, a group without frame renders its Angular
+// On every reference page of the build, a group without frame renders its Angular
 // result natively in the page (prerendered and hydrated), and a group with frame never
 // does (pages/framed.spec.ts covers its frame).
 const builtManifest = JSON.parse(readFileSync(fileURLToPath(new URL('../../../src/generated/content/manifest.json', import.meta.url)), 'utf8')) as {

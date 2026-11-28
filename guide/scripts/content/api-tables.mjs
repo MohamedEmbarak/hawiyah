@@ -3,7 +3,7 @@
 // installed packages (scripts/api-tables/write.mjs), in the English and the
 // Arabic file. Captions, header rows and the prose after each table stay as
 // written; the table bodies, and the generated note after a JavaScript table read
-// from the stylesheet alone (leadAmendments A11), are rewritten.
+// from the stylesheet alone, are rewritten.
 //
 //   npm run content:api-tables -- <id> [--write | --check] [--docs <dir>]
 //
