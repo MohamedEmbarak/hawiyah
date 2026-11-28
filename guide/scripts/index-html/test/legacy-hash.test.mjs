@@ -65,6 +65,19 @@ describe("mapLegacyHash", () => {
         }
       });
 
+      it("maps the renamed ids upload and empty of the previous guide to file-upload and empty-state", () => {
+        const renamed = { components: ["file-upload", "empty-state"], landing: true };
+        expect(mapLegacyHash("#component/upload", lang, renamed)).toBe(`${lang}/components/file-upload/`);
+        expect(mapLegacyHash("#components/empty", lang, renamed)).toBe(`${lang}/components/empty-state/`);
+        expect(mapLegacyHash("#component/upload", lang, nothingBuilt)).toBe(`${lang}/components/`);
+      });
+
+      it("maps the bare #docs to Getting started when it is built, else as before", () => {
+        expect(mapLegacyHash("#docs", lang, { ...withLanding, guides: ["getting-started"], guideIndex: true })).toBe(`${lang}/guides/getting-started/`);
+        expect(mapLegacyHash("#docs", lang, { ...withLanding, guides: [], guideIndex: true })).toBe(`${lang}/guides/`);
+        expect(mapLegacyHash("#docs", lang, withLanding)).toBe(`${lang}/`);
+      });
+
       it("tolerates trailing slashes and encoded hashes", () => {
         expect(mapLegacyHash("#component/button/", lang, stage4a)).toBe(`${lang}/components/button/`);
         expect(mapLegacyHash("#component%2Fbutton", lang, stage4a)).toBe(`${lang}/components/button/`);

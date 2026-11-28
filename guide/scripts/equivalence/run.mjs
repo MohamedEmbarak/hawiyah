@@ -276,10 +276,20 @@ export function validateDesignedDifferences({ empty, hooks, hosts = [] }, { chan
     });
     return list.filter((entry) => entry && typeof entry.component === 'string');
   };
+  const checkedHosts = check(hosts, 'angular-hosts.json', [['element', /^hw-[a-z0-9-]+$/, 'hw- element name'], ['tag', /^[a-z][a-z0-9]*$/, 'HTML element name without a hyphen']]);
+  // A guide or a template takes the hosts of every component (designedOf), so one element has one tag in the whole list.
+  const tags = new Map();
+  checkedHosts.forEach((entry) => {
+    const index = hosts.indexOf(entry);
+    if (typeof entry.element !== 'string' || typeof entry.tag !== 'string') return;
+    const first = tags.get(entry.element);
+    if (first && first.tag !== entry.tag) errors.push(`HWE-KD scripts/equivalence/angular-hosts.json:1: entry ${index + 1}: ${entry.element} is compared with ${entry.tag} here and with ${first.tag} in entry ${first.index + 1}; one element takes one tag`);
+    else if (!first) tags.set(entry.element, { tag: entry.tag, index });
+  });
   return {
     empty: check(empty, 'empty-elements.json', [['class', /^hw-[a-z0-9-]+$/, 'hw- class name']]),
     hooks: check(hooks, 'vanilla-hooks.json', [['attribute', /^data-hw-[a-z0-9-]+$/, 'data-hw-* attribute name']]),
-    hosts: check(hosts, 'angular-hosts.json', [['element', /^hw-[a-z0-9-]+$/, 'hw- element name'], ['tag', /^[a-z][a-z0-9]*$/, 'HTML element name without a hyphen']]),
+    hosts: checkedHosts,
     errors,
   };
 }
@@ -378,14 +388,29 @@ export function englishPages(dir) {
   return readdirSync(dir).flatMap((name) => /^([a-z0-9-]+)\.md$/.exec(name)?.[1] ?? []);
 }
 
-/** The documented difference a group names, or a failure line. */
-export function differenceOf(group, entries) {
+/**
+ * Whether the html block of a group shows a component: an element with one of its
+ * classes (components.json cssClasses) or its hook data-hw="<id>", as HWC-COMP reads it.
+ */
+export function vanillaShows(group, component, classes = []) {
+  const code = group.blocks?.vanilla?.code ?? '';
+  for (const match of code.matchAll(/\bclass\s*=\s*"([^"]*)"/g)) {
+    if (match[1].split(/\s+/).some((token) => classes.includes(token))) return true;
+  }
+  return code.includes(`data-hw="${component}"`);
+}
+
+/** The documented difference a group names, or a failure line. classesOf(id) gives the classes of a component (components.json). */
+export function differenceOf(group, entries, classesOf = null) {
   if (group.differences === undefined) return { entry: null };
   const entry = entries.get(group.differences);
   if (!entry) return { error: failureLine('HWE-KD', group, `differences=${group.differences} names no entry of scripts/equivalence/known-differences.json`) };
   // A group of a guide or a template may name the documented difference of any component it composes.
   if (entry.component !== group.id && !composes(group.id)) {
     return { error: failureLine('HWE-KD', group, `differences=${group.differences} documents component ${entry.component}, not ${group.id}`) };
+  }
+  if (entry.component !== group.id && classesOf && !vanillaShows(group, entry.component, classesOf(entry.component))) {
+    return { error: failureLine('HWE-KD', group, `differences=${group.differences} documents component ${entry.component}, which the html block of the group does not show`) };
   }
   return { entry };
 }
@@ -394,9 +419,9 @@ export function differenceOf(group, entries) {
  * The documented differences a group names with differences=<id>[,<id>...]: each id is
  * judged as differenceOf judges one. Returns { entries, errors }.
  */
-export function differencesOf(group, entries) {
+export function differencesOf(group, entries, classesOf = null) {
   if (group.differences === undefined) return { entries: [], errors: [] };
-  const found = String(group.differences).split(',').map((id) => differenceOf({ ...group, differences: id }, entries));
+  const found = String(group.differences).split(',').map((id) => differenceOf({ ...group, differences: id }, entries, classesOf));
   return { entries: found.flatMap((item) => (item.entry ? [item.entry] : [])), errors: found.flatMap((item) => (item.error ? [item.error] : [])) };
 }
 
@@ -549,11 +574,28 @@ export const FIXED_FRAME_HEIGHT = 720;
 /** The two heights at which a frame is laid out to find an element whose minimum block size follows the viewport. */
 export const PROBE_HEIGHTS = [600, 700];
 
-/** Fixes the height of a framework's frame in the harness page (null releases it) and waits until its document has that viewport height. */
+/**
+ * Fixes the height of a framework's frame in the harness page (null releases it) and
+ * waits until its document has that viewport height.
+ *
+ * The frame is scrolled into the viewport of the harness page first. Cause (measured
+ * with the stand-in of test/frame-height.test.mjs): a result frame is sandboxed, so
+ * Chromium runs it in a process of its own. A frame of that kind that lies outside the
+ * viewport of the page sometimes never takes a new size: its document keeps the viewport
+ * height of its first layout (150 px, the default height of an iframe) whatever height
+ * the harness sets, for as long as it stays outside the viewport, and takes the set
+ * height as soon as it enters it. With --disable-features=IsolateSandboxedIframes the
+ * frame stays in the process of the page and always takes the new size. Which frames
+ * stay behind depends on the load of the machine (Chromium apparently holds a new size
+ * until the frame has rendered the previous one, and a frame outside the viewport is
+ * render-throttled); in the harness page every frame below the first one or two lies
+ * outside the viewport.
+ */
 async function fixFrameHeight(page, framework, height) {
   const fixed = await page.evaluate(([name, value]) => window.__harnessFixHeight?.(name, value) ?? false, [framework, height]);
   if (!fixed) throw new Error(`the harness cannot fix the height of the ${framework} frame`);
   if (height === null) return;
+  await page.locator(`iframe[data-framework="${framework}"]`).scrollIntoViewIfNeeded();
   const frame = await frameOf(page, framework);
   // Polled on a timer: a frame outside the viewport of the harness page gets no animation frames.
   await frame.waitForFunction((value) => window.innerHeight === value, height, { timeout: 5_000, polling: 20 });
@@ -982,7 +1024,8 @@ async function runGroup({ page, origin, base, pin, group, checks, differences = 
       await axe(`rest@${group.width}`);
     }
   }
-  failures.push(...staleDifferences(group, differences, skippedRows));
+  // A group whose frames or checks failed did not run every state, so its documented differences are not judged.
+  if (!failures.some((line) => /^HWE-(FRAME|CHECK) /.test(line))) failures.push(...staleDifferences(group, differences, skippedRows));
   return { rows, failures, asserted: checked.asserted, axeFrames: axeCount, hosts: [...hosts], fixedHeights: [...fixedHeights] };
 }
 
@@ -992,7 +1035,10 @@ async function runGroup({ page, origin, base, pin, group, checks, differences = 
  * results of that aspect were equal in every pair and every state of the group, the
  * entry hides nothing and is removed from the group. skippedRows are the rows of
  * compareCapture with result 'skipped', each with equal. A structure entry with
- * ignore is compared and is not judged here.
+ * ignore is compared and is not judged here. The judgement is per aspect: when a
+ * group names several entries for one aspect and the results of that aspect differ,
+ * no entry is judged, since the comparison cannot tell which entry the difference
+ * needs (a group of a template that names several structure entries).
  */
 export function staleDifferences(group, differences, skippedRows) {
   const out = [];
@@ -1044,6 +1090,15 @@ export async function runEquivalence(options) {
   const designedLists = options.designedDifferences ?? readDesignedDifferences(guideDir);
   const failures = [...known.errors, ...designedLists.errors];
   const componentsFile = options.componentsFile ?? resolve(guideDir, '..', 'components.json');
+  // The classes of each component, by which a group of a guide or a template shows it (differenceOf).
+  const componentClasses = new Map();
+  try {
+    const listed = JSON.parse(readFileSync(componentsFile, 'utf8'));
+    for (const entry of Array.isArray(listed) ? listed : listed.components ?? []) componentClasses.set(entry.id, entry.cssClasses ?? []);
+  } catch {
+    // Without components.json a guide or a template shows a component by its hook only.
+  }
+  const classesOf = (id) => componentClasses.get(id) ?? [];
   // The keyboard rule (HWE-KEYS) reads every check the groups of a page name, also
   // those of groups outside this run's selection or shard.
   const manifest = existsSync(manifestFile) ? JSON.parse(readFileSync(manifestFile, 'utf8')) : { pages: [] };
@@ -1070,7 +1125,7 @@ export async function runEquivalence(options) {
   const withController = new Set(controllerScope.keys());
   const plan = [];
   for (const group of groups) {
-    const named = differencesOf(group, known.entries);
+    const named = differencesOf(group, known.entries, classesOf);
     failures.push(...named.errors);
     for (const name of checkNames(group)) {
       if (!checks.has(name)) failures.push(failureLine('HWE-CHECK', group, `check=${name} has no scripts/equivalence/checks/${name}.mjs`));

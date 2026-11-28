@@ -77,7 +77,8 @@ describe('routes of the kinds', () => {
     expect(available).toMatchObject({ guides: ['getting-started'], templates: ['service'], guideIndex: true, templateIndex: true, brand: true, foundations: true });
     expect(mapLegacyHash('#docs/getting-started', 'en', available)).toBe('en/guides/getting-started/');
     expect(mapLegacyHash('#docs/react', 'ar', available)).toBe('ar/guides/');
-    expect(mapLegacyHash('#docs', 'en', available)).toBe('en/guides/');
+    // The bare #docs of the previous guide opened Getting started.
+    expect(mapLegacyHash('#docs', 'en', available)).toBe('en/guides/getting-started/');
     expect(mapLegacyHash('#templates/service?preview=template', 'ar', available)).toBe('ar/templates/service/');
     expect(mapLegacyHash('#templates/home', 'en', available)).toBe('en/templates/');
     expect(mapLegacyHash('#foundations', 'en', available)).toBe('en/foundations/');

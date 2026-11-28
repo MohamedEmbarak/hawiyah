@@ -63,6 +63,9 @@ export function mapLegacyHash(hash, lang, available) {
   var head = parts[0];
   if (head === "components" || head === "component") {
     var id = parts[1] || "";
+    // Two components of the previous guide were renamed: upload is FileUpload, empty is EmptyState.
+    if (id === "upload") id = "file-upload";
+    if (id === "empty") id = "empty-state";
     for (var i = 0; i < components.length; i += 1) {
       if (components[i] === id) return lang + "/components/" + id + "/";
     }
@@ -72,7 +75,8 @@ export function mapLegacyHash(hash, lang, available) {
   if (head === "docs" || head === "templates") {
     var ids = head === "docs" ? guides : templates;
     var route = head === "docs" ? "guides" : "templates";
-    var page = parts[1] || "";
+    // The bare #docs of the previous guide opened Getting started.
+    var page = parts[1] || (head === "docs" ? "getting-started" : "");
     for (var j = 0; j < ids.length; j += 1) {
       if (page !== "" && ids[j] === page) return lang + "/" + route + "/" + page + "/";
     }

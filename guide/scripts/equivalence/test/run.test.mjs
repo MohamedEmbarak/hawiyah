@@ -214,6 +214,17 @@ describe('known differences', () => {
     expect(differenceOf({ ...group, id: 'template:home', differences: 'missing' }, entries).error).toMatch(/names no entry/);
   });
 
+  it('fail a group of a template that names the difference of a component its html block does not show', () => {
+    const { entries } = validateKnownDifferences([{ ...entry, component: 'button' }]);
+    const shown = { ...group, id: 'template:home', differences: 'tabs-bar', blocks: { vanilla: { line: 19, code: '<button class="hw-button" type="button">Go</button>' } } };
+    const classesOf = (id) => (id === 'button' ? ['hw-button'] : []);
+    expect(differenceOf(shown, entries, classesOf).error).toBeUndefined();
+    expect(differenceOf({ ...shown, blocks: { vanilla: { line: 19, code: '<div data-hw="button"></div>' } } }, entries, classesOf).error).toBeUndefined();
+    expect(differenceOf({ ...shown, blocks: { vanilla: { line: 19, code: '<p class="hw-buttons">Go</p>' } } }, entries, classesOf).error).toBe(
+      'HWE-KD docs/components/tabs.ar.md:19: differences=tabs-bar documents component button, which the html block of the group does not show',
+    );
+  });
+
   // A group of Portal layout differs in several aspects: the structure, the accessibility tree and the rendering.
   it('judge each id of a list as one, in the order written', () => {
     const aria = { ...entry, id: 'tabs-aria', aspect: 'aria' };

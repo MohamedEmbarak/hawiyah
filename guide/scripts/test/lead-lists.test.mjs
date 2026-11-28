@@ -50,8 +50,8 @@ const PINS = {
   'scripts/content/marketing-terms.json': '9376a99a82e48201',
   'scripts/page-guards/latin-allowlist.json': '37517e5f3dc66819',
   'scripts/equivalence/keyboard-exceptions.json': 'e2cd8a4267419155',
-  'scripts/equivalence/known-differences.json': 'f04ea1cac3d6621f',
-  'scripts/equivalence/empty-elements.json': 'd0758741b06a1e9a',
+  'scripts/equivalence/known-differences.json': 'd30afd4679b1e691',
+  'scripts/equivalence/empty-elements.json': 'ec4ca3fe1b5a06cf',
   'scripts/equivalence/vanilla-hooks.json': 'bb5d2c8fecd4c734',
   'scripts/equivalence/angular-hosts.json': 'dadd35b44cd66f6e',
 };

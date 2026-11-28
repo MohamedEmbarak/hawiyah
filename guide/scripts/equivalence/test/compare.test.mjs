@@ -160,6 +160,10 @@ describe('angular-hosts.json', () => {
     expect(designedOf('badge', lists).angularHosts).toEqual({ 'hw-badge': 'span' });
     expect(designedOf('card', lists).angularHosts).toEqual({});
   });
+  it('refuses one element compared with two tags, since a guide or a template takes the hosts of every component', () => {
+    const errors = validateDesignedDifferences({ empty: [], hooks: [], hosts: [entry, { ...entry, component: 'avatar-group', tag: 'div' }] }, options).errors;
+    expect(errors).toEqual(['HWE-KD scripts/equivalence/angular-hosts.json:1: entry 2: hw-avatar is compared with div here and with span in entry 1; one element takes one tag']);
+  });
   it('gives a guide or a template the elements and tags of every component, since its examples compose them', () => {
     const lists = { empty: [{ component: 'stat', class: 'hw-stat-trend' }, { component: 'empty-state', class: 'hw-empty-icon' }], hooks: [], hosts: [entry, { ...entry, component: 'badge', element: 'hw-badge' }] };
     expect(designedOf('template:home', lists)).toEqual({ emptyClasses: ['hw-stat-trend', 'hw-empty-icon'], vanillaAttributes: [], angularHosts: { 'hw-avatar': 'span', 'hw-badge': 'span' } });
