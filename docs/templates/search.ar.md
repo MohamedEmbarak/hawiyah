@@ -1,7 +1,7 @@
 ---
 source:
   summary: 94f7243626ed
-  example: 364ca4d374e0
+  example: 3740bc231564
   composition: e382e95723f4
   platforms-code-reference: 28fcda0e2b4f
 ---
